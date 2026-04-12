@@ -7,7 +7,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "7965227435:AAFVkenCU8mvMMc_JZ4XGD3T56Tfl1y_pLU")
-WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://huaxiashanghui-a11y.github.io/wysz01/webapp")
+WEBAPP_URL = os.environ.get("WEBAPP_URL", "https://wyszbot-webapp.vercel.app")
 CS_TELEGRAM = "https://t.me/xxx"
 
 
