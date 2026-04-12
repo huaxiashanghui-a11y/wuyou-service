@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ff6b35">
+<title>木姐同城生活助手</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div id="app">
+<header id="header">
+<div class="header-back" id="headerBack" style="display:none" onclick="goBack()">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</div>
+<div class="header-title" id="headerTitle">木姐同城生活助手</div>
+</header>
+<main id="mainContent">
+
+<!-- 首页 -->
+<div id="page-home" class="page active">
+<div class="banner-carousel">
+<div class="carousel-track" id="carouselTrack">
+<div class="carousel-slide" style="background:linear-gradient(135deg,#ff6b35,#ff9a56)"><div class="slide-content"><h2>🍜 木姐美食推荐</h2><p>发现木姐最地道的美食</p></div></div>
+<div class="carousel-slide" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"><div class="slide-content"><h2>💱 实时汇率查询</h2><p>人民币/缅甸币最新汇率</p></div></div>
+<div class="carousel-slide" style="background:linear-gradient(135deg,#43e97b,#38f9d7)"><div class="slide-content"><h2>🏠 租房找屋</h2><p>木姐优质房源一键查询</p></div></div>
+<div class="carousel-slide" style="background:linear-gradient(135deg,#fa709a,#fee140)"><div class="slide-content"><h2>🎉 同城活动</h2><p>精彩活动不容错过</p></div></div>
+</div>
+<div class="carousel-dots" id="carouselDots"></div>
+</div>
+
+<div class="search-bar" onclick="navigateTo('search')">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#999" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="#999" stroke-width="2" stroke-linecap="round"/></svg>
+<span>搜索商家、服务...</span>
+</div>
+
+<div class="category-grid">
+<div class="category-item" onclick="navigateTo('category/food')"><div class="cat-icon" style="background:linear-gradient(135deg,#ff6b35,#ff9a56)">🍜</div><span>美食</span></div>
+<div class="category-item" onclick="navigateTo('category/hotel')"><div class="cat-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🏨</div><span>酒店</span></div>
+<div class="category-item" onclick="navigateTo('category/rental')"><div class="cat-icon" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🏠</div><span>租房</span></div>
+<div class="category-item" onclick="navigateTo('category/shopping')"><div class="cat-icon" style="background:linear-gradient(135deg,#fa709a,#fee140)">🛒</div><span>购物</span></div>
+<div class="category-item" onclick="navigateTo('category/exchange')"><div class="cat-icon" style="background:linear-gradient(135deg,#f5576c,#ff6b81)">💱</div><span>换汇</span></div>
+<div class="category-item" onclick="navigateTo('category/visa')"><div class="cat-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">📋</div><span>签证</span></div>
+<div class="category-item" onclick="navigateTo('category/car')"><div class="cat-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🚗</div><span>车行</span></div>
+<div class="category-item" onclick="navigateTo('category/express')"><div class="cat-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">📦</div><span>快递</span></div>
+</div>
+
+<div class="section">
+<div class="section-header"><h3>💱 实时汇率</h3><span class="more" onclick="navigateTo('category/exchange')">查看更多 ›</span></div>
+<div class="rate-cards">
+<div class="rate-card"><div class="rate-from">🇨🇳 人民币 CNY</div><div class="rate-arrow">→</div><div class="rate-to">🇲🇲 缅币 MMK</div><div class="rate-value" id="rateCnyMmk">1 : ---</div></div>
+<div class="rate-card"><div class="rate-from">🇺🇸 美元 USD</div><div class="rate-arrow">→</div><div class="rate-to">🇲🇲 缅币 MMK</div><div class="rate-value" id="rateUsdMmk">1 : ---</div></div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-header"><h3>🔥 热门推荐</h3></div>
+<div class="recommend-list">
+<div class="recommend-item" onclick="navigateTo('category/food')"><div class="rec-img" style="background:linear-gradient(135deg,#ff6b35,#ff9a56)">🍜</div><div class="rec-info"><h4>木姐老街火锅</h4><p>正宗川味火锅 · 人均￥80</p><div class="rec-tags"><span class="tag">美食</span><span class="tag hot">爆款</span></div></div></div>
+<div class="recommend-item" onclick="navigateTo('category/hotel')"><div class="rec-img" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🏨</div><div class="rec-info"><h4>木姐国际大酒店</h4><p>舒适住宿 · 特惠￥199/晚</p><div class="rec-tags"><span class="tag">酒店</span><span class="tag hot">特惠</span></div></div></div>
+<div class="recommend-item" onclick="navigateTo('category/exchange')"><div class="rec-img" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">💱</div><div class="rec-info"><h4>诚信换汇中心</h4><p>安全快捷 · 实时汇率</p><div class="rec-tags"><span class="tag">换汇</span><span class="tag hot">推荐</span></div></div></div>
+</div>
+</div>
+<div style="height:80px"></div>
+</div>
+
+<!-- 跑腿页 -->
+<div id="page-errand" class="page">
+<div class="page-banner" style="background:linear-gradient(135deg,#667eea,#764ba2)"><h2>🏃 跑腿服务</h2><p>木姐同城跑腿，随叫随到</p></div>
+<div class="service-list">
+<div class="service-card" onclick="contactService('跑腿代购')"><div class="svc-icon">🛍️</div><h4>代购服务</h4><p>帮您代购本地商品</p><button class="contact-btn">联系下单</button></div>
+<div class="service-card" onclick="contactService('跑腿送件')"><div class="svc-icon">📦</div><h4>同城送件</h4><p>木姐城区快速送达</p><button class="contact-btn">联系下单</button></div>
+<div class="service-card" onclick="contactService('跑腿排队')"><div class="svc-icon">⏳</div><h4>代排队</h4><p>帮您排队办事省时省力</p><button class="contact-btn">联系下单</button></div>
+<div class="service-card" onclick="contactService('跑腿其他')"><div class="svc-icon">🔧</div><h4>其他跑腿</h4><p>各种跑腿需求均可</p><button class="contact-btn">联系下单</button></div>
+</div>
+<div style="height:80px"></div>
+</div>
+
+<!-- 曝光页 -->
+<div id="page-expose" class="page">
+<div class="page-banner" style="background:linear-gradient(135deg,#f5576c,#ff6b81)"><h2>📢 曝光台</h2><p>不良商家曝光，维护权益</p></div>
+<div class="expose-notice"><p>⚠️ 曝光台为用户提供不良商家、诈骗信息曝光渠道，请如实描述，恶意诽谤将承担法律责任。</p></div>
+<div class="expose-list">
+<div class="expose-item"><div class="expose-header"><span class="expose-tag danger">⚠️ 诈骗</span><span class="expose-time">2026-04-10</span></div><h4>某换汇点虚假汇率</h4><p>该换汇点标价与实际兑换金额严重不符，请各位注意防范。</p><div class="expose-actions"><button onclick="contactService('曝光详情咨询')">咨询详情</button></div></div>
+<div class="expose-item"><div class="expose-header"><span class="expose-tag warn">⚠️ 投诉</span><span class="expose-time">2026-04-08</span></div><h4>某快递公司丢件不赔</h4><p>寄送物品丢失后推诿不处理，提醒大家选择正规快递。</p><div class="expose-actions"><button onclick="contactService('曝光详情咨询')">咨询详情</button></div></div>
+</div>
+<button class="fab-btn" onclick="contactService('我要曝光')">📝 我要曝光</button>
+<div style="height:80px"></div>
+</div>
+
+<!-- 活动页 -->
+<div id="page-activity" class="page">
+<div class="page-banner" style="background:linear-gradient(135deg,#fa709a,#fee140)"><h2>🎉 同城活动</h2><p>木姐精彩活动，不容错过</p></div>
+<div class="activity-list">
+<div class="activity-card"><div class="activity-img" style="background:linear-gradient(135deg,#ff6b35,#ff9a56)">🎊</div><div class="activity-info"><h4>木姐泼水节庆祝活动</h4><p class="activity-time">📅 2026年4月13日-15日</p><p class="activity-loc">📍 木姐市中心广场</p><div class="activity-status ongoing">进行中</div></div></div>
+<div class="activity-card"><div class="activity-img" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🎯</div><div class="activity-info"><h4>中缅文化交流展</h4><p class="activity-time">📅 2026年4月20日-25日</p><p class="activity-loc">📍 木姐文化中心</p><div class="activity-status upcoming">即将开始</div></div></div>
+<div class="activity-card"><div class="activity-img" style="background:linear-gradient(135deg,#43e97b,#38f9d7)">🎸</div><div class="activity-info"><h4>木姐周末音乐节</h4><p class="activity-time">📅 2026年5月1日-3日</p><p class="activity-loc">📍 木姐河滨公园</p><div class="activity-status upcoming">即将开始</div></div></div>
+</div>
+<button class="fab-btn" onclick="contactService('发布活动')">📢 发布活动</button>
+<div style="height:80px"></div>
+</div>
+
+<!-- 我的页 -->
+<div id="page-profile" class="page">
+<div class="profile-header"><div class="profile-avatar">👤</div><div class="profile-info"><h3 id="profileName">用户</h3><p>木姐同城生活助手</p></div></div>
+<div class="profile-menu">
+<div class="profile-menu-item" onclick="contactService('我的订单')"><span class="pmi-icon">📋</span><span>我的订单</span><span class="pmi-arrow">›</span></div>
+<div class="profile-menu-item" onclick="contactService('我的收藏')"><span class="pmi-icon">❤️</span><span>我的收藏</span><span class="pmi-arrow">›</span></div>
+<div class="profile-menu-item" onclick="contactService('我的发布')"><span class="pmi-icon">📝</span><span>我的发布</span><span class="pmi-arrow">›</span></div>
+<div class="profile-menu-item" onclick="contactService('意见反馈')"><span class="pmi-icon">💬</span><span>意见反馈</span><span class="pmi-arrow">›</span></div>
+<div class="profile-menu-item" onclick="contactService('关于我们')"><span class="pmi-icon">ℹ️</span><span>关于我们</span><span class="pmi-arrow">›</span></div>
+<div class="profile-menu-item" onclick="contactService('联系客服')"><span class="pmi-icon">💁</span><span>联系客服</span><span class="pmi-arrow">›</span></div>
+</div>
+<div style="height:80px"></div>
+</div>
+
+<!-- 分类页 -->
+<div id="page-category" class="page">
+<div class="page-banner" id="categoryBanner"><h2 id="categoryTitle">分类</h2><p id="categoryDesc">服务列表</p></div>
+<div class="category-tabs" id="categoryTabs"></div>
+<div class="shop-list" id="shopList"></div>
+<div style="height:80px"></div>
+</div>
+
+<!-- 搜索页 -->
+<div id="page-search" class="page">
+<div class="search-page-header"><div class="search-input-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="#999" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="#999" stroke-width="2" stroke-linecap="round"/></svg><input type="text" id="searchInput" placeholder="搜索商家、服务..." autofocus></div><button class="search-cancel" onclick="goBack()">取消</button></div>
+<div class="search-hot"><h4>🔥 热门搜索</h4><div class="hot-tags"><span onclick="doSearch('换汇')">换汇</span><span onclick="doSearch('火锅')">火锅</span><span onclick="doSearch('租车')">租车</span><span onclick="doSearch('快递')">快递</span><span onclick="doSearch('签证')">签证</span><span onclick="doSearch('酒店')">酒店</span></div></div>
+<div style="height:80px"></div>
+</div>
+</main>
+
+<nav id="bottomNav">
+<div class="nav-item active" onclick="switchTab('home')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>首页</span></div>
+<div class="nav-item" onclick="switchTab('errand')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>跑腿</span></div>
+<div class="nav-item" onclick="switchTab('expose')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/><path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>曝光</span></div>
+<div class="nav-item" onclick="switchTab('activity')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M8 2V5M16 2V5M3 10H21M5 4H19C20.1046 4 21 4.89543 21 6V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V6C3 4.89543 3.89543 4 5 4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>活动</span></div>
+<div class="nav-item" onclick="switchTab('profile')"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M12 11C14.2091 11 16 9.20914 16 7C16 4.79086 14.2091 3 12 3C9.79086 3 8 4.79086 8 7C8 9.20914 9.79086 11 12 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>我的</span></div>
+</nav>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
