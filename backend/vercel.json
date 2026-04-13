@@ -1,12 +1,5 @@
 {
-  "framework": null,
-  "buildCommand": "npm run build",
-  "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/vercel.js" }
-  ],
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/vercel.js" }
+    { "source": "/(.*)", "destination": "dist/index.js" }
   ]
 }
