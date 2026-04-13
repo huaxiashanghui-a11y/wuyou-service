@@ -18,9 +18,9 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">94</span>
+              <span className="text-white font-bold text-sm">无</span>
             </div>
-            <span className="font-bold text-lg text-gray-800 hidden sm:block">94LIVES</span>
+            <span className="font-bold text-lg text-gray-800 hidden sm:block">无忧服务</span>
           </Link>
 
           {/* Search Bar */}
