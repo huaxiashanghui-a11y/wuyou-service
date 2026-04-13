@@ -2,9 +2,11 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import ProductCard from '@/components/ProductCard';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import ProductGrid from '@/components/ProductGrid';
+import { Search, Package } from 'lucide-react';
 import { Product } from '@/lib/types';
-import { Search, Filter, Grid, List, Package } from 'lucide-react';
 
 // 模拟商品数据
 const allProducts: Product[] = [
@@ -22,7 +24,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 1,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '2',
@@ -38,7 +40,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 2,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '3',
@@ -54,7 +56,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 3,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '4',
@@ -70,7 +72,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 4,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '5',
@@ -86,7 +88,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 5,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '6',
@@ -102,7 +104,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 6,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '7',
@@ -118,7 +120,7 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 7,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   },
   {
     id: '8',
@@ -134,8 +136,8 @@ const allProducts: Product[] = [
     status: 'active',
     sort: 8,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  }
+    updatedAt: new Date().toISOString(),
+  },
 ];
 
 const categories = [
@@ -143,14 +145,14 @@ const categories = [
   { id: 'game', name: '游戏点卡' },
   { id: 'gift', name: '礼品卡' },
   { id: 'recharge', name: '话费充值' },
-  { id: 'other', name: '增值服务' }
+  { id: 'other', name: '增值服务' },
 ];
 
 const sortOptions = [
   { value: 'default', label: '默认排序' },
   { value: 'price-low', label: '价格从低到高' },
   { value: 'price-high', label: '价格从高到低' },
-  { value: 'sales', label: '销量优先' }
+  { value: 'sales', label: '销量优先' },
 ];
 
 function ShopContent() {
@@ -167,10 +169,11 @@ function ShopContent() {
   }, [categoryParam]);
 
   const filteredProducts = allProducts
-    .filter(product => {
+    .filter((product) => {
       const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     })
     .sort((a, b) => {
@@ -215,7 +218,7 @@ function ShopContent() {
             onChange={(e) => setSortBy(e.target.value)}
             className="px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all"
           >
-            {sortOptions.map(option => (
+            {sortOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -225,7 +228,7 @@ function ShopContent() {
 
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mt-4">
-          {categories.map(cat => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
@@ -242,9 +245,7 @@ function ShopContent() {
       </div>
 
       {/* Results Count */}
-      <div className="mb-4 text-gray-600">
-        找到 {filteredProducts.length} 个商品
-      </div>
+      <div className="mb-4 text-gray-600">找到 {filteredProducts.length} 个商品</div>
 
       {/* Products Grid */}
       {loading ? (
@@ -261,11 +262,7 @@ function ShopContent() {
           ))}
         </div>
       ) : filteredProducts.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <ProductGrid products={filteredProducts} />
       ) : (
         <div className="glass rounded-2xl p-12 text-center">
           <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
@@ -318,8 +315,14 @@ function ShopLoading() {
 
 export default function ShopPage() {
   return (
-    <Suspense fallback={<ShopLoading />}>
-      <ShopContent />
-    </Suspense>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 pt-16">
+        <Suspense fallback={<ShopLoading />}>
+          <ShopContent />
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
   );
 }
