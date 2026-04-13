@@ -32,12 +32,18 @@ export default function AdminsPage() {
   const [editingAdmin, setEditingAdmin] = useState<Admin | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    username: string;
+    email: string;
+    password: string;
+    role: 'admin' | 'superadmin';
+    permissions: string[];
+  }>({
     username: '',
     email: '',
     password: '',
-    role: 'admin' as const,
-    permissions: [] as string[]
+    role: 'admin',
+    permissions: []
   });
 
   const allPermissions = [
