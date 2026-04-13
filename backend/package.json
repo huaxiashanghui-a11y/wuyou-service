@@ -2,7 +2,7 @@
   "name": "wuyou-backend",
   "version": "1.0.0",
   "description": "无忧服务 - 后端API服务和管理后台",
-  "main": "dist/index.js",
+  "main": "vercel.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -10,7 +10,6 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@vercel/node": "^3.0.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
