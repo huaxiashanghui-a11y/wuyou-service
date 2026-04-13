@@ -30,7 +30,7 @@ export default function CardsPage() {
 
   const filteredCards = cards.filter(card => {
     const matchesSearch = card.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         card.productName.toLowerCase().includes(searchQuery.toLowerCase());
+                         (card.productName?.toLowerCase() || '').includes(searchQuery.toLowerCase());
     const matchesProduct = !selectedProduct || card.productId === selectedProduct;
     const matchesStatus = filterStatus === 'all' || card.status === filterStatus;
     return matchesSearch && matchesProduct && matchesStatus;
