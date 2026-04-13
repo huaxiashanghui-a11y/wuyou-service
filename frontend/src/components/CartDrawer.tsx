@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useCartStore } from '@/lib/store';
 
-export function CartDrawer() {
+export default function CartDrawer() {
   const { items, isOpen, setCartOpen, removeItem, updateQuantity, getTotalPrice } = useCartStore();
 
   if (!isOpen) return null;
