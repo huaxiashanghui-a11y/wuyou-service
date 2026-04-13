@@ -58,7 +58,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="pt-32">
+      <main className="pt-16">
         {/* Main Content */}
         <div className="flex-1 px-4 md:px-6 py-6">
           {/* Hero Banner */}

@@ -6,45 +6,40 @@ import { Search, ShoppingCart, User, Bell } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import CartDrawer from './CartDrawer';
 
-const tabs = ['全部', '热门', '新品', '推荐', '折扣'];
 const navLinks = ['首页', '商品', '订单', '帮助'];
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('全部');
   const { getTotalItems, toggleCart } = useCartStore();
   const totalItems = getTotalItems();
 
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
-        {/* Top Navigation Bar */}
-        <div className="bg-gray-100 border-b">
-          <div className="flex items-center px-4 md:px-6 h-9">
-            {navLinks.map((link) => (
-              <Link
-                key={link}
-                href={link === '首页' ? '/' : link === '商品' ? '/shop' : link === '订单' ? '/query' : '/help'}
-                className="px-3 py-1 text-sm text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                {link}
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Main Header */}
         <div className="flex items-center justify-between px-4 md:px-6 h-14">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">无</span>
             </div>
-            <span className="font-bold text-lg text-gray-800 hidden sm:block">无忧服务</span>
+            <span className="font-bold text-lg text-gray-800">无忧服务</span>
           </Link>
 
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
+            {navLinks.map((link) => (
+              <Link
+                key={link}
+                href={link === '首页' ? '/' : link === '商品' ? '/shop' : link === '订单' ? '/query' : '/help'}
+                className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
+              >
+                {link}
+              </Link>
+            ))}
+          </div>
+
           {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-4">
+          <div className="flex-1 max-w-xs mx-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -76,21 +71,6 @@ export default function Header() {
                 </span>
               )}
             </button>
-          </div>
-        </div>
-
-        {/* Top Navigation Bar */}
-        <div className="bg-gray-100 border-b">
-          <div className="flex items-center px-4 md:px-6 h-10">
-            {navLinks.map((link) => (
-              <Link
-                key={link}
-                href={link === '首页' ? '/' : link === '商品' ? '/shop' : link === '订单' ? '/query' : '/help'}
-                className="px-4 py-1 text-sm text-gray-700 hover:text-purple-600 transition-colors"
-              >
-                {link}
-              </Link>
-            ))}
           </div>
         </div>
       </header>
