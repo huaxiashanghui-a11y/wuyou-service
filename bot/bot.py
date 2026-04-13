@@ -1,5 +1,8 @@
 import os
+import asyncio
 import logging
+import sys
+
 from telegram import Update, ReplyKeyboardMarkup, WebAppInfo, KeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
@@ -74,14 +77,14 @@ async def handle_msg(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         )
 
 
-def main():
-    logger.info("\u6728\u59d0\u540c\u57ce\u751f\u6d3b\u52a9\u624b Bot \u542f\u52a8\u4e2d...")
+async def main():
+    logger.info("木姐同城生活助手 Bot 启动中...")
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_msg))
-    logger.info("Bot \u5df2\u542f\u52a8\uff0c\u7b49\u5f85\u6d88\u606f...")
-    app.run_polling(drop_pending_updates=True)
+    logger.info("Bot 已启动，等待消息...")
+    await app.run_polling()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
