@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {

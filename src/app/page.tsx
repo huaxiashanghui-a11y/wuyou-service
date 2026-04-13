@@ -2,9 +2,10 @@ import HeroCarousel from '@/components/HeroCarousel';
 import Categories from '@/components/Categories';
 import ProductGrid from '@/components/ProductGrid';
 import Link from 'next/link';
+import { Product } from '@/lib/types';
 
 // 模拟热门商品数据
-const featuredProducts = [
+const featuredProducts: Product[] = [
   {
     id: '1',
     name: '王者荣耀点卡 100元',

@@ -1,4 +1,4 @@
-import apiClient from './api-client';
+import apiClient, { PaginatedResponse } from './api-client';
 import type {
   Product,
   Category,
@@ -12,8 +12,7 @@ import type {
   LoginResponse,
   ProductQuery,
   CardQuery,
-  ImportCardsRequest,
-  PaginatedResponse
+  ImportCardsRequest
 } from './types';
 
 // 认证 API

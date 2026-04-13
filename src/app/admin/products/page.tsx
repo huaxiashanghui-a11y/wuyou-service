@@ -85,7 +85,17 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    description: string;
+    price: number;
+    originalPrice: number;
+    image: string;
+    category: string;
+    stock: number;
+    featured: boolean;
+    status: 'active' | 'inactive';
+  }>({
     name: '',
     description: '',
     price: 0,
@@ -94,7 +104,7 @@ export default function ProductsPage() {
     category: 'game',
     stock: 0,
     featured: false,
-    status: 'active' as const
+    status: 'active'
   });
 
   const filteredProducts = products.filter(p =>
