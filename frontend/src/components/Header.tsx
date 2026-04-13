@@ -6,14 +6,18 @@ import { Search, ShoppingCart, User, Bell } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import CartDrawer from './CartDrawer';
 
+const tabs = ['全部', '热门', '新品', '推荐', '折扣'];
+
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('全部');
   const { getTotalItems, toggleCart } = useCartStore();
   const totalItems = getTotalItems();
 
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+        {/* Top Bar */}
         <div className="flex items-center justify-between px-4 md:px-6 h-14">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
@@ -38,7 +42,7 @@ export default function Header() {
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <button className="p-2 text-gray-600 hover:text-gray-800 transition-colors">
               <Bell className="w-5 h-5" />
             </button>
@@ -56,9 +60,25 @@ export default function Header() {
                 </span>
               )}
             </button>
-            <button className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm font-medium rounded-full hover:opacity-90 transition-opacity hidden md:block">
-              立即购买
-            </button>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="bg-gray-50 border-t">
+          <div className="flex items-center px-4 md:px-6 h-10 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-1 text-sm font-medium transition-colors whitespace-nowrap ${
+                  activeTab === tab
+                    ? 'text-purple-600 border-b-2 border-purple-600'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         </div>
       </header>

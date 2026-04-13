@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/lib/store';
-import { ShoppingCart, Plus, Home, ShoppingBag, FileText, User, Settings } from 'lucide-react';
+import { ShoppingCart, Home, ShoppingBag, FileText, User, Settings } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -30,10 +30,7 @@ const products: Product[] = [
   { id: '12', price: 98, coins: 9800 },
 ];
 
-const tabs = ['全部', '热门', '新品', '推荐', '折扣'];
-
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState('全部');
   const { addItem, getTotalItems } = useCartStore();
   const totalItems = getTotalItems();
 
@@ -57,20 +54,11 @@ export default function HomePage() {
     });
   };
 
-  const filteredProducts = products.filter((p) => {
-    if (activeTab === '全部') return true;
-    if (activeTab === '热门') return p.featured;
-    if (activeTab === '新品') return p.label === '新品';
-    if (activeTab === '推荐') return p.label === '推荐' || p.featured;
-    if (activeTab === '折扣') return p.price < 100;
-    return true;
-  });
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="pt-14 flex">
+      <main className="pt-24 flex">
         {/* Main Content */}
         <div className="flex-1 px-4 md:px-6 py-6">
           {/* Hero Banner */}
@@ -96,45 +84,9 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-red-500 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold">¥</span>
-              </div>
-              <span className="font-bold text-lg">66.66元</span>
-              <button className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center hover:bg-gray-300">
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            <button className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm rounded-full">
-              立即购买
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex gap-4 mb-4 border-b">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-3 px-2 text-sm font-medium transition-colors relative ${
-                  activeTab === tab
-                    ? 'text-purple-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
-                )}
-              </button>
-            ))}
-          </div>
-
           {/* Product Grid */}
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <div
                 key={product.id}
                 className={`bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow ${
@@ -229,7 +181,7 @@ export default function HomePage() {
 
         {/* Right Sidebar */}
         <div className="hidden lg:block w-16 bg-white border-l">
-          <div className="sticky top-14 p-2 space-y-2">
+          <div className="sticky top-24 p-2 space-y-2">
             <div className="w-10 h-10 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
               <User className="w-5 h-5 text-gray-600" />
             </div>
