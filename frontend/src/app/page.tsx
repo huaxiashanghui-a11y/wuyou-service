@@ -1,225 +1,260 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import HeroCarousel from '@/components/HeroCarousel';
-import Categories from '@/components/Categories';
-import ProductGrid from '@/components/ProductGrid';
-import { Product } from '@/lib/types';
+import { useCartStore } from '@/lib/store';
+import { ShoppingCart, Plus, Home, ShoppingBag, FileText, User, Settings } from 'lucide-react';
 
-// 模拟商品数据 - 实际项目中应从 API 获取
-const mockProducts: Product[] = [
-  {
-    id: '1',
-    name: '王者荣耀点卡 100元',
-    description: '官方直充，快速到账，安全可靠',
-    price: 95,
-    originalPrice: 100,
-    image: 'https://images.unsplash.com/photo-1614294148960-9aa740632a87?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 999,
-    sold: 5200,
-    featured: true,
-    status: 'active',
-    sort: 1,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '2',
-    name: '原神月卡 30元',
-    description: '原神祈月礼遇，快速充值',
-    price: 28,
-    originalPrice: 30,
-    image: 'https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 999,
-    sold: 3500,
-    featured: true,
-    status: 'active',
-    sort: 2,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '3',
-    name: 'Steam充值卡 100美元',
-    description: 'Steam钱包充值码，全球通用',
-    price: 680,
-    originalPrice: 720,
-    image: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 50,
-    sold: 1200,
-    featured: true,
-    status: 'active',
-    sort: 3,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '4',
-    name: '腾讯视频VIP月卡',
-    description: '腾讯视频会员，畅享海量影视',
-    price: 20,
-    originalPrice: 25,
-    image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=400&h=300&fit=crop',
-    category: 'gift',
-    stock: 999,
-    sold: 8000,
-    featured: false,
-    status: 'active',
-    sort: 4,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '5',
-    name: '网易云音乐VIP年卡',
-    description: '网易云音乐年度会员，高品质音乐',
-    price: 158,
-    originalPrice: 188,
-    image: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=300&fit=crop',
-    category: 'gift',
-    stock: 200,
-    sold: 1500,
-    featured: false,
-    status: 'active',
-    sort: 5,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '6',
-    name: '英雄联盟点券 1000',
-    description: 'LOL官方点券充值，秒到账',
-    price: 85,
-    originalPrice: 100,
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 999,
-    sold: 4500,
-    featured: false,
-    status: 'active',
-    sort: 6,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '7',
-    name: '手机话费充值 100元',
-    description: '全网运营商通用，秒到账',
-    price: 98,
-    originalPrice: 100,
-    image: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=300&fit=crop',
-    category: 'recharge',
-    stock: 999,
-    sold: 12000,
-    featured: false,
-    status: 'active',
-    sort: 7,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: '8',
-    name: 'QQ超级会员月卡',
-    description: 'QQ超级会员特权，尊享体验',
-    price: 20,
-    originalPrice: 25,
-    image: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=400&h=300&fit=crop',
-    category: 'gift',
-    stock: 500,
-    sold: 3000,
-    featured: false,
-    status: 'active',
-    sort: 8,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+interface Product {
+  id: string;
+  price: number;
+  coins: number;
+  label?: string;
+  soldOut?: boolean;
+  featured?: boolean;
+}
+
+const products: Product[] = [
+  { id: '1', price: 100, coins: 10000, featured: true },
+  { id: '2', price: 200, coins: 20000, featured: true },
+  { id: '3', price: 500, coins: 50000, featured: true },
+  { id: '4', price: 1000, coins: 100000, featured: true },
+  { id: '5', price: 2000, coins: 200000, label: '限时', featured: true },
+  { id: '6', price: 5000, coins: 500000, featured: true },
+  { id: '7', price: 10000, coins: 1000000, soldOut: true },
+  { id: '8', price: 66, coins: 6666, label: '爆款' },
+  { id: '9', price: 128, coins: 12800, label: '新品' },
+  { id: '10', price: 328, coins: 32800 },
+  { id: '11', price: 648, coins: 64800, label: '推荐' },
+  { id: '12', price: 98, coins: 9800 },
 ];
 
+const tabs = ['全部', '热门', '新品', '推荐', '折扣'];
+
 export default function HomePage() {
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('全部');
+  const { addItem, getTotalItems } = useCartStore();
+  const totalItems = getTotalItems();
 
-  useEffect(() => {
-    // 模拟加载
-    const timer = setTimeout(() => setLoading(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleAddToCart = (product: Product) => {
+    if (product.soldOut) return;
+    addItem({
+      id: product.id,
+      name: `${product.coins} 薯币`,
+      description: '小红书薯币充值',
+      price: product.price,
+      originalPrice: product.price * 1.25,
+      image: 'https://picsum.photos/200/200',
+      category: 'douyin',
+      stock: 999,
+      sold: 0,
+      featured: false,
+      status: 'active',
+      sort: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+  };
 
-  const featuredProducts = mockProducts.filter((p) => p.featured);
-  const allProducts = mockProducts;
+  const filteredProducts = products.filter((p) => {
+    if (activeTab === '全部') return true;
+    if (activeTab === '热门') return p.featured;
+    if (activeTab === '新品') return p.label === '新品';
+    if (activeTab === '推荐') return p.label === '推荐' || p.featured;
+    if (activeTab === '折扣') return p.price < 100;
+    return true;
+  });
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <main className="flex-1 pt-16">
-        {/* Hero Section */}
-        <section className="container-custom py-8">
-          <HeroCarousel />
-        </section>
-
-        {/* Categories */}
-        <section className="container-custom py-8">
-          <Categories />
-        </section>
-
-        {/* Featured Products */}
-        <section className="container-custom py-8">
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="glass rounded-2xl overflow-hidden">
-                  <div className="h-48 skeleton" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-6 skeleton rounded" />
-                    <div className="h-4 skeleton rounded w-2/3" />
-                    <div className="h-8 skeleton rounded" />
+      <main className="pt-14 flex">
+        {/* Main Content */}
+        <div className="flex-1 px-4 md:px-6 py-6">
+          {/* Hero Banner */}
+          <div className="relative rounded-2xl overflow-hidden mb-6">
+            <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 h-64 md:h-80">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="text-3xl md:text-5xl font-bold mb-2">
+                    充小红书薯币
+                  </div>
+                  <div className="text-xl md:text-2xl mb-4 opacity-90">
+                    即享 <span className="text-yellow-300 font-bold">8折</span> 优惠
+                  </div>
+                  <div className="bg-green-500 inline-block px-6 py-2 rounded-full text-sm">
+                    ¥100 全部最低（可叠加）
                   </div>
                 </div>
-              ))}
+              </div>
+              {/* Left decoration */}
+              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-purple-800/50 to-transparent" />
+              {/* Right decoration */}
+              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-pink-500/50 to-transparent" />
             </div>
-          ) : (
-            <ProductGrid products={featuredProducts} title="热门推荐" />
-          )}
-        </section>
+          </div>
 
-        {/* All Products */}
-        <section className="container-custom py-8">
-          <ProductGrid products={allProducts} title="更多商品" />
-        </section>
+          {/* Section Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 bg-red-500 rounded flex items-center justify-center">
+                <span className="text-white text-xs font-bold">¥</span>
+              </div>
+              <span className="font-bold text-lg">66.66元</span>
+              <button className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center hover:bg-gray-300">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+            <button className="px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm rounded-full">
+              立即购买
+            </button>
+          </div>
 
-        {/* Features */}
-        <section className="bg-gray-50 py-12">
-          <div className="container-custom">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-3xl">⚡</span>
+          {/* Tabs */}
+          <div className="flex gap-4 mb-4 border-b">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`pb-3 px-2 text-sm font-medium transition-colors relative ${
+                  activeTab === tab
+                    ? 'text-purple-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                {tab}
+                {activeTab === tab && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600" />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                className={`bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition-shadow ${
+                  product.soldOut ? 'opacity-60' : ''
+                }`}
+              >
+                {product.label && (
+                  <div className="inline-block px-2 py-0.5 bg-red-500 text-white text-xs rounded mb-2">
+                    {product.label}
+                  </div>
+                )}
+                {product.soldOut && (
+                  <div className="inline-block px-2 py-0.5 bg-gray-400 text-white text-xs rounded mb-2">
+                    已售罄
+                  </div>
+                )}
+                <div className="text-2xl font-bold text-red-500 mb-1">
+                  ¥{product.price}
                 </div>
-                <h3 className="text-lg font-semibold mb-2">快速发货</h3>
-                <p className="text-gray-600">支付成功后，卡密立即发送到您的邮箱</p>
+                <div className="text-gray-600 text-sm mb-3">
+                  {product.coins.toLocaleString()} 币
+                </div>
+                {product.soldOut ? (
+                  <button
+                    disabled
+                    className="w-full py-2 bg-gray-200 text-gray-400 text-sm rounded-lg cursor-not-allowed"
+                  >
+                    已售罄
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="w-full py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-sm rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    购买
+                  </button>
+                )}
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-3xl">🔒</span>
+            ))}
+          </div>
+
+          {/* More Products Section */}
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-lg font-bold">更多充值</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Genshin Banner */}
+              <div className="relative rounded-xl overflow-hidden h-32 bg-gradient-to-r from-blue-600 to-purple-600">
+                <div className="absolute inset-0 flex items-center justify-between px-6">
+                  <div className="text-white">
+                    <div className="text-xs opacity-80">游戏充值</div>
+                    <div className="font-bold text-lg">原神</div>
+                    <div className="text-xs opacity-80">2024年最火</div>
+                  </div>
+                  <button className="px-4 py-1.5 bg-yellow-500 text-black text-sm font-medium rounded-full">
+                    立即充值
+                  </button>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">安全可靠</h3>
-                <p className="text-gray-600">官方渠道，真实有效，售后有保障</p>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-4">
-                  <span className="text-3xl">💬</span>
+
+              {/* League Banner */}
+              <div className="relative rounded-xl overflow-hidden h-32 bg-gradient-to-r from-orange-500 to-red-500">
+                <div className="absolute inset-0 flex items-center justify-between px-6">
+                  <div className="text-white">
+                    <div className="text-xs opacity-80">游戏充值</div>
+                    <div className="font-bold text-lg">英雄联盟</div>
+                    <div className="text-xs opacity-80">全球电竞</div>
+                  </div>
+                  <button className="px-4 py-1.5 bg-white text-orange-600 text-sm font-medium rounded-full">
+                    立即充值
+                  </button>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">24小时客服</h3>
-                <p className="text-gray-600">全天候在线，随时为您解答疑问</p>
+              </div>
+
+              {/* Honor Banner */}
+              <div className="relative rounded-xl overflow-hidden h-32 bg-gradient-to-r from-green-500 to-teal-500">
+                <div className="absolute inset-0 flex items-center justify-between px-6">
+                  <div className="text-white">
+                    <div className="text-xs opacity-80">游戏充值</div>
+                    <div className="font-bold text-lg">王者荣耀</div>
+                    <div className="text-xs opacity-80">国战手游</div>
+                  </div>
+                  <button className="px-4 py-1.5 bg-white text-green-600 text-sm font-medium rounded-full">
+                    立即充值
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </section>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="hidden lg:block w-16 bg-white border-l">
+          <div className="sticky top-14 p-2 space-y-2">
+            <div className="w-10 h-10 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-gray-600" />
+            </div>
+            <button className="w-10 h-10 mx-auto bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 hover:bg-purple-200 transition-colors">
+              <Home className="w-5 h-5" />
+            </button>
+            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+              <ShoppingBag className="w-5 h-5" />
+            </button>
+            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors relative">
+              <ShoppingCart className="w-5 h-5" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              )}
+            </button>
+            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+              <FileText className="w-5 h-5" />
+            </button>
+            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
       </main>
 
       <Footer />
