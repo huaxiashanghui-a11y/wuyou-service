@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/lib/store';
-import { ShoppingCart, Home, ShoppingBag, FileText, User, Settings } from 'lucide-react';
+
+const navLinks = [
+  { name: '首页', href: '/' },
+  { name: '商品', href: '/shop' },
+  { name: '订单', href: '/query' },
+  { name: '帮助', href: '/help' },
+];
 
 interface Product {
   id: string;
@@ -31,8 +37,7 @@ const products: Product[] = [
 ];
 
 export default function HomePage() {
-  const { addItem, getTotalItems } = useCartStore();
-  const totalItems = getTotalItems();
+  const { addItem } = useCartStore();
 
   const handleAddToCart = (product: Product) => {
     if (product.soldOut) return;
@@ -55,36 +60,31 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
 
-      <main className="pt-16">
-        {/* Main Content */}
-        <div className="flex-1 px-4 md:px-6 py-6">
-          {/* Hero Banner */}
-          <div className="relative rounded-2xl overflow-hidden mb-6">
-            <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 h-64 md:h-80">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="text-3xl md:text-5xl font-bold mb-2">
-                    充小红书薯币
-                  </div>
-                  <div className="text-xl md:text-2xl mb-4 opacity-90">
-                    即享 <span className="text-yellow-300 font-bold">8折</span> 优惠
-                  </div>
-                  <div className="bg-green-500 inline-block px-6 py-2 rounded-full text-sm">
-                    ¥100 全部最低（可叠加）
-                  </div>
+      <main className="flex-1 pt-16 pb-16">
+        {/* Hero Banner - replaces left sidebar */}
+        <div className="relative rounded-none overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-purple-600 via-purple-500 to-pink-500 h-48 md:h-64">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center text-white">
+                <div className="text-2xl md:text-4xl font-bold mb-2">
+                  充小红书薯币
                 </div>
+                <div className="text-lg md:text-xl mb-4 opacity-90">
+                  享更多优惠
+                </div>
+                <button className="bg-green-500 hover:bg-green-600 inline-block px-6 py-2 rounded-full text-sm font-medium transition-colors">
+                  立即充值 &gt;
+                </button>
               </div>
-              {/* Left decoration */}
-              <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-purple-800/50 to-transparent" />
-              {/* Right decoration */}
-              <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-pink-500/50 to-transparent" />
             </div>
           </div>
+        </div>
 
-          {/* Product Grid */}
+        {/* Product Grid */}
+        <div className="px-4 md:px-6">
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
             {products.map((product) => (
               <div
@@ -127,84 +127,20 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-
-          {/* More Products Section */}
-          <div className="mt-8">
-            <div className="flex items-center gap-3 mb-4">
-              <span className="text-lg font-bold">更多充值</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Genshin Banner */}
-              <div className="relative rounded-xl overflow-hidden h-32 bg-gradient-to-r from-blue-600 to-purple-600">
-                <div className="absolute inset-0 flex items-center justify-between px-6">
-                  <div className="text-white">
-                    <div className="text-xs opacity-80">游戏充值</div>
-                    <div className="font-bold text-lg">原神</div>
-                    <div className="text-xs opacity-80">2024年最火</div>
-                  </div>
-                  <button className="px-4 py-1.5 bg-yellow-500 text-black text-sm font-medium rounded-full">
-                    立即充值
-                  </button>
-                </div>
-              </div>
-
-              {/* League Banner */}
-              <div className="relative rounded-xl overflow-hidden h-32 bg-gradient-to-r from-orange-500 to-red-500">
-                <div className="absolute inset-0 flex items-center justify-between px-6">
-                  <div className="text-white">
-                    <div className="text-xs opacity-80">游戏充值</div>
-                    <div className="font-bold text-lg">英雄联盟</div>
-                    <div className="text-xs opacity-80">全球电竞</div>
-                  </div>
-                  <button className="px-4 py-1.5 bg-white text-orange-600 text-sm font-medium rounded-full">
-                    立即充值
-                  </button>
-                </div>
-              </div>
-
-              {/* Honor Banner */}
-              <div className="relative rounded-xl overflow-hidden h-32 bg-gradient-to-r from-green-500 to-teal-500">
-                <div className="absolute inset-0 flex items-center justify-between px-6">
-                  <div className="text-white">
-                    <div className="text-xs opacity-80">游戏充值</div>
-                    <div className="font-bold text-lg">王者荣耀</div>
-                    <div className="text-xs opacity-80">国战手游</div>
-                  </div>
-                  <button className="px-4 py-1.5 bg-white text-green-600 text-sm font-medium rounded-full">
-                    立即充值
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="hidden lg:block w-16 bg-white border-l">
-          <div className="sticky top-24 p-2 space-y-2">
-            <div className="w-10 h-10 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-600" />
-            </div>
-            <button className="w-10 h-10 mx-auto bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 hover:bg-purple-200 transition-colors">
-              <Home className="w-5 h-5" />
-            </button>
-            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-              <ShoppingBag className="w-5 h-5" />
-            </button>
-            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors relative">
-              <ShoppingCart className="w-5 h-5" />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {totalItems}
-                </span>
-              )}
-            </button>
-            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-              <FileText className="w-5 h-5" />
-            </button>
-            <button className="w-10 h-10 mx-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
-              <Settings className="w-5 h-5" />
-            </button>
+        {/* Bottom Navigation Tabs - replaces "更多充值" */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+          <div className="flex items-center justify-around h-16 max-w-lg mx-auto">
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="flex flex-col items-center justify-center px-4 py-2 text-gray-600 hover:text-purple-600 transition-colors"
+              >
+                <span className="text-sm font-medium">{link.name}</span>
+              </Link>
+            ))}
           </div>
         </div>
       </main>
