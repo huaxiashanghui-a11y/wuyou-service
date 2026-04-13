@@ -1,125 +1,207 @@
-import { db } from './firebase';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy } from 'firebase/firestore';
-import { Product, Card, Order, Category } from './types';
+import apiClient from './api-client';
+import type {
+  Product,
+  Category,
+  Order,
+  Card,
+  DashboardStats,
+  SystemSettings,
+  Admin,
+  CreateOrderRequest,
+  LoginRequest,
+  LoginResponse,
+  ProductQuery,
+  CardQuery,
+  ImportCardsRequest,
+  PaginatedResponse
+} from './types';
 
-// Products
-export async function getProducts(category?: string): Promise<Product[]> {
-  const productsRef = collection(db, 'products');
-  let q = category && category !== 'all'
-    ? query(productsRef, where('category', '==', category), orderBy('createdAt', 'desc'))
-    : query(productsRef, orderBy('createdAt', 'desc'));
-
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-}
-
-export async function getFeaturedProducts(): Promise<Product[]> {
-  const productsRef = collection(db, 'products');
-  const q = query(productsRef, where('featured', '==', true), orderBy('createdAt', 'desc'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-}
-
-export async function getProduct(id: string): Promise<Product | null> {
-  const productsRef = collection(db, 'products');
-  const q = query(productsRef, where('id', '==', id));
-  const snapshot = await getDocs(q);
-  return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Product;
-}
-
-export async function addProduct(product: Omit<Product, 'id'>): Promise<string> {
-  const productsRef = collection(db, 'products');
-  const docRef = await addDoc(productsRef, product);
-  return docRef.id;
-}
-
-export async function updateProduct(id: string, data: Partial<Product>): Promise<void> {
-  const productRef = doc(db, 'products', id);
-  await updateDoc(productRef, data);
-}
-
-export async function deleteProduct(id: string): Promise<void> {
-  const productRef = doc(db, 'products', id);
-  await deleteDoc(productRef);
-}
-
-// Cards
-export async function getAvailableCards(productId: string, quantity: number): Promise<Card[]> {
-  const cardsRef = collection(db, 'cards');
-  const q = query(
-    cardsRef,
-    where('productId', '==', productId),
-    where('used', '==', false),
-    orderBy('createdAt')
-  );
-  const snapshot = await getDocs(q);
-  const cards = snapshot.docs.slice(0, quantity).map(doc => ({ id: doc.id, ...doc.data() } as Card));
-
-  for (const card of cards) {
-    await updateDoc(doc(db, 'cards', card.id), { used: true });
+// 认证 API
+export const authApi = {
+  login: async (data: LoginRequest): Promise<LoginResponse> => {
+    return apiClient.post('/api/auth/login', data);
+  },
+  
+  logout: async (): Promise<void> => {
+    return apiClient.post('/api/auth/logout');
+  },
+  
+  getProfile: async (): Promise<Admin> => {
+    return apiClient.get('/api/auth/profile');
+  },
+  
+  refreshToken: async (): Promise<{ token: string }> => {
+    return apiClient.post('/api/auth/refresh');
   }
+};
 
-  return cards;
-}
-
-export async function addCards(productId: string, codes: string[], passwords?: string[]): Promise<void> {
-  const cardsRef = collection(db, 'cards');
-  const batch = codes.map((code, index) => ({
-    productId,
-    code,
-    password: passwords?.[index] || undefined,
-    used: false,
-    createdAt: new Date()
-  }));
-
-  for (const card of batch) {
-    await addDoc(cardsRef, card);
+// 商品 API
+export const productApi = {
+  // 获取商品列表
+  getProducts: async (query?: ProductQuery): Promise<PaginatedResponse<Product>> => {
+    return apiClient.get('/api/products', { params: query });
+  },
+  
+  // 获取热门商品
+  getFeaturedProducts: async (): Promise<Product[]> => {
+    return apiClient.get('/api/products/featured');
+  },
+  
+  // 获取单个商品
+  getProduct: async (id: string): Promise<Product> => {
+    return apiClient.get(`/api/products/${id}`);
+  },
+  
+  // 获取商品分类
+  getCategories: async (): Promise<Category[]> => {
+    return apiClient.get('/api/categories');
+  },
+  
+  // 创建商品（管理员）
+  createProduct: async (data: Partial<Product>): Promise<Product> => {
+    return apiClient.post('/api/products', data);
+  },
+  
+  // 更新商品（管理员）
+  updateProduct: async (id: string, data: Partial<Product>): Promise<Product> => {
+    return apiClient.put(`/api/products/${id}`, data);
+  },
+  
+  // 删除商品（管理员）
+  deleteProduct: async (id: string): Promise<void> => {
+    return apiClient.delete(`/api/products/${id}`);
+  },
+  
+  // 批量更新商品状态（管理员）
+  batchUpdateProducts: async (ids: string[], data: Partial<Product>): Promise<void> => {
+    return apiClient.post('/api/products/batch', { ids, data });
   }
-}
+};
 
-export async function getCardCount(productId: string): Promise<number> {
-  const cardsRef = collection(db, 'cards');
-  const q = query(cardsRef, where('productId', '==', productId), where('used', '==', false));
-  const snapshot = await getDocs(q);
-  return snapshot.size;
-}
+// 订单 API
+export const orderApi = {
+  // 创建订单
+  createOrder: async (data: CreateOrderRequest): Promise<Order> => {
+    return apiClient.post('/api/orders', data);
+  },
+  
+  // 查询订单
+  queryOrder: async (orderId?: string, email?: string): Promise<Order[]> => {
+    return apiClient.get('/api/orders/query', { params: { orderId, email } });
+  },
+  
+  // 获取订单详情
+  getOrder: async (id: string): Promise<Order> => {
+    return apiClient.get(`/api/orders/${id}`);
+  },
+  
+  // 获取订单列表（管理员）
+  getOrders: async (params?: any): Promise<PaginatedResponse<Order>> => {
+    return apiClient.get('/api/orders', { params });
+  },
+  
+  // 更新订单状态（管理员）
+  updateOrderStatus: async (id: string, status: Order['status']): Promise<Order> => {
+    return apiClient.put(`/api/orders/${id}/status`, { status });
+  },
+  
+  // 导出订单（管理员）
+  exportOrders: async (params?: any): Promise<Blob> => {
+    return apiClient.get('/api/orders/export', { 
+      params, 
+      responseType: 'blob' 
+    });
+  }
+};
 
-// Orders
-export async function createOrder(order: Omit<Order, 'id'>): Promise<string> {
-  const ordersRef = collection(db, 'orders');
-  const docRef = await addDoc(ordersRef, order);
-  return docRef.id;
-}
+// 卡密 API
+export const cardApi = {
+  // 获取卡密列表（管理员）
+  getCards: async (query?: CardQuery): Promise<PaginatedResponse<Card>> => {
+    return apiClient.get('/api/cards', { params: query });
+  },
+  
+  // 获取可用卡密数量
+  getAvailableCount: async (productId: string): Promise<number> => {
+    return apiClient.get(`/api/cards/available/${productId}`);
+  },
+  
+  // 导入卡密（管理员）
+  importCards: async (data: ImportCardsRequest): Promise<{ count: number }> => {
+    return apiClient.post('/api/cards/import', data);
+  },
+  
+  // 导出卡密（管理员）
+  exportCards: async (productId?: string): Promise<Blob> => {
+    return apiClient.get('/api/cards/export', { 
+      params: { productId },
+      responseType: 'blob' 
+    });
+  },
+  
+  // 删除卡密（管理员）
+  deleteCard: async (id: string): Promise<void> => {
+    return apiClient.delete(`/api/cards/${id}`);
+  }
+};
 
-export async function getOrders(): Promise<Order[]> {
-  const ordersRef = collection(db, 'orders');
-  const q = query(ordersRef, orderBy('createdAt', 'desc'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
-}
+// 管理员 API
+export const adminApi = {
+  // 获取管理员列表（超级管理员）
+  getAdmins: async (): Promise<Admin[]> => {
+    return apiClient.get('/api/admins');
+  },
+  
+  // 创建管理员（超级管理员）
+  createAdmin: async (data: Partial<Admin>): Promise<Admin> => {
+    return apiClient.post('/api/admins', data);
+  },
+  
+  // 更新管理员（超级管理员）
+  updateAdmin: async (id: string, data: Partial<Admin>): Promise<Admin> => {
+    return apiClient.put(`/api/admins/${id}`, data);
+  },
+  
+  // 删除管理员（超级管理员）
+  deleteAdmin: async (id: string): Promise<void> => {
+    return apiClient.delete(`/api/admins/${id}`);
+  }
+};
 
-export async function getOrderById(orderId: string): Promise<Order | null> {
-  const ordersRef = collection(db, 'orders');
-  const q = query(ordersRef, where('orderId', '==', orderId));
-  const snapshot = await getDocs(q);
-  return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Order;
-}
+// 系统设置 API
+export const settingsApi = {
+  // 获取系统设置
+  getSettings: async (): Promise<SystemSettings> => {
+    return apiClient.get('/api/settings');
+  },
+  
+  // 更新系统设置（管理员）
+  updateSettings: async (data: Partial<SystemSettings>): Promise<SystemSettings> => {
+    return apiClient.put('/api/settings', data);
+  }
+};
 
-export async function updateOrderStatus(id: string, status: Order['status']): Promise<void> {
-  const orderRef = doc(db, 'orders', id);
-  await updateDoc(orderRef, { status, paidAt: status === 'paid' ? new Date() : undefined });
-}
+// 仪表盘统计 API
+export const dashboardApi = {
+  getStats: async (): Promise<DashboardStats> => {
+    return apiClient.get('/api/dashboard/stats');
+  }
+};
 
-// Categories
-export async function getCategories(): Promise<Category[]> {
-  const categoriesRef = collection(db, 'categories');
-  const q = query(categoriesRef, orderBy('order'));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Category));
-}
+// 健康检查 API
+export const healthApi = {
+  check: async (): Promise<{ status: string; timestamp: string }> => {
+    return apiClient.get('/api/health');
+  }
+};
 
-export async function addCategory(category: Omit<Category, 'id'>): Promise<string> {
-  const categoriesRef = collection(db, 'categories');
-  const docRef = await addDoc(categoriesRef, category);
-  return docRef.id;
-}
+export default {
+  auth: authApi,
+  products: productApi,
+  orders: orderApi,
+  cards: cardApi,
+  admins: adminApi,
+  settings: settingsApi,
+  dashboard: dashboardApi,
+  health: healthApi
+};

@@ -1,18 +1,29 @@
-'use client'
+'use client';
 
-import { Product } from '@/lib/types'
-import Image from 'next/image'
-import Link from 'next/link'
-import { ShoppingCart, Star } from 'lucide-react'
+import Image from 'next/image';
+import Link from 'next/link';
+import { ShoppingCart, Star, TrendingUp } from 'lucide-react';
+import { Product } from '@/lib/types';
+import { useCartStore, useToastStore } from '@/lib/store';
 
 interface ProductCardProps {
-  product: Product
+  product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const addItem = useCartStore((state) => state.addItem);
+  const addToast = useToastStore((state) => state.addToast);
+
   const discount = product.originalPrice
     ? Math.round((1 - product.price / product.originalPrice) * 100)
-    : 0
+    : 0;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addItem(product, 1);
+    addToast('success', `已添加 ${product.name} 到购物车`);
+  };
 
   return (
     <Link href={`/shop/${product.id}`} className="group">
@@ -24,15 +35,16 @@ export default function ProductCard({ product }: ProductCardProps) {
             alt={product.name}
             fill
             className="object-cover group-hover:scale-110 transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           {discount > 0 && (
-            <div className="absolute top-3 right-3 bg-accent-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+            <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
               -{discount}%
             </div>
           )}
           {product.featured && (
             <div className="absolute top-3 left-3 bg-primary-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg flex items-center">
-              <Star className="w-3 h-3 mr-1" />
+              <Star className="w-3 h-3 mr-1 fill-current" />
               热门
             </div>
           )}
@@ -61,19 +73,25 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* Stats */}
           <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-            <span>销量 {product.sold || 0}</span>
-            <span className={product.stock > 10 ? 'text-green-500' : 'text-accent-500'}>
+            <span className="flex items-center">
+              <TrendingUp className="w-4 h-4 mr-1" />
+              销量 {product.sold || 0}
+            </span>
+            <span className={product.stock > 10 ? 'text-green-500' : 'text-red-500'}>
               库存 {product.stock}
             </span>
           </div>
 
           {/* Buy Button */}
-          <button className="w-full py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 group/btn">
+          <button
+            onClick={handleAddToCart}
+            className="w-full py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 group/btn"
+          >
             <ShoppingCart className="w-4 h-4" />
-            <span>立即购买</span>
+            <span>加入购物车</span>
           </button>
         </div>
       </div>
     </Link>
-  )
+  );
 }

@@ -1,215 +1,163 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server';
 
-// Demo data - in production, use Firebase
-const demoProducts: Record<string, any> = {
-  '1': {
+// 模拟订单数据
+let orders = [
+  {
     id: '1',
-    name: '王者荣耀点卡 100元',
-    description: '官方直充，快速到账',
-    price: 95,
-    originalPrice: 100,
-    image: 'https://images.unsplash.com/photo-1614294148960-9aa740632a87?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 999,
-    sold: 5200,
-    featured: true
+    orderId: 'WY20240115001',
+    email: 'user1@example.com',
+    productId: '1',
+    productName: '王者荣耀点卡 100元',
+    quantity: 1,
+    unitPrice: 95,
+    totalAmount: 95,
+    status: 'completed',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    paymentTime: new Date().toISOString(),
+    cards: [{ code: 'WYRC-ABCD-1234-5678' }]
   },
-  '2': {
+  {
     id: '2',
-    name: '原神月卡 30元',
-    description: '原神祈月礼遇，快速充值',
-    price: 28,
-    originalPrice: 30,
-    image: 'https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 999,
-    sold: 3500,
-    featured: true
+    orderId: 'WY20240115002',
+    email: 'user2@example.com',
+    productId: '2',
+    productName: '原神月卡 30元',
+    quantity: 2,
+    unitPrice: 28,
+    totalAmount: 56,
+    status: 'paid',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    paymentTime: new Date().toISOString()
   },
-  '3': {
+  {
     id: '3',
-    name: 'Steam充值卡 100美元',
-    description: 'Steam钱包充值码，全球通用',
-    price: 680,
-    originalPrice: 720,
-    image: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=300&fit=crop',
-    category: 'game',
-    stock: 50,
-    sold: 1200,
-    featured: true
-  },
-  '4': {
-    id: '4',
-    name: '腾讯视频VIP月卡',
-    description: '腾讯视频会员，畅享海量影视',
-    price: 20,
-    originalPrice: 25,
-    image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=400&h=300&fit=crop',
-    category: 'gift',
-    stock: 999,
-    sold: 8000,
-    featured: false
+    orderId: 'WY20240115003',
+    email: 'user3@example.com',
+    productId: '3',
+    productName: 'Steam充值卡 100美元',
+    quantity: 1,
+    unitPrice: 680,
+    totalAmount: 680,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
-}
+];
 
-// Demo cards storage
-const demoCards: Record<string, string[][]> = {
-  '1': [
-    ['WYRC-ABCD-1234-5678'],
-    ['WYRC-ABCD-1234-5679'],
-    ['WYRC-EFGH-9876-5432']
-  ],
-  '2': [
-    ['YSYK-ABCD-1111-2222'],
-    ['YSYK-ABCD-3333-4444']
-  ],
-  '3': [
-    ['STMC-IJKL-2468-1357', 'PWD123']
-  ],
-  '4': [
-    ['TXSP-MNOP-5555-6666']
-  ]
-}
-
-// Demo orders storage
-let demoOrders: any[] = []
-
+// 生成订单号
 function generateOrderId() {
-  return `WY${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+  return `WY${Date.now()}${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
 }
 
-// POST - Create new order
+// POST - 创建订单
 export async function POST(request: NextRequest) {
   try {
-    const { productId, quantity, email } = await request.json()
+    const { productId, quantity, email } = await request.json();
 
-    // Validate input
     if (!productId || !quantity || !email) {
       return NextResponse.json(
         { success: false, message: '缺少必要参数' },
         { status: 400 }
-      )
+      );
     }
 
-    // Get product
-    const product = demoProducts[productId]
+    // 模拟商品数据
+    const products: Record<string, any> = {
+      '1': { name: '王者荣耀点卡 100元', price: 95, stock: 999 },
+      '2': { name: '原神月卡 30元', price: 28, stock: 999 },
+      '3': { name: 'Steam充值卡 100美元', price: 680, stock: 50 }
+    };
+
+    const product = products[productId];
     if (!product) {
       return NextResponse.json(
         { success: false, message: '商品不存在' },
         { status: 404 }
-      )
+      );
     }
 
-    // Check stock
-    const availableCards = demoCards[productId] || []
-    if (availableCards.length < quantity) {
+    if (product.stock < quantity) {
       return NextResponse.json(
         { success: false, message: '库存不足' },
         { status: 400 }
-      )
+      );
     }
 
-    // Get cards
-    const cards = availableCards.splice(0, quantity)
+    // 生成卡密
+    const cards = Array.from({ length: quantity }, (_, i) => ({
+      code: `${productId.toUpperCase()}-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`
+    }));
 
-    // Create order
-    const orderId = generateOrderId()
-    const totalAmount = product.price * quantity
-
+    // 创建订单
     const order = {
-      id: orderId,
-      orderId,
+      id: Date.now().toString(),
+      orderId: generateOrderId(),
       email,
       productId,
       productName: product.name,
       quantity,
-      totalAmount,
-      cards: cards.map((card, index) => ({
-        code: card[0],
-        password: card[1] || null
-      })),
-      status: 'completed',
+      unitPrice: product.price,
+      totalAmount: product.price * quantity,
+      status: 'completed' as const,
+      cards,
       createdAt: new Date().toISOString(),
-      paidAt: new Date().toISOString()
-    }
+      updatedAt: new Date().toISOString(),
+      paymentTime: new Date().toISOString()
+    };
 
-    // Save order
-    demoOrders.push(order)
-
-    // Update product stock (demo)
-    if (demoProducts[productId]) {
-      demoProducts[productId].stock -= quantity
-      demoProducts[productId].sold += quantity
-    }
-
-    // In production, you would:
-    // 1. Save to Firebase
-    // 2. Send email with cards
-    // 3. Process payment
+    orders.push(order);
 
     return NextResponse.json({
       success: true,
       message: '订单创建成功',
-      orderId,
-      order
-    })
+      data: order
+    });
 
   } catch (error) {
-    console.error('Order creation error:', error)
+    console.error('Create order error:', error);
     return NextResponse.json(
       { success: false, message: '服务器错误' },
       { status: 500 }
-    )
+    );
   }
 }
 
-// GET - Query orders
+// GET - 查询订单
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const orderId = searchParams.get('orderId')
-    const email = searchParams.get('email')
+    const { searchParams } = new URL(request.url);
+    const orderId = searchParams.get('orderId');
+    const email = searchParams.get('email');
 
     if (!orderId && !email) {
       return NextResponse.json(
         { success: false, message: '请提供订单号或邮箱' },
         { status: 400 }
-      )
+      );
     }
 
-    // Find order
-    let result: any = null
+    let result = orders;
 
     if (orderId) {
-      result = demoOrders.find(o => o.orderId === orderId)
-    } else if (email) {
-      // Find all orders for this email
-      const userOrders = demoOrders.filter(o => o.email === email)
-      if (userOrders.length > 0) {
-        return NextResponse.json({
-          success: true,
-          orders: userOrders
-        })
-      }
+      result = result.filter(o => o.orderId === orderId);
     }
 
-    if (result) {
-      return NextResponse.json({
-        success: true,
-        order: result
-      })
-    } else {
-      return NextResponse.json(
-        { success: false, message: '未找到订单' },
-        { status: 404 }
-      )
+    if (email) {
+      result = result.filter(o => o.email === email);
     }
+
+    return NextResponse.json({
+      success: true,
+      data: result
+    });
 
   } catch (error) {
-    console.error('Order query error:', error)
+    console.error('Query orders error:', error);
     return NextResponse.json(
       { success: false, message: '服务器错误' },
       { status: 500 }
-    )
+    );
   }
 }

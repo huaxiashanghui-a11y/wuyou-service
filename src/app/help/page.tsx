@@ -1,4 +1,4 @@
-import { HelpCircle, CreditCard, Mail, Shield, Clock, FileText } from 'lucide-react'
+import { HelpCircle, CreditCard, Mail, Shield, Clock, FileText, MessageCircle, Book } from 'lucide-react';
 
 const faqs = [
   {
@@ -26,37 +26,32 @@ const faqs = [
     question: '卡密充值教程',
     answer: '不同游戏的充值方式各不相同。一般流程为：登录游戏 -> 进入充值页面 -> 选择卡密充值 -> 输入卡密和密码 -> 确认充值。'
   }
-]
+];
 
 const guides = [
   {
     title: '微信支付教程',
     description: '详细图文教程',
     image: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=400&h=300&fit=crop',
-    link: '#'
+    link: '/help/wechat-payment'
   },
   {
     title: '支付宝支付教程',
     description: '详细图文教程',
     image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=300&fit=crop',
-    link: '#'
+    link: '/help/alipay-payment'
   },
   {
     title: 'Steam充值教程',
     description: '详细图文教程',
     image: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400&h=300&fit=crop',
-    link: '#'
+    link: '/help/steam-recharge'
   }
-]
-
-export const metadata = {
-  title: '帮助中心 - 无忧服务',
-  description: '常见问题解答和充值教程',
-}
+];
 
 export default function HelpPage() {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container-custom py-8">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">帮助中心</h1>
@@ -75,14 +70,14 @@ export default function HelpPage() {
           </div>
           <div>
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-secondary-100 flex items-center justify-center">
-              <HelpCircle className="w-6 h-6 text-secondary-500" />
+              <MessageCircle className="w-6 h-6 text-secondary-500" />
             </div>
             <h3 className="font-bold mb-1">在线客服</h3>
             <p className="text-sm text-gray-600">7x24 小时服务</p>
           </div>
           <div>
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-accent-100 flex items-center justify-center">
-              <Clock className="w-6 h-6 text-accent-500" />
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
+              <Clock className="w-6 h-6 text-green-500" />
             </div>
             <h3 className="font-bold mb-1">响应时间</h3>
             <p className="text-sm text-gray-600">平均 1 小时内回复</p>
@@ -92,43 +87,52 @@ export default function HelpPage() {
 
       {/* FAQs */}
       <div className="mb-12">
-        <h2 className="text-2xl font-bold mb-6">常见问题</h2>
+        <h2 className="text-2xl font-bold mb-6 flex items-center">
+          <HelpCircle className="w-6 h-6 mr-2 text-primary-500" />
+          常见问题
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {faqs.map((faq, index) => (
-            <div key={index} className="glass rounded-2xl p-6 card-hover">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center flex-shrink-0">
-                  <faq.icon className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-2">{faq.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{faq.answer}</p>
+          {faqs.map((faq, index) => {
+            const Icon = faq.icon;
+            return (
+              <div key={index} className="glass rounded-2xl p-6 card-hover">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2">{faq.question}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">{faq.answer}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Guides */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">充值教程</h2>
+        <h2 className="text-2xl font-bold mb-6 flex items-center">
+          <Book className="w-6 h-6 mr-2 text-primary-500" />
+          充值教程
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {guides.map((guide, index) => (
             <a
               key={index}
               href={guide.link}
-              className="glass rounded-2xl overflow-hidden card-hover"
+              className="glass rounded-2xl overflow-hidden card-hover group"
             >
-              <div className="relative h-40">
+              <div className="relative h-40 overflow-hidden">
                 <img
                   src={guide.image}
                   alt={guide.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
               <div className="p-4">
-                <h3 className="font-bold mb-1">{guide.title}</h3>
+                <h3 className="font-bold mb-1 group-hover:text-primary-500 transition-colors">{guide.title}</h3>
                 <p className="text-sm text-gray-600">{guide.description}</p>
               </div>
             </a>
@@ -158,5 +162,5 @@ export default function HelpPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,57 +1,67 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Package,
   CreditCard,
   ShoppingCart,
+  Users,
   Settings,
   LogOut,
   Menu,
-  X
-} from 'lucide-react'
+  X,
+  ChevronDown
+} from 'lucide-react';
 
 const adminNav = [
   { href: '/admin', label: '仪表盘', icon: LayoutDashboard },
   { href: '/admin/products', label: '商品管理', icon: Package },
   { href: '/admin/cards', label: '卡密管理', icon: CreditCard },
   { href: '/admin/orders', label: '订单管理', icon: ShoppingCart },
+  { href: '/admin/admins', label: '管理员', icon: Users },
   { href: '/admin/settings', label: '系统设置', icon: Settings },
-]
+];
 
 export default function AdminLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const pathname = usePathname()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isChecking, setIsChecking] = useState(true)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [adminName, setAdminName] = useState('');
 
   useEffect(() => {
     const checkAuth = () => {
-      const auth = localStorage.getItem('admin_auth')
-      if (auth === 'authenticated') {
-        setIsAuthenticated(true)
+      const token = localStorage.getItem('admin_token');
+      const name = localStorage.getItem('admin_name') || '管理员';
+      
+      if (token) {
+        setIsAuthenticated(true);
+        setAdminName(name);
+      } else {
+        router.push('/admin/login');
       }
-      setIsChecking(false)
-    }
-    checkAuth()
-  }, [])
+      setIsChecking(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_auth')
-    setIsAuthenticated(false)
-    window.location.href = '/admin/login'
-  }
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_name');
+    router.push('/admin/login');
+  };
 
   // Check if on login page
   if (pathname === '/admin/login') {
-    return <>{children}</>
+    return <>{children}</>;
   }
 
   // Show loading while checking auth
@@ -63,15 +73,12 @@ export default function AdminLayout({
           <p className="text-gray-600">加载中...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/admin/login'
-    }
-    return null
+    return null;
   }
 
   return (
@@ -98,16 +105,22 @@ export default function AdminLayout({
             <Link
               href="/"
               target="_blank"
-              className="text-sm text-gray-600 hover:text-primary-500"
+              className="text-sm text-gray-600 hover:text-primary-500 hidden sm:block"
             >
               查看前台
             </Link>
+            <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-lg">
+              <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-medium">{adminName.charAt(0)}</span>
+              </div>
+              <span className="hidden sm:inline text-sm font-medium">{adminName}</span>
+            </div>
             <button
               onClick={handleLogout}
               className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">退出登录</span>
+              <span className="hidden sm:inline">退出</span>
             </button>
           </div>
         </div>
@@ -116,10 +129,11 @@ export default function AdminLayout({
       <div className="flex">
         {/* Sidebar */}
         <aside className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:block w-64 bg-white shadow-lg min-h-screen fixed lg:static inset-y-0 left-0 z-30 pt-[72px] lg:pt-0`}>
-          <nav className="p-4 space-y-2">
+          <nav className="p-4 space-y-1">
             {adminNav.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
+              const Icon = item.icon;
+              const isActive = pathname === item.href || 
+                (item.href !== '/admin' && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
@@ -134,7 +148,7 @@ export default function AdminLayout({
                   <Icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
                 </Link>
-              )
+              );
             })}
           </nav>
         </aside>
@@ -153,5 +167,5 @@ export default function AdminLayout({
         </main>
       </div>
     </div>
-  )
+  );
 }

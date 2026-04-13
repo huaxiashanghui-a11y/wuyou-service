@@ -5,9 +5,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --primary: 14 165 233;
+  --primary: 59 130 246;
   --secondary: 168 85 247;
-  --accent: 249 115 22;
 }
 
 * {
@@ -16,44 +15,88 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
 }
 
+/* 玻璃态效果 */
 .glass {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.card-gradient {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  backdrop-filter: blur(10px);
-}
-
-.btn-primary {
-  @apply bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
-}
-
-.btn-secondary {
-  @apply bg-secondary-500 hover:bg-secondary-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
-}
-
-.input-field {
-  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all duration-300;
-}
-
-.card-hover {
-  @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer;
-}
-
+/* 渐变文字 */
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-secondary-500;
 }
 
-/* Scrollbar */
+/* 按钮样式 */
+.btn-primary {
+  @apply bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+  @apply bg-secondary-500 hover:bg-secondary-600 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-outline {
+  @apply border-2 border-primary-500 text-primary-500 hover:bg-primary-50 px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+}
+
+/* 输入框 */
+.input-field {
+  @apply w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all duration-300;
+}
+
+/* 卡片悬浮效果 */
+.card-hover {
+  @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl cursor-pointer;
+}
+
+/* 加载动画 */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* 骨架屏 */
+.skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Toast 提示 */
+.toast {
+  @apply fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg animate-slide-up;
+}
+
+.toast-success {
+  @apply bg-green-500 text-white;
+}
+
+.toast-error {
+  @apply bg-red-500 text-white;
+}
+
+.toast-info {
+  @apply bg-blue-500 text-white;
+}
+
+/* 响应式容器 */
+.container-custom {
+  @apply container mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* 滚动条样式 */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -69,23 +112,4 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.5);
-}
-
-/* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.float-animation {
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.6); }
-}
-
-.pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
 }

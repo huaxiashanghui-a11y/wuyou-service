@@ -1,98 +1,101 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Upload, Download, Search, Package, CreditCard, CheckCircle, XCircle } from 'lucide-react'
+import { useState } from 'react';
+import { Upload, Download, Search, Package, CreditCard, CheckCircle, XCircle, X, AlertCircle } from 'lucide-react';
+import { Card } from '@/lib/types';
 
-interface Card {
-  id: string
-  productId: string
-  productName: string
-  code: string
-  password?: string
-  used: boolean
-  createdAt: string
-}
+// 模拟卡密数据
+const initialCards: Card[] = [
+  { id: '1', productId: '1', productName: '王者荣耀点卡 100元', code: 'WYRC-ABCD-1234-5678', status: 'available', createdAt: '2024-01-15 10:30' },
+  { id: '2', productId: '1', productName: '王者荣耀点卡 100元', code: 'WYRC-ABCD-1234-5679', status: 'used', usedAt: '2024-01-15 12:00', createdAt: '2024-01-15 10:30' },
+  { id: '3', productId: '2', productName: '原神月卡 30元', code: 'YSYK-EFGH-9876-5432', status: 'available', createdAt: '2024-01-15 11:00' },
+  { id: '4', productId: '3', productName: 'Steam充值卡 100美元', code: 'STMC-IJKL-2468-1357', password: 'PWD123', status: 'available', createdAt: '2024-01-15 12:00' },
+  { id: '5', productId: '2', productName: '原神月卡 30元', code: 'YSYK-EFGH-9876-5433', status: 'used', usedAt: '2024-01-15 14:00', createdAt: '2024-01-15 11:00' },
+];
+
+const products = [
+  { id: '1', name: '王者荣耀点卡 100元' },
+  { id: '2', name: '原神月卡 30元' },
+  { id: '3', name: 'Steam充值卡 100美元' },
+  { id: '4', name: '腾讯视频VIP月卡' },
+];
 
 export default function CardsPage() {
-  const [cards, setCards] = useState<Card[]>([
-    { id: '1', productId: '1', productName: '王者荣耀点卡 100元', code: 'WYRC-ABCD-1234-5678', used: false, createdAt: '2024-01-15 10:30' },
-    { id: '2', productId: '1', productName: '王者荣耀点卡 100元', code: 'WYRC-ABCD-1234-5679', used: true, createdAt: '2024-01-15 10:30' },
-    { id: '3', productId: '2', productName: '原神月卡 30元', code: 'YSYK-EFGH-9876-5432', used: false, createdAt: '2024-01-15 11:00' },
-    { id: '4', productId: '3', productName: 'Steam充值卡 100美元', code: 'STMC-IJKL-2468-1357', password: 'PWD123', used: false, createdAt: '2024-01-15 12:00' },
-  ])
-
-  const [selectedProduct, setSelectedProduct] = useState('')
-  const [showImportModal, setShowImportModal] = useState(false)
-  const [importData, setImportData] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'used'>('all')
-
-  const products = [
-    { id: '1', name: '王者荣耀点卡 100元' },
-    { id: '2', name: '原神月卡 30元' },
-    { id: '3', name: 'Steam充值卡 100美元' },
-  ]
+  const [cards, setCards] = useState<Card[]>(initialCards);
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importData, setImportData] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'used'>('all');
 
   const filteredCards = cards.filter(card => {
     const matchesSearch = card.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         card.productName.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesProduct = !selectedProduct || card.productId === selectedProduct
-    const matchesStatus = filterStatus === 'all' ||
-                         (filterStatus === 'available' && !card.used) ||
-                         (filterStatus === 'used' && card.used)
-    return matchesSearch && matchesProduct && matchesStatus
-  })
+                         card.productName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesProduct = !selectedProduct || card.productId === selectedProduct;
+    const matchesStatus = filterStatus === 'all' || card.status === filterStatus;
+    return matchesSearch && matchesProduct && matchesStatus;
+  });
 
   const stats = {
     total: cards.length,
-    available: cards.filter(c => !c.used).length,
-    used: cards.filter(c => c.used).length
-  }
+    available: cards.filter(c => c.status === 'available').length,
+    used: cards.filter(c => c.status === 'used').length
+  };
 
   const handleImport = () => {
     if (!selectedProduct || !importData.trim()) {
-      alert('请选择商品并输入卡密数据')
-      return
+      alert('请选择商品并输入卡密数据');
+      return;
     }
 
-    const lines = importData.trim().split('\n')
-    const newCards = lines.map((line, index) => {
-      const parts = line.split(',')
-      return {
-        id: `import-${Date.now()}-${index}`,
-        productId: selectedProduct,
-        productName: products.find(p => p.id === selectedProduct)?.name || '',
-        code: parts[0]?.trim() || '',
-        password: parts[1]?.trim() || undefined,
-        used: false,
-        createdAt: new Date().toLocaleString()
-      }
-    }).filter(c => c.code)
+    const lines = importData.trim().split('\n');
+    const productName = products.find(p => p.id === selectedProduct)?.name || '';
+    
+    const newCards = lines
+      .map((line) => {
+        const parts = line.split(',').map(s => s.trim());
+        return {
+          id: `card-${Date.now()}-${Math.random()}`,
+          productId: selectedProduct,
+          productName,
+          code: parts[0] || '',
+          password: parts[1] || undefined,
+          status: 'available' as const,
+          createdAt: new Date().toLocaleString()
+        };
+      })
+      .filter(c => c.code);
 
-    setCards([...newCards, ...cards])
-    setShowImportModal(false)
-    setImportData('')
-    alert(`成功导入 ${newCards.length} 个卡密`)
-  }
+    setCards([...newCards, ...cards]);
+    setShowImportModal(false);
+    setImportData('');
+    alert(`成功导入 ${newCards.length} 个卡密`);
+  };
 
   const handleExport = () => {
-    const availableCards = cards.filter(c => !c.used)
+    const availableCards = filteredCards.filter(c => c.status === 'available');
     if (availableCards.length === 0) {
-      alert('没有可导出的卡密')
-      return
+      alert('没有可导出的卡密');
+      return;
     }
 
     const csv = availableCards.map(c =>
       `${c.code}${c.password ? ',' + c.password : ''},${c.productName}`
-    ).join('\n')
+    ).join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `cards-export-${Date.now()}.csv`
-    a.click()
-  }
+    const blob = new Blob([`卡密${importData.includes(',') ? ',密码' : ''},商品\n${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cards-export-${Date.now()}.csv`;
+    a.click();
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('确定要删除这个卡密吗？')) {
+      setCards(cards.filter(c => c.id !== id));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -203,6 +206,7 @@ export default function CardsPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">密码</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">状态</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">创建时间</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -224,14 +228,20 @@ export default function CardsPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      card.used
-                        ? 'bg-gray-100 text-gray-600'
-                        : 'bg-green-100 text-green-600'
+                      card.status === 'available' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'
                     }`}>
-                      {card.used ? '已使用' : '可用'}
+                      {card.status === 'available' ? '可用' : '已使用'}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">{card.createdAt}</td>
+                  <td className="px-6 py-4">
+                    <button
+                      onClick={() => handleDelete(card.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <XCircle className="w-5 h-5" />
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -243,7 +253,12 @@ export default function CardsPage() {
       {showImportModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-6">批量导入卡密</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">批量导入卡密</h2>
+              <button onClick={() => setShowImportModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -273,9 +288,10 @@ ABC123456789
 DEF987654321,PWD123
 GHI555555555"
                 />
-                <p className="text-xs text-gray-500 mt-2">
-                  每行一个卡密，如有密码用逗号分隔
-                </p>
+                <div className="mt-2 p-3 bg-blue-50 rounded-lg text-sm text-blue-700 flex items-start">
+                  <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>每行一个卡密，如有密码用逗号分隔。支持批量粘贴。</span>
+                </div>
               </div>
             </div>
 
@@ -297,5 +313,5 @@ GHI555555555"
         </div>
       )}
     </div>
-  )
+  );
 }

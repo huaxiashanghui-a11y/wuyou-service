@@ -1,94 +1,155 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Search, Eye, Download, CheckCircle, Clock, XCircle, Mail } from 'lucide-react'
+import { useState } from 'react';
+import { Search, Eye, Download, CheckCircle, Clock, XCircle, Mail, X, RefreshCw } from 'lucide-react';
+import { Order } from '@/lib/types';
 
-interface Order {
-  id: string
-  orderId: string
-  email: string
-  productName: string
-  quantity: number
-  totalAmount: number
-  status: 'pending' | 'paid' | 'completed' | 'cancelled'
-  createdAt: string
-  paidAt?: string
-  cards: string[]
-}
+// 模拟订单数据
+const initialOrders: Order[] = [
+  {
+    id: '1',
+    orderId: 'WY20240115001',
+    email: 'user1@example.com',
+    productId: '1',
+    productName: '王者荣耀点卡 100元',
+    productImage: 'https://images.unsplash.com/photo-1614294148960-9aa740632a87?w=100&h=100&fit=crop',
+    quantity: 1,
+    unitPrice: 95,
+    totalAmount: 95,
+    status: 'completed',
+    createdAt: '2024-01-15T10:30:00Z',
+    updatedAt: '2024-01-15T10:30:05Z',
+    paymentTime: '2024-01-15T10:30:05Z'
+  },
+  {
+    id: '2',
+    orderId: 'WY20240115002',
+    email: 'user2@example.com',
+    productId: '2',
+    productName: '原神月卡 30元',
+    productImage: 'https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?w=100&h=100&fit=crop',
+    quantity: 2,
+    unitPrice: 28,
+    totalAmount: 56,
+    status: 'paid',
+    createdAt: '2024-01-15T11:00:00Z',
+    updatedAt: '2024-01-15T11:00:10Z',
+    paymentTime: '2024-01-15T11:00:10Z'
+  },
+  {
+    id: '3',
+    orderId: 'WY20240115003',
+    email: 'user3@example.com',
+    productId: '3',
+    productName: 'Steam充值卡 100美元',
+    productImage: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=100&h=100&fit=crop',
+    quantity: 1,
+    unitPrice: 680,
+    totalAmount: 680,
+    status: 'delivered',
+    createdAt: '2024-01-15T12:00:00Z',
+    updatedAt: '2024-01-15T12:00:15Z',
+    paymentTime: '2024-01-15T12:00:15Z',
+    cards: [
+      { code: 'STMC-IJKL-2468-1357', password: 'PWD123' }
+    ]
+  },
+  {
+    id: '4',
+    orderId: 'WY20240115004',
+    email: 'user4@example.com',
+    productId: '4',
+    productName: '腾讯视频VIP月卡',
+    productImage: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=100&h=100&fit=crop',
+    quantity: 1,
+    unitPrice: 20,
+    totalAmount: 20,
+    status: 'completed',
+    createdAt: '2024-01-15T13:00:00Z',
+    updatedAt: '2024-01-15T13:00:05Z',
+    paymentTime: '2024-01-15T13:00:05Z'
+  },
+  {
+    id: '5',
+    orderId: 'WY20240115005',
+    email: 'user5@example.com',
+    productId: '5',
+    productName: '网易云音乐VIP年卡',
+    productImage: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&h=100&fit=crop',
+    quantity: 1,
+    unitPrice: 158,
+    totalAmount: 158,
+    status: 'pending',
+    createdAt: '2024-01-15T14:00:00Z',
+    updatedAt: '2024-01-15T14:00:00Z'
+  }
+];
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: '1',
-      orderId: 'WY20240115001',
-      email: 'user1@example.com',
-      productName: '王者荣耀点卡 100元',
-      quantity: 1,
-      totalAmount: 95,
-      status: 'completed',
-      createdAt: '2024-01-15 10:30:00',
-      paidAt: '2024-01-15 10:30:05',
-      cards: ['WYRC-ABCD-1234-5678']
-    },
-    {
-      id: '2',
-      orderId: 'WY20240115002',
-      email: 'user2@example.com',
-      productName: '原神月卡 30元',
-      quantity: 2,
-      totalAmount: 56,
-      status: 'paid',
-      createdAt: '2024-01-15 11:00:00',
-      paidAt: '2024-01-15 11:00:10'
-    },
-    {
-      id: '3',
-      orderId: 'WY20240115003',
-      email: 'user3@example.com',
-      productName: 'Steam充值卡 100美元',
-      quantity: 1,
-      totalAmount: 680,
-      status: 'pending',
-      createdAt: '2024-01-15 12:00:00'
-    }
-  ])
-
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterStatus, setFilterStatus] = useState<string>('all')
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const filteredOrders = orders.filter(order => {
     const matchesSearch = order.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.email.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = filterStatus === 'all' || order.status === filterStatus
-    return matchesSearch && matchesStatus
-  })
+                         order.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
   const stats = {
     total: orders.length,
     completed: orders.filter(o => o.status === 'completed').length,
-    pending: orders.filter(o => o.status === 'pending').length,
+    pending: orders.filter(o => o.status === 'pending' || o.status === 'paid').length,
     revenue: orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + o.totalAmount, 0)
-  }
+  };
 
   const handleUpdateStatus = (id: string, newStatus: Order['status']) => {
     setOrders(orders.map(o =>
-      o.id === id ? { ...o, status: newStatus, paidAt: newStatus === 'paid' ? new Date().toISOString() : o.paidAt } : o
-    ))
-  }
+      o.id === id ? { ...o, status: newStatus, updatedAt: new Date().toISOString() } : o
+    ));
+    if (selectedOrder?.id === id) {
+      setSelectedOrder({ ...selectedOrder, status: newStatus });
+    }
+  };
 
   const handleExport = () => {
     const csv = filteredOrders.map(o =>
-      `${o.orderId},${o.email},${o.productName},${o.quantity},${o.totalAmount},${o.status},${o.createdAt}`
-    ).join('\n')
+      `${o.orderId},${o.email},${o.productName},${o.quantity},${o.totalAmount},${getStatusLabel(o.status)},${o.createdAt}`
+    ).join('\n');
 
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `orders-export-${Date.now()}.csv`
-    a.click()
-  }
+    const blob = new Blob([`订单号,邮箱,商品,数量,金额,状态,时间\n${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders-export-${Date.now()}.csv`;
+    a.click();
+  };
+
+  const getStatusLabel = (status: Order['status']) => {
+    const labels: Record<string, string> = {
+      pending: '待支付',
+      paid: '已支付',
+      delivered: '已发卡',
+      completed: '已完成',
+      cancelled: '已取消',
+      refunded: '已退款'
+    };
+    return labels[status] || status;
+  };
+
+  const getStatusColor = (status: Order['status']) => {
+    const colors: Record<string, string> = {
+      pending: 'bg-yellow-100 text-yellow-700',
+      paid: 'bg-blue-100 text-blue-700',
+      delivered: 'bg-purple-100 text-purple-700',
+      completed: 'bg-green-100 text-green-700',
+      cancelled: 'bg-gray-100 text-gray-700',
+      refunded: 'bg-red-100 text-red-700'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-700';
+  };
 
   return (
     <div className="space-y-6">
@@ -122,7 +183,7 @@ export default function OrdersPage() {
           <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <p className="text-sm text-gray-500 mb-1">总收入</p>
+          <p className="text-sm text-gray-500 mb-1">已完成收入</p>
           <p className="text-2xl font-bold text-primary-500">¥{stats.revenue.toFixed(2)}</p>
         </div>
       </div>
@@ -146,8 +207,9 @@ export default function OrdersPage() {
             className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none"
           >
             <option value="all">全部状态</option>
-            <option value="pending">待处理</option>
+            <option value="pending">待支付</option>
             <option value="paid">已支付</option>
+            <option value="delivered">已发卡</option>
             <option value="completed">已完成</option>
             <option value="cancelled">已取消</option>
           </select>
@@ -189,18 +251,13 @@ export default function OrdersPage() {
                     ¥{order.totalAmount.toFixed(2)}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      order.status === 'completed' ? 'bg-green-100 text-green-600' :
-                      order.status === 'paid' ? 'bg-blue-100 text-blue-600' :
-                      order.status === 'pending' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-red-100 text-red-600'
-                    }`}>
-                      {order.status === 'completed' ? '已完成' :
-                       order.status === 'paid' ? '已支付' :
-                       order.status === 'pending' ? '待处理' : '已取消'}
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                      {getStatusLabel(order.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">{order.createdAt}</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {new Date(order.createdAt).toLocaleString()}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
                       <button
@@ -220,6 +277,15 @@ export default function OrdersPage() {
                         </button>
                       )}
                       {order.status === 'paid' && (
+                        <button
+                          onClick={() => handleUpdateStatus(order.id, 'delivered')}
+                          className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          title="发货"
+                        >
+                          <RefreshCw className="w-5 h-5" />
+                        </button>
+                      )}
+                      {order.status === 'delivered' && (
                         <button
                           onClick={() => handleUpdateStatus(order.id, 'completed')}
                           className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
@@ -247,7 +313,7 @@ export default function OrdersPage() {
                 onClick={() => setSelectedOrder(null)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <XCircle className="w-6 h-6" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
@@ -260,15 +326,8 @@ export default function OrdersPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 mb-1">状态</p>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    selectedOrder.status === 'completed' ? 'bg-green-100 text-green-600' :
-                    selectedOrder.status === 'paid' ? 'bg-blue-100 text-blue-600' :
-                    selectedOrder.status === 'pending' ? 'bg-yellow-100 text-yellow-600' :
-                    'bg-red-100 text-red-600'
-                  }`}>
-                    {selectedOrder.status === 'completed' ? '已完成' :
-                     selectedOrder.status === 'paid' ? '已支付' :
-                     selectedOrder.status === 'pending' ? '待处理' : '已取消'}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedOrder.status)}`}>
+                    {getStatusLabel(selectedOrder.status)}
                   </span>
                 </div>
                 <div>
@@ -289,12 +348,12 @@ export default function OrdersPage() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 mb-1">创建时间</p>
-                  <p className="font-medium">{selectedOrder.createdAt}</p>
+                  <p className="font-medium">{new Date(selectedOrder.createdAt).toLocaleString()}</p>
                 </div>
-                {selectedOrder.paidAt && (
+                {selectedOrder.paymentTime && (
                   <div>
                     <p className="text-sm text-gray-500 mb-1">支付时间</p>
-                    <p className="font-medium">{selectedOrder.paidAt}</p>
+                    <p className="font-medium">{new Date(selectedOrder.paymentTime).toLocaleString()}</p>
                   </div>
                 )}
               </div>
@@ -305,8 +364,11 @@ export default function OrdersPage() {
                   <p className="text-sm text-gray-500 mb-3">卡密列表</p>
                   <div className="space-y-2">
                     {selectedOrder.cards.map((card, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-3 font-mono text-sm">
-                        {card}
+                      <div key={index} className="bg-gray-50 rounded-lg p-3">
+                        <p className="font-mono text-sm">卡密: {card.code}</p>
+                        {card.password && (
+                          <p className="font-mono text-sm text-gray-600">密码: {card.password}</p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -314,14 +376,14 @@ export default function OrdersPage() {
               )}
 
               {/* Actions */}
-              <div className="flex space-x-4 pt-4 border-t">
+              <div className="flex flex-wrap gap-3 pt-4 border-t">
                 {selectedOrder.status === 'pending' && (
                   <button
                     onClick={() => {
-                      handleUpdateStatus(selectedOrder.id, 'paid')
-                      setSelectedOrder(null)
+                      handleUpdateStatus(selectedOrder.id, 'paid');
+                      setSelectedOrder(null);
                     }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                    className="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
                   >
                     标记已支付
                   </button>
@@ -329,21 +391,32 @@ export default function OrdersPage() {
                 {selectedOrder.status === 'paid' && (
                   <button
                     onClick={() => {
-                      handleUpdateStatus(selectedOrder.id, 'completed')
-                      setSelectedOrder(null)
+                      handleUpdateStatus(selectedOrder.id, 'delivered');
+                      setSelectedOrder(null);
                     }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                    className="px-6 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                  >
+                    发货
+                  </button>
+                )}
+                {selectedOrder.status === 'delivered' && (
+                  <button
+                    onClick={() => {
+                      handleUpdateStatus(selectedOrder.id, 'completed');
+                      setSelectedOrder(null);
+                    }}
+                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
                   >
                     完成订单
                   </button>
                 )}
-                {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'completed' && (
+                {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'completed' && selectedOrder.status !== 'refunded' && (
                   <button
                     onClick={() => {
-                      handleUpdateStatus(selectedOrder.id, 'cancelled')
-                      setSelectedOrder(null)
+                      handleUpdateStatus(selectedOrder.id, 'cancelled');
+                      setSelectedOrder(null);
                     }}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+                    className="px-6 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
                   >
                     取消订单
                   </button>
@@ -354,5 +427,5 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

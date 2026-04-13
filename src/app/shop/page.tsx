@@ -1,7 +1,13 @@
-import ShopClient from './ShopClient'
+'use client';
 
-// Demo products
-const products = [
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import ProductCard from '@/components/ProductCard';
+import { Product } from '@/lib/types';
+import { Search, Filter, Grid, List, Package } from 'lucide-react';
+
+// 模拟商品数据
+const allProducts: Product[] = [
   {
     id: '1',
     name: '王者荣耀点卡 100元',
@@ -13,7 +19,10 @@ const products = [
     stock: 999,
     sold: 5200,
     featured: true,
-    createdAt: new Date()
+    status: 'active',
+    sort: 1,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '2',
@@ -26,7 +35,10 @@ const products = [
     stock: 999,
     sold: 3500,
     featured: true,
-    createdAt: new Date()
+    status: 'active',
+    sort: 2,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '3',
@@ -39,7 +51,10 @@ const products = [
     stock: 50,
     sold: 1200,
     featured: true,
-    createdAt: new Date()
+    status: 'active',
+    sort: 3,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '4',
@@ -52,7 +67,10 @@ const products = [
     stock: 999,
     sold: 8000,
     featured: false,
-    createdAt: new Date()
+    status: 'active',
+    sort: 4,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '5',
@@ -65,7 +83,10 @@ const products = [
     stock: 200,
     sold: 1500,
     featured: false,
-    createdAt: new Date()
+    status: 'active',
+    sort: 5,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '6',
@@ -78,7 +99,10 @@ const products = [
     stock: 999,
     sold: 4500,
     featured: false,
-    createdAt: new Date()
+    status: 'active',
+    sort: 6,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '7',
@@ -91,7 +115,10 @@ const products = [
     stock: 999,
     sold: 12000,
     featured: false,
-    createdAt: new Date()
+    status: 'active',
+    sort: 7,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: '8',
@@ -104,22 +131,156 @@ const products = [
     stock: 500,
     sold: 3000,
     featured: false,
-    createdAt: new Date()
+    status: 'active',
+    sort: 8,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
-]
+];
 
 const categories = [
+  { id: 'all', name: '全部' },
   { id: 'game', name: '游戏点卡' },
   { id: 'gift', name: '礼品卡' },
   { id: 'recharge', name: '话费充值' },
-  { id: 'support', name: '增值服务' }
-]
+  { id: 'other', name: '增值服务' }
+];
 
-export const metadata = {
-  title: '点卡商城 - 无忧服务',
-  description: '浏览我们精选的游戏点卡和充值服务',
-}
+const sortOptions = [
+  { value: 'default', label: '默认排序' },
+  { value: 'price-low', label: '价格从低到高' },
+  { value: 'price-high', label: '价格从高到低' },
+  { value: 'sales', label: '销量优先' }
+];
 
 export default function ShopPage() {
-  return <ShopClient products={products} categories={categories} />
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category') || 'all';
+  
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('default');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setSelectedCategory(categoryParam);
+  }, [categoryParam]);
+
+  const filteredProducts = allProducts
+    .filter(product => {
+      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'sales':
+          return b.sold - a.sold;
+        default:
+          return a.sort - b.sort;
+      }
+    });
+
+  return (
+    <div className="container-custom py-8">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">点卡商城</h1>
+        <p className="text-gray-600">浏览我们精选的游戏点卡和充值服务</p>
+      </div>
+
+      {/* Filters */}
+      <div className="glass rounded-2xl p-6 mb-8">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-grow relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索商品..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all"
+            />
+          </div>
+
+          {/* Sort */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all"
+          >
+            {sortOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Categories */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {categories.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                selectedCategory === cat.id
+                  ? 'bg-primary-500 text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Results Count */}
+      <div className="mb-4 text-gray-600">
+        找到 {filteredProducts.length} 个商品
+      </div>
+
+      {/* Products Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="glass rounded-2xl overflow-hidden">
+              <div className="h-48 skeleton" />
+              <div className="p-4 space-y-3">
+                <div className="h-6 skeleton rounded" />
+                <div className="h-4 skeleton rounded w-2/3" />
+                <div className="h-8 skeleton rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredProducts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredProducts.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      ) : (
+        <div className="glass rounded-2xl p-12 text-center">
+          <Package className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <p className="text-gray-500 text-lg">未找到相关商品</p>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory('all');
+            }}
+            className="mt-4 text-primary-500 hover:text-primary-600 font-medium"
+          >
+            清空筛选条件
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
