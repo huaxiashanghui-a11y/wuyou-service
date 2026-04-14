@@ -62,7 +62,7 @@ export default function VerificationPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+      <div className="glass rounded-xl mb-6">
         <div className="flex">
           <button
             onClick={() => setActiveTab('identity')}

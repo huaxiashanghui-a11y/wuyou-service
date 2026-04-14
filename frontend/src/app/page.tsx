@@ -243,14 +243,14 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 pt-48">
         {/* Main Content Grid */}
         <div className="flex gap-4 mb-8">
           {/* Left Sidebar - Category Menu */}
-          <div className="hidden lg:block w-48 bg-white rounded-lg shadow-sm p-4">
+          <div className="hidden lg:block w-48 glass rounded-lg p-4">
             <h3 className="font-bold text-gray-800 mb-4">{t('cat.allCategories')}</h3>
             <div className="space-y-1">
               {leftCategories.map((cat) => (
@@ -456,7 +456,7 @@ export default function HomePage() {
         </div>
 
         {/* Hot Products Section */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
+        <div className="glass rounded-lg p-4 mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
@@ -667,7 +667,7 @@ export default function HomePage() {
         </div>
 
         {/* Service Features */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="glass rounded-lg p-6 mb-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">

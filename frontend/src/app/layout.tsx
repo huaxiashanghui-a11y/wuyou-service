@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Providers } from '@/lib/providers';
+import Background from '@/components/Background';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -16,7 +17,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
-      <body>
+      <body className="min-h-screen">
+        <Background />
         <Providers>
           {children}
         </Providers>

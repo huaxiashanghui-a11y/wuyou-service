@@ -143,7 +143,7 @@ export default function HelpPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+      <div className="glass rounded-xl mb-6">
         <div className="flex flex-wrap">
           {tabs.map((tab) => (
             <button

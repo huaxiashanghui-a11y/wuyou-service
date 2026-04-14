@@ -62,7 +62,7 @@ export default function UserLayout({ children, activeTab }: UserLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-pink-50">
+    <div className="min-h-screen">
       {/* Background Decorations */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-10 text-6xl opacity-10">🎮</div>
@@ -75,7 +75,7 @@ export default function UserLayout({ children, activeTab }: UserLayoutProps) {
         <div className="flex gap-6">
           {/* Left Sidebar */}
           <div className="w-56 flex-shrink-0">
-            <div className="bg-white rounded-2xl shadow-lg p-4 sticky top-8">
+            <div className="glass rounded-2xl p-4 sticky top-8">
               {/* Logo */}
               <div className="text-center pb-4 border-b border-gray-100">
                 <Link href="/" className="inline-flex items-center gap-2">

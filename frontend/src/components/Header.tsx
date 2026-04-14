@@ -79,7 +79,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white">
+      <header className="sticky top-0 z-50 glass">
         {/* Top Navigation Bar */}
         <div className="bg-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4">

@@ -8,6 +8,8 @@
   --primary-500: #0ea5e9;
   --primary-600: #0284c7;
   --primary-700: #0369a1;
+  --orange-from: #f97316;
+  --orange-to: #ea580c;
 }
 
 * {
@@ -26,20 +28,60 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* 玻璃态效果 */
+/* 全局玻璃态效果 - 用于所有白色卡片 */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 深色玻璃态 - 用于深色背景上的卡片 */
+.glass-dark {
+  background: rgba(30, 30, 50, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* 全局卡片样式优化 - 自动应用磨砂效果 */
+.bg-white,
+[class*="bg-white"],
+[class*="rounded-xl"],
+[class*="shadow-sm"] {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 /* 渐变文字 */
 .gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* 橙色渐变按钮 */
+.btn-orange-gradient {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+}
+
+.btn-orange-gradient:hover {
+  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+}
+
+.btn-orange-gradient:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.4);
 }
 
 /* 骨架屏动画 */
@@ -70,17 +112,17 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: rgba(249, 115, 22, 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: rgba(249, 115, 22, 0.7);
 }
 
 /* 按钮悬停效果 */
@@ -90,7 +132,7 @@ body {
 
 .btn-hover:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
 
 /* 卡片悬停效果 */
@@ -100,7 +142,7 @@ body {
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
 
 /* 容器样式 */
@@ -120,4 +162,23 @@ body {
   .container-custom {
     padding: 0 2rem;
   }
+}
+
+/* 模态框遮罩优化 */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+/* 下拉菜单优化 */
+.dropdown-menu {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* 轮播遮罩优化 */
+.carousel-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%);
 }
