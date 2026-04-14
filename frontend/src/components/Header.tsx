@@ -86,7 +86,18 @@ export default function Header() {
             <div className="flex items-center justify-between h-12">
               {/* Logo & All Services */}
               <div className="flex items-center gap-4">
-                {/* All Services Dropdown - Top left of header */}
+                {/* Logo - Left */}
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
+                    <span className="text-white font-bold text-sm">无</span>
+                  </div>
+                  <div className="hidden sm:block">
+                    <div className="text-sm font-bold">无忧服务</div>
+                    <div className="text-[10px] text-gray-400">WORRY-FREE SERVICE</div>
+                  </div>
+                </Link>
+
+                {/* All Services Dropdown - Right of Logo */}
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={() => setShowServiceDropdown(!showServiceDropdown)}
@@ -117,17 +128,6 @@ export default function Header() {
                     </div>
                   )}
                 </div>
-
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
-                    <span className="text-white font-bold text-sm">无</span>
-                  </div>
-                  <div className="hidden sm:block">
-                    <div className="text-sm font-bold">无忧服务</div>
-                    <div className="text-[10px] text-gray-400">WORRY-FREE SERVICE</div>
-                  </div>
-                </Link>
               </div>
 
               {/* Search Bar - Center */}
