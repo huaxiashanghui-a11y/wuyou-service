@@ -73,7 +73,6 @@ const rightGames = [
 
 interface Product {
   id: string;
-  name: string;
   price: number;
   coins: number;
   label?: string;
