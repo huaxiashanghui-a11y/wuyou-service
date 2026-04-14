@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/lib/store';
-import { ChevronLeft, ChevronRight, ArrowUp, MessageCircle, QrCode, Star, Clock, Shield, Headphones } from 'lucide-react';
+import { useApp } from '@/lib/i18n';
+import { ChevronLeft, ChevronRight, ArrowUp, MessageCircle, QrCode, Star, Clock, Shield, Headphones, Plus } from 'lucide-react';
 
 const leftCategories = [
   { name: '直播平台', icon: '📺', href: '/category/直播平台' },
@@ -39,6 +40,44 @@ const banners = [
     subtitle: '全场8折',
     description: '秒到账',
     bgGradient: 'from-blue-500 to-purple-500',
+  },
+];
+
+const sidebarItems = [
+  {
+    id: 1,
+    icon: Headphones,
+    title: '24小时在线客服',
+    subtitle: '随时为您服务',
+    color: 'bg-purple-100 text-purple-600',
+  },
+  {
+    id: 2,
+    icon: QrCode,
+    title: '扫码咨询',
+    subtitle: '',
+    color: 'bg-gray-100 text-gray-600',
+  },
+  {
+    id: 3,
+    icon: MessageCircle,
+    title: '微信客服',
+    subtitle: '',
+    color: 'bg-green-100 text-green-600',
+  },
+  {
+    id: 4,
+    icon: Headphones,
+    title: 'QQ客服',
+    subtitle: '',
+    color: 'bg-blue-100 text-blue-600',
+  },
+  {
+    id: 5,
+    icon: Star,
+    title: '视频教程',
+    subtitle: '',
+    color: 'bg-red-100 text-red-600',
   },
 ];
 
@@ -92,8 +131,26 @@ const products: Product[] = [
 
 export default function HomePage() {
   const { addItem } = useCartStore();
+  const { t, formatPrice } = useApp();
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [currentSidebar, setCurrentSidebar] = useState(0);
   const [hotProductIndex, setHotProductIndex] = useState(0);
+
+  // Auto-play banner every 20 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
+    }, 20000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Auto-play sidebar every 15 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSidebar((prev) => (prev + 1) % sidebarItems.length);
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
 
   const nextBanner = () => {
     setCurrentBanner((prev) => (prev + 1) % banners.length);
@@ -101,6 +158,14 @@ export default function HomePage() {
 
   const prevBanner = () => {
     setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
+  };
+
+  const nextSidebar = () => {
+    setCurrentSidebar((prev) => (prev + 1) % sidebarItems.length);
+  };
+
+  const prevSidebar = () => {
+    setCurrentSidebar((prev) => (prev - 1 + sidebarItems.length) % sidebarItems.length);
   };
 
   const nextHotProducts = () => {
@@ -143,7 +208,7 @@ export default function HomePage() {
         <div className="flex gap-4 mb-8">
           {/* Left Sidebar - Category Menu */}
           <div className="hidden lg:block w-48 bg-white rounded-lg shadow-sm p-4">
-            <h3 className="font-bold text-gray-800 mb-4">全部分类</h3>
+            <h3 className="font-bold text-gray-800 mb-4">{t('cat.allCategories')}</h3>
             <div className="space-y-1">
               {leftCategories.map((cat) => (
                 <Link
@@ -156,6 +221,9 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
+            <Link href="/categories" className="block mt-4 text-sm text-purple-600 hover:underline">
+              {t('section.viewMore')} &gt;
+            </Link>
           </div>
 
           {/* Center - Banner Carousel */}
@@ -178,7 +246,7 @@ export default function HomePage() {
                             <div className="text-xl md:text-2xl mb-2">{banner.subtitle}</div>
                             <div className="text-lg opacity-80">{banner.description}</div>
                             <button className="mt-4 px-8 py-3 bg-white text-purple-600 font-bold rounded-full hover:bg-gray-100 transition-colors">
-                              立即抢购
+                              {t('banner.buyNow')}
                             </button>
                           </div>
                         </div>
@@ -217,20 +285,63 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Right Sidebar - Customer Service Info */}
+          {/* Right Sidebar - Customer Service Info with Auto-play */}
           <div className="hidden xl:block w-56 bg-white rounded-lg shadow-sm p-4">
-            {/* Customer Service */}
-            <div className="text-center mb-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Headphones className="w-6 h-6 text-purple-600" />
+            {/* Auto-play Sidebar Carousel */}
+            <div className="relative">
+              <div className="min-h-48">
+                {sidebarItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`transition-opacity duration-500 ${
+                      index === currentSidebar ? 'opacity-100' : 'opacity-0 absolute inset-0'
+                    }`}
+                  >
+                    {/* Customer Service */}
+                    <div className="text-center mb-4">
+                      <div className={`w-12 h-12 ${item.color} rounded-full flex items-center justify-center mx-auto mb-2`}>
+                        <item.icon className="w-6 h-6" />
+                      </div>
+                      <div className="font-bold text-gray-800">{item.title}</div>
+                      {item.subtitle && (
+                        <div className="text-sm text-gray-500">{item.subtitle}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="font-bold text-gray-800">24小时在线客服</div>
-              <div className="text-sm text-gray-500">随时为您服务</div>
+
+              {/* Sidebar Navigation */}
+              <button
+                onClick={prevSidebar}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-600" />
+              </button>
+              <button
+                onClick={nextSidebar}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 w-6 h-6 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center transition-colors"
+              >
+                <ChevronRight className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Sidebar Dots */}
+            <div className="flex justify-center gap-1 mt-4">
+              {sidebarItems.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentSidebar(index)}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentSidebar ? 'bg-purple-600' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
             </div>
 
             {/* QR Code */}
-            <div className="border-t pt-4 mb-4">
-              <div className="text-sm font-medium text-gray-700 mb-2 text-center">扫码咨询</div>
+            <div className="border-t pt-4 mb-4 mt-4">
+              <div className="text-sm font-medium text-gray-700 mb-2 text-center">{t('sidebar.scan')}</div>
               <div className="w-24 h-24 bg-gray-200 mx-auto flex items-center justify-center rounded">
                 <QrCode className="w-16 h-16 text-gray-400" />
               </div>
@@ -238,12 +349,16 @@ export default function HomePage() {
 
             {/* Social Links */}
             <div className="border-t pt-4">
-              <div className="text-sm font-medium text-gray-700 mb-2">社交平台</div>
+              <div className="text-sm font-medium text-gray-700 mb-2">{t('sidebar.social')}</div>
               <div className="flex justify-center gap-2">
-                <a href="#" className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white text-xs">微</a>
-                <a href="#" className="w-8 h-8 bg-green-500 rounded flex items-center justify-center text-white text-xs">博</a>
-                <a href="#" className="w-8 h-8 bg-pink-500 rounded flex items-center justify-center text-white text-xs">知</a>
+                <a href="#" className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center text-white text-xs transition-colors">微</a>
+                <a href="#" className="w-8 h-8 bg-green-500 hover:bg-green-600 rounded flex items-center justify-center text-white text-xs transition-colors">博</a>
+                <a href="#" className="w-8 h-8 bg-pink-500 hover:bg-pink-600 rounded flex items-center justify-center text-white text-xs transition-colors">知</a>
               </div>
+              <button className="mt-2 w-full py-1.5 border border-gray-300 hover:bg-gray-50 rounded text-sm text-gray-600 flex items-center justify-center gap-1 transition-colors">
+                <Plus className="w-4 h-4" />
+                添加好友
+              </button>
             </div>
 
             {/* Back to Top */}
@@ -252,7 +367,7 @@ export default function HomePage() {
               className="mt-4 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm rounded flex items-center justify-center gap-1 transition-colors"
             >
               <ArrowUp className="w-4 h-4" />
-              回到顶部
+              {t('sidebar.backTop')}
             </button>
           </div>
         </div>
@@ -262,9 +377,9 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Star className="w-5 h-5 text-yellow-500" />
-              <h3 className="font-bold text-lg text-gray-800">热门充值</h3>
+              <h3 className="font-bold text-lg text-gray-800">{t('section.hotRecharge')}</h3>
             </div>
-            <Link href="/category/热门" className="text-sm text-purple-600 hover:underline">查看更多 &gt;</Link>
+            <Link href="/category/热门" className="text-sm text-purple-600 hover:underline">{t('section.viewMore')} &gt;</Link>
           </div>
 
           <div className="relative">
@@ -288,8 +403,8 @@ export default function HomePage() {
                     </div>
                     <div className="text-sm font-medium text-gray-800 mb-1">{product.name}</div>
                     <div className="flex items-center justify-between">
-                      <span className="text-red-500 font-bold">¥{product.price}</span>
-                      <span className="text-xs text-gray-400">已售{product.sales}</span>
+                      <span className="text-red-500 font-bold">{formatPrice(product.price)}</span>
+                      <span className="text-xs text-gray-400">{t('section.sold')}{product.sales}</span>
                     </div>
                   </Link>
                 ))}
@@ -318,7 +433,7 @@ export default function HomePage() {
         <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Star className="w-5 h-5 text-yellow-500" />
-            <h3 className="font-bold text-lg text-gray-800">热门分类</h3>
+            <h3 className="font-bold text-lg text-gray-800">{t('section.hotCategories')}</h3>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -326,7 +441,7 @@ export default function HomePage() {
             <div>
               <div className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
                 <MessageCircle className="w-4 h-4" />
-                直播/社交
+                {t('section.liveSocial')}
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {leftPlatforms.map((platform) => (
@@ -346,7 +461,7 @@ export default function HomePage() {
             <div>
               <div className="text-sm font-medium text-gray-500 mb-3 flex items-center gap-2">
                 <Star className="w-4 h-4" />
-                游戏充值
+                {t('section.games')}
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {rightGames.map((game) => (
@@ -369,7 +484,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-5 h-5 text-green-500" />
-              <h3 className="font-bold text-lg text-gray-800">快捷充值</h3>
+              <h3 className="font-bold text-lg text-gray-800">{t('section.quickRecharge')}</h3>
             </div>
           </div>
 
@@ -384,13 +499,13 @@ export default function HomePage() {
                     {product.label}
                   </div>
                 )}
-                <div className="text-xl font-bold text-red-500">¥{product.price}</div>
+                <div className="text-xl font-bold text-red-500">{formatPrice(product.price)}</div>
                 <div className="text-xs text-gray-500 mb-2">{product.coins.toLocaleString()}币</div>
                 <button
                   onClick={() => handleAddToCart(product)}
                   className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs rounded hover:opacity-90 transition-opacity"
                 >
-                  购买
+                  {t('common.buy')}
                 </button>
               </div>
             ))}
@@ -405,8 +520,8 @@ export default function HomePage() {
                 <Clock className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <div className="font-medium text-gray-800">24h自动发货</div>
-                <div className="text-xs text-gray-500">下单即到</div>
+                <div className="font-medium text-gray-800">{t('service.autoDeliver')}</div>
+                <div className="text-xs text-gray-500">{t('service.instant')}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -414,8 +529,8 @@ export default function HomePage() {
                 <Shield className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <div className="font-medium text-gray-800">安全支付</div>
-                <div className="text-xs text-gray-500">交易保障</div>
+                <div className="font-medium text-gray-800">{t('service.secure')}</div>
+                <div className="text-xs text-gray-500">{t('service.guarantee')}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -423,8 +538,8 @@ export default function HomePage() {
                 <Star className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <div className="font-medium text-gray-800">正品保证</div>
-                <div className="text-xs text-gray-500">官方渠道</div>
+                <div className="font-medium text-gray-800">{t('service.authentic')}</div>
+                <div className="text-xs text-gray-500">{t('service.official')}</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -432,8 +547,8 @@ export default function HomePage() {
                 <Headphones className="w-6 h-6 text-orange-600" />
               </div>
               <div>
-                <div className="font-medium text-gray-800">售后保障</div>
-                <div className="text-xs text-gray-500">7x24h客服</div>
+                <div className="font-medium text-gray-800">{t('service.support')}</div>
+                <div className="text-xs text-gray-500">{t('service.customer')}</div>
               </div>
             </div>
           </div>

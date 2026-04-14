@@ -1,9 +1,11 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/checkout/page": "app/checkout/page.js",
   "/page": "app/page.js",
-  "/query/page": "app/query/page.js",
+  "/login/page": "app/login/page.js",
   "/help/page": "app/help/page.js",
+  "/checkout/page": "app/checkout/page.js",
   "/shop/[id]/page": "app/shop/[id]/page.js",
+  "/query/page": "app/query/page.js",
+  "/register/page": "app/register/page.js",
   "/shop/page": "app/shop/page.js"
 }
