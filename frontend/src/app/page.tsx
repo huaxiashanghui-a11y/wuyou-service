@@ -203,6 +203,14 @@ export default function HomePage() {
     setCurrentSidebar((prev) => (prev - 1 + sidebarItems.length) % sidebarItems.length);
   };
 
+  const nextQR = () => {
+    setCurrentQR((prev) => (prev + 1) % qrCodes.length);
+  };
+
+  const prevQR = () => {
+    setCurrentQR((prev) => (prev - 1 + qrCodes.length) % qrCodes.length);
+  };
+
   const nextHotProducts = () => {
     setHotProductIndex((prev) => Math.min(prev + 4, hotProducts.length - 4));
   };
