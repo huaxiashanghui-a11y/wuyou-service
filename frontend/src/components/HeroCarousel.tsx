@@ -10,7 +10,7 @@ const banners = [
     image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop',
     title: '王者荣耀点卡优惠',
     subtitle: '官方直充，快速到账',
-    color: 'from-blue-500/80 to-purple-600/80',
+    color: 'from-blue-500/80 to-orange-600/80',
   },
   {
     id: 2,

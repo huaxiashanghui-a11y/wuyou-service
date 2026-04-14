@@ -74,7 +74,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           <button
             onClick={handleAddToCart}
-            className="w-full py-2 bg-gradient-to-r from-primary-500 to-purple-600 text-white text-sm font-medium rounded-lg btn-hover flex items-center justify-center gap-2"
+            className="w-full py-2 bg-gradient-to-r from-primary-500 to-orange-600 text-white text-sm font-medium rounded-lg btn-hover flex items-center justify-center gap-2"
           >
             <ShoppingCart className="w-4 h-4" />
             加入购物车

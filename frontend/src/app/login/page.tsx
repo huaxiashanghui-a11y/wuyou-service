@@ -107,7 +107,7 @@ export default function LoginPage() {
                 {language === 'zh' ? '邮箱地址' : language === 'my' ? 'အီးမေးလ်လိပ်စာ' : 'Email'}
               </label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type="email"
                   value={email}
@@ -116,10 +116,10 @@ export default function LoginPage() {
                     if (errors.email) setErrors({ ...errors, email: undefined });
                   }}
                   placeholder={language === 'zh' ? '请输入邮箱' : language === 'my' ? 'အီးမေးလ်ထည့်ပါ' : 'Please enter email'}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
+                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
                     errors.email
                       ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-200 hover:border-purple-300'
+                      : 'border-gray-200 hover:border-orange-300'
                   }`}
                 />
               </div>
@@ -134,7 +134,7 @@ export default function LoginPage() {
                 {language === 'zh' ? '密码' : language === 'my' ? 'စကားဝှက်' : 'Password'}
               </label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -143,16 +143,16 @@ export default function LoginPage() {
                     if (errors.password) setErrors({ ...errors, password: undefined });
                   }}
                   placeholder={language === 'zh' ? '请输入密码' : language === 'my' ? 'စကားဝှက်ထည့်ပါ' : 'Please enter password'}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
+                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
                     errors.password
                       ? 'border-red-300 focus:border-red-500'
-                      : 'border-gray-200 hover:border-purple-300'
+                      : 'border-gray-200 hover:border-orange-300'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500 transition-colors p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors p-1"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -165,12 +165,12 @@ export default function LoginPage() {
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between">
               <label className="flex items-center cursor-pointer group">
-                <input type="checkbox" className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-colors" />
-                <span className="ml-2 text-sm text-gray-600 group-hover:text-purple-600 transition-colors">
+                <input type="checkbox" className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500 transition-colors" />
+                <span className="ml-2 text-sm text-gray-600 group-hover:text-orange-600 transition-colors">
                   {language === 'zh' ? '记住我' : language === 'my' ? 'အသုံးပြုသူကိုမှတ်မိ' : 'Remember me'}
                 </span>
               </label>
-              <Link href="/forgot-password" className="text-sm text-purple-600 hover:text-purple-700 hover:underline transition-colors">
+              <Link href="/forgot-password" className="text-sm text-orange-600 hover:text-orange-700 hover:underline transition-colors">
                 {language === 'zh' ? '忘记密码？' : language === 'my' ? 'စကားဝှက်မေ့နေပါ' : 'Forgot password?'}
               </Link>
             </div>
@@ -179,7 +179,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-600 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+              className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium rounded-xl hover:from-orange-700 hover:to-pink-600 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {loading
@@ -232,7 +232,7 @@ export default function LoginPage() {
           {/* Register Link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             {language === 'zh' ? '还没有账户？' : language === 'my' ? 'အကောင့်မရှိသေးပါသလား?' : 'Don\'t have an account?'}
-            <Link href="/register" className="text-purple-600 hover:text-purple-700 hover:underline font-medium ml-1 transition-colors">
+            <Link href="/register" className="text-orange-600 hover:text-orange-700 hover:underline font-medium ml-1 transition-colors">
               {language === 'zh' ? '立即注册' : language === 'my' ? 'မှတ်ပုံတင်မည်' : 'Register now'}
             </Link>
           </p>
@@ -240,7 +240,7 @@ export default function LoginPage() {
 
         {/* Back to Home */}
         <div className="mt-6 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-purple-600 transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-orange-600 transition-colors">
             <span>←</span>
             <span>{language === 'zh' ? '返回首页' : language === 'my' ? 'ပင်မသို့ပြန်သွားမည်' : 'Back to home'}</span>
           </Link>

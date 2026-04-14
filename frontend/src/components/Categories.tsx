@@ -32,9 +32,9 @@ const categories = [
     id: 'other',
     name: '增值服务',
     icon: Settings,
-    color: 'from-purple-500 to-violet-500',
-    bgColor: 'bg-purple-50',
-    iconColor: 'text-purple-500',
+    color: 'from-orange-500 to-orange-500',
+    bgColor: 'bg-orange-50',
+    iconColor: 'text-orange-500',
   },
 ];
 

@@ -79,7 +79,7 @@ export default function UserLayout({ children, activeTab }: UserLayoutProps) {
               {/* Logo */}
               <div className="text-center pb-4 border-b border-gray-100">
                 <Link href="/" className="inline-flex items-center gap-2">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-orange-500 rounded-xl flex items-center justify-center">
                     <span className="text-white font-bold">无</span>
                   </div>
                 </Link>

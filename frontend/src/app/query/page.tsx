@@ -56,7 +56,7 @@ export default function QueryPage() {
     const statusMap = {
       pending: { label: '待支付', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       paid: { label: '已支付', color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
-      processing: { label: '处理中', color: 'bg-purple-100 text-purple-800', icon: Clock },
+      processing: { label: '处理中', color: 'bg-orange-100 text-orange-800', icon: Clock },
       delivered: { label: '已发货', color: 'bg-green-100 text-green-800', icon: CheckCircle },
       completed: { label: '已完成', color: 'bg-green-100 text-green-800', icon: CheckCircle },
       cancelled: { label: '已取消', color: 'bg-gray-100 text-gray-800', icon: AlertCircle },
@@ -139,7 +139,7 @@ export default function QueryPage() {
                 <button
                   type="submit"
                   disabled={loading || !searchValue.trim()}
-                  className="px-8 py-3 bg-gradient-to-r from-primary-500 to-purple-600 text-white font-semibold rounded-xl btn-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-8 py-3 bg-gradient-to-r from-primary-500 to-orange-600 text-white font-semibold rounded-xl btn-hover disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? '查询中...' : '查询'}
                 </button>

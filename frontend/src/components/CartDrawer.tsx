@@ -101,7 +101,7 @@ export default function CartDrawer() {
             <Link
               href="/checkout"
               onClick={() => setCartOpen(false)}
-              className="block w-full py-3 bg-gradient-to-r from-primary-500 to-purple-600 text-white text-center font-semibold rounded-lg btn-hover"
+              className="block w-full py-3 bg-gradient-to-r from-primary-500 to-orange-600 text-white text-center font-semibold rounded-lg btn-hover"
             >
               去结算
             </Link>

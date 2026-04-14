@@ -188,7 +188,7 @@ export default function ProductDetailPage() {
               <div className="flex gap-4">
                 <button
                   onClick={handleAddToCart}
-                  className="flex-1 py-4 bg-gradient-to-r from-primary-500 to-purple-600 text-white font-semibold rounded-xl btn-hover flex items-center justify-center gap-2"
+                  className="flex-1 py-4 bg-gradient-to-r from-primary-500 to-orange-600 text-white font-semibold rounded-xl btn-hover flex items-center justify-center gap-2"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   加入购物车

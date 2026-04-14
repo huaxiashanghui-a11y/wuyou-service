@@ -140,7 +140,7 @@ export default function ForexPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Calculator Card */}
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              <div className="bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-4">
+              <div className="bg-gradient-to-r from-orange-600 to-pink-500 px-6 py-4">
                 <div className="flex items-center gap-2 text-white">
                   <Calculator className="w-5 h-5" />
                   <h2 className="font-semibold">{t('forex.calculator')}</h2>
@@ -154,7 +154,7 @@ export default function ForexPage() {
                     <div className="relative flex-1">
                       <button
                         onClick={() => setShowFromDropdown(!showFromDropdown)}
-                        className="w-full flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:border-orange-300 transition-colors"
                       >
                         <span className="text-2xl">{currencyFlags[fromCurrency]}</span>
                         <span className="font-medium">{fromCurrency}</span>
@@ -166,7 +166,7 @@ export default function ForexPage() {
                             <button
                               key={code}
                               onClick={() => { setFromCurrency(code); setShowFromDropdown(false); }}
-                              className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 ${fromCurrency === code ? 'bg-purple-50' : ''}`}
+                              className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 ${fromCurrency === code ? 'bg-orange-50' : ''}`}
                             >
                               <span className="text-xl">{currencyFlags[code]}</span>
                               <span className="font-medium">{code}</span>
@@ -180,7 +180,7 @@ export default function ForexPage() {
                       type="number"
                       value={fromAmount}
                       onChange={(e) => setFromAmount(e.target.value)}
-                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 text-lg font-medium"
+                      className="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-lg font-medium"
                       placeholder="0.00"
                     />
                   </div>
@@ -190,9 +190,9 @@ export default function ForexPage() {
                 <div className="flex justify-center my-4">
                   <button
                     onClick={() => { setFromCurrency(toCurrency); setToCurrency(fromCurrency); }}
-                    className="p-3 bg-purple-100 hover:bg-purple-200 rounded-full transition-colors"
+                    className="p-3 bg-orange-100 hover:bg-orange-200 rounded-full transition-colors"
                   >
-                    <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
                     </svg>
                   </button>
@@ -205,7 +205,7 @@ export default function ForexPage() {
                     <div className="relative flex-1">
                       <button
                         onClick={() => setShowToDropdown(!showToDropdown)}
-                        className="w-full flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:border-purple-300 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-3 border border-gray-200 rounded-xl hover:border-orange-300 transition-colors"
                       >
                         <span className="text-2xl">{currencyFlags[toCurrency]}</span>
                         <span className="font-medium">{toCurrency}</span>
@@ -217,7 +217,7 @@ export default function ForexPage() {
                             <button
                               key={code}
                               onClick={() => { setToCurrency(code); setShowToDropdown(false); }}
-                              className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 ${toCurrency === code ? 'bg-purple-50' : ''}`}
+                              className={`w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-50 ${toCurrency === code ? 'bg-orange-50' : ''}`}
                             >
                               <span className="text-xl">{currencyFlags[code]}</span>
                               <span className="font-medium">{code}</span>
@@ -227,7 +227,7 @@ export default function ForexPage() {
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium text-purple-600">
+                    <div className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-lg font-medium text-orange-600">
                       {toAmount} {toCurrency}
                     </div>
                   </div>
@@ -329,7 +329,7 @@ export default function ForexPage() {
                     </div>
                   ))}
               </div>
-              <button className="w-full py-3 text-purple-600 text-sm font-medium hover:bg-purple-50 transition-colors flex items-center justify-center gap-1">
+              <button className="w-full py-3 text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors flex items-center justify-center gap-1">
                 {t('forex.viewAll')} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -348,7 +348,7 @@ export default function ForexPage() {
                       <span className="font-medium">{item.amount}</span> {item.from}
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
-                    <div className="text-sm font-medium text-purple-600">
+                    <div className="text-sm font-medium text-orange-600">
                       {convert(item.amount, item.from, item.to)} {item.to}
                     </div>
                   </div>
@@ -357,13 +357,13 @@ export default function ForexPage() {
             </div>
 
             {/* Featured */}
-            <div className="bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl shadow-lg p-6 text-white">
+            <div className="bg-gradient-to-br from-orange-600 to-pink-500 rounded-2xl shadow-lg p-6 text-white">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="w-5 h-5" />
                 <h3 className="font-semibold">{t('forex.featured')}</h3>
               </div>
-              <p className="text-purple-100 text-sm mb-4">{t('forex.featuredDesc')}</p>
-              <button className="w-full py-2 bg-white text-purple-600 rounded-lg font-medium hover:bg-purple-50 transition-colors">
+              <p className="text-orange-100 text-sm mb-4">{t('forex.featuredDesc')}</p>
+              <button className="w-full py-2 bg-white text-orange-600 rounded-lg font-medium hover:bg-orange-50 transition-colors">
                 {t('forex.learnMore')}
               </button>
             </div>

@@ -11,7 +11,7 @@ import Image from 'next/image';
 const paymentMethods = [
   { id: 'alipay', name: '支付宝', icon: Smartphone, color: 'bg-blue-500' },
   { id: 'wechat', name: '微信支付', icon: Smartphone, color: 'bg-green-500' },
-  { id: 'card', name: '礼品卡', icon: Gift, color: 'bg-purple-500' },
+  { id: 'card', name: '礼品卡', icon: Gift, color: 'bg-orange-500' },
 ];
 
 export default function CheckoutPage() {
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full mt-6 py-4 bg-gradient-to-r from-primary-500 to-purple-600 text-white font-semibold rounded-xl btn-hover disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="w-full mt-6 py-4 bg-gradient-to-r from-primary-500 to-orange-600 text-white font-semibold rounded-xl btn-hover disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                       {loading && <Loader2 className="w-5 h-5 animate-spin" />}
                       提交订单

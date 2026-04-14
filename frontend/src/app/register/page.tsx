@@ -157,7 +157,7 @@ export default function RegisterPage() {
                 {language === 'zh' ? '用户名' : language === 'my' ? 'အသုံးပြုသူအမည်' : 'Username'}
               </label>
               <div className="relative group">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type="text"
                   value={username}
@@ -166,8 +166,8 @@ export default function RegisterPage() {
                     if (errors.username) setErrors({ ...errors, username: '' });
                   }}
                   placeholder={language === 'zh' ? '请输入用户名' : language === 'my' ? 'အသုံးပြုသူအမည်ထည့်ပါ' : 'Please enter username'}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                    errors.username ? 'border-red-300' : 'border-gray-200 hover:border-purple-300'
+                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
+                    errors.username ? 'border-red-300' : 'border-gray-200 hover:border-orange-300'
                   }`}
                 />
               </div>
@@ -180,7 +180,7 @@ export default function RegisterPage() {
                 {language === 'zh' ? '邮箱地址' : language === 'my' ? 'အီးမေးလ်လိပ်စာ' : 'Email'}
               </label>
               <div className="relative group">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type="email"
                   value={email}
@@ -189,8 +189,8 @@ export default function RegisterPage() {
                     if (errors.email) setErrors({ ...errors, email: '' });
                   }}
                   placeholder={language === 'zh' ? '请输入邮箱' : language === 'my' ? 'အီးမေးလ်ထည့်ပါ' : 'Please enter email'}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                    errors.email ? 'border-red-300' : 'border-gray-200 hover:border-purple-300'
+                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
+                    errors.email ? 'border-red-300' : 'border-gray-200 hover:border-orange-300'
                   }`}
                 />
               </div>
@@ -224,8 +224,8 @@ export default function RegisterPage() {
                             setCountryCode(country.code);
                             setShowCodeDropdown(false);
                           }}
-                          className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-purple-50 transition-colors ${
-                            countryCode === country.code ? 'bg-purple-50 text-purple-600' : ''
+                          className={`w-full flex items-center gap-2 px-3 py-2 hover:bg-orange-50 transition-colors ${
+                            countryCode === country.code ? 'bg-orange-50 text-orange-600' : ''
                           }`}
                         >
                           <span className="text-lg">{country.country}</span>
@@ -238,7 +238,7 @@ export default function RegisterPage() {
                 </div>
                 {/* Phone Input */}
                 <div className="relative flex-1 group">
-                  <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                  <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                   <input
                     type="tel"
                     value={phone}
@@ -247,8 +247,8 @@ export default function RegisterPage() {
                       if (errors.phone) setErrors({ ...errors, phone: '' });
                     }}
                     placeholder={language === 'zh' ? '请输入手机号' : language === 'my' ? 'ဖုန်းနံပါတ်ထည့်ပါ' : 'Please enter phone'}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                      errors.phone ? 'border-red-300' : 'border-gray-200 hover:border-purple-300'
+                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
+                      errors.phone ? 'border-red-300' : 'border-gray-200 hover:border-orange-300'
                     }`}
                   />
                 </div>
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                 {language === 'zh' ? '密码' : language === 'my' ? 'စကားဝှက်' : 'Password'}
               </label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -271,14 +271,14 @@ export default function RegisterPage() {
                     if (errors.password) setErrors({ ...errors, password: '' });
                   }}
                   placeholder={language === 'zh' ? '请输入密码' : language === 'my' ? 'စကားဝှက်ထည့်ပါ' : 'Please enter password'}
-                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                    errors.password ? 'border-red-300' : 'border-gray-200 hover:border-purple-300'
+                  className={`w-full pl-10 pr-12 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
+                    errors.password ? 'border-red-300' : 'border-gray-200 hover:border-orange-300'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-500 transition-colors p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-orange-500 transition-colors p-1"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -310,7 +310,7 @@ export default function RegisterPage() {
                 {language === 'zh' ? '确认密码' : language === 'my' ? 'စကားဝှက်အတည်ပြု' : 'Confirm Password'}
               </label>
               <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition-colors" />
                 <input
                   type="password"
                   value={confirmPassword}
@@ -319,8 +319,8 @@ export default function RegisterPage() {
                     if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
                   }}
                   placeholder={language === 'zh' ? '请再次输入密码' : language === 'my' ? 'စကားဝှက်ပြန်လည်ထည့်ပါ' : 'Please confirm password'}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all duration-200 ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-200 hover:border-purple-300'
+                  className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200 ${
+                    errors.confirmPassword ? 'border-red-300' : 'border-gray-200 hover:border-orange-300'
                   }`}
                 />
               </div>
@@ -337,15 +337,15 @@ export default function RegisterPage() {
                     setAgreeTerms(e.target.checked);
                     if (errors.terms) setErrors({ ...errors, terms: '' });
                   }}
-                  className="w-4 h-4 mt-1 text-purple-600 border-gray-300 rounded focus:ring-purple-500 transition-colors"
+                  className="w-4 h-4 mt-1 text-orange-600 border-gray-300 rounded focus:ring-orange-500 transition-colors"
                 />
                 <span className="ml-2 text-sm text-gray-600 group-hover:text-gray-800 transition-colors">
                   {language === 'zh' ? '我已阅读并同意' : language === 'my' ? 'ဝန်ဆောင်မှုစည်းမျဉ်းများဖတ်ပြီးသဘောတူ' : 'I have read and agree to'}
-                  <Link href="/terms" className="text-purple-600 hover:underline ml-1">
+                  <Link href="/terms" className="text-orange-600 hover:underline ml-1">
                     {language === 'zh' ? '服务条款' : language === 'my' ? 'ဝန်ဆောင်မှုစည်းမျဉ်း' : 'Terms'}
                   </Link>
                   {language === 'zh' ? '和' : language === 'my' ? '�ှင့်' : 'and'}
-                  <Link href="/privacy" className="text-purple-600 hover:underline ml-1">
+                  <Link href="/privacy" className="text-orange-600 hover:underline ml-1">
                     {language === 'zh' ? '隐私政策' : language === 'my' ? 'ကိုယ်ရေးလုံခြုံမှုမူဝါဒ' : 'Privacy Policy'}
                   </Link>
                 </span>
@@ -357,7 +357,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium rounded-xl hover:from-purple-700 hover:to-pink-600 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+              className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium rounded-xl hover:from-orange-700 hover:to-pink-600 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
             >
               {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {loading
@@ -410,7 +410,7 @@ export default function RegisterPage() {
           {/* Login Link */}
           <p className="mt-6 text-center text-sm text-gray-600">
             {language === 'zh' ? '已有账户？' : language === 'my' ? 'အကောင့်ရှိပြီသလား?' : 'Already have an account?'}
-            <Link href="/login" className="text-purple-600 hover:text-purple-700 hover:underline font-medium ml-1 transition-colors">
+            <Link href="/login" className="text-orange-600 hover:text-orange-700 hover:underline font-medium ml-1 transition-colors">
               {language === 'zh' ? '立即登录' : language === 'my' ? '၀င်ရောက်မည်' : 'Login now'}
             </Link>
           </p>
@@ -418,7 +418,7 @@ export default function RegisterPage() {
 
         {/* Back to Home */}
         <div className="mt-6 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-purple-600 transition-colors">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-orange-600 transition-colors">
             <span>←</span>
             <span>{language === 'zh' ? '返回首页' : language === 'my' ? 'ပင်မသို့ပြန်သွားမည်' : 'Back to home'}</span>
           </Link>

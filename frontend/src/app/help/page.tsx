@@ -110,8 +110,8 @@ export default function HelpPage() {
                   <p className="text-sm text-gray-600">400-888-8888</p>
                 </div>
               </a>
-              <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-xl">
-                <MessageCircle className="w-6 h-6 text-purple-500" />
+              <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-xl">
+                <MessageCircle className="w-6 h-6 text-orange-500" />
                 <div>
                   <p className="font-medium">在线客服</p>
                   <p className="text-sm text-gray-600">9:00 - 21:00</p>

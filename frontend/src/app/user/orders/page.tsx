@@ -34,7 +34,7 @@ export default function OrdersPage() {
       all: { bg: 'bg-gray-100', text: 'text-gray-600', label: '全部' },
       unpaid: { bg: 'bg-orange-100', text: 'text-orange-600', label: '未付款' },
       pending: { bg: 'bg-blue-100', text: 'text-blue-600', label: '待审核' },
-      authenticating: { bg: 'bg-purple-100', text: 'text-purple-600', label: '认证中' },
+      authenticating: { bg: 'bg-orange-100', text: 'text-orange-600', label: '认证中' },
       failed: { bg: 'bg-red-100', text: 'text-red-600', label: '发货失败' },
       completed: { bg: 'bg-green-100', text: 'text-green-600', label: '已完成' },
     };

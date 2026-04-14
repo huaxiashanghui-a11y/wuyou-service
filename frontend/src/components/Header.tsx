@@ -14,7 +14,7 @@ const categories = [
 
 const serviceCategories = [
   { name: '直播平台', icon: '📺', color: 'bg-orange-500' },
-  { name: '平台点卡', icon: '💳', color: 'bg-purple-500' },
+  { name: '平台点卡', icon: '💳', color: 'bg-orange-500' },
   { name: '游戏充值', icon: '🎮', color: 'bg-orange-500' },
   { name: '视频音频', icon: '🎬', color: 'bg-teal-500' },
   { name: '陪玩陪聊', icon: '🎯', color: 'bg-pink-500' },
@@ -88,7 +88,7 @@ export default function Header() {
               <div className="flex items-center gap-4">
                 {/* Logo - Left */}
                 <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
+                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
                     <span className="text-white font-bold text-sm">无</span>
                   </div>
                   <div className="hidden sm:block">
@@ -101,7 +101,7 @@ export default function Header() {
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={() => setShowServiceDropdown(!showServiceDropdown)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap shadow-md hover:shadow-lg"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap shadow-md hover:shadow-lg"
                   >
                     {t('cat.allServices')}
                     <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showServiceDropdown ? 'rotate-180' : ''}`} />
@@ -162,19 +162,19 @@ export default function Header() {
                     <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-32 z-50">
                       <button
                         onClick={() => handleLanguageChange('zh')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'zh' ? 'text-purple-600 font-medium' : ''}`}
+                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'zh' ? 'text-orange-600 font-medium' : ''}`}
                       >
                         中文
                       </button>
                       <button
                         onClick={() => handleLanguageChange('my')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'my' ? 'text-purple-600 font-medium' : ''}`}
+                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'my' ? 'text-orange-600 font-medium' : ''}`}
                       >
                         မြန်မာ (缅语)
                       </button>
                       <button
                         onClick={() => handleLanguageChange('en')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'en' ? 'text-purple-600 font-medium' : ''}`}
+                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'en' ? 'text-orange-600 font-medium' : ''}`}
                       >
                         English
                       </button>
@@ -195,19 +195,19 @@ export default function Header() {
                     <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-24 z-50">
                       <button
                         onClick={() => handleCurrencyChange('USD')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'USD' ? 'text-purple-600 font-medium' : ''}`}
+                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'USD' ? 'text-orange-600 font-medium' : ''}`}
                       >
                         USD ($)
                       </button>
                       <button
                         onClick={() => handleCurrencyChange('CNY')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'CNY' ? 'text-purple-600 font-medium' : ''}`}
+                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'CNY' ? 'text-orange-600 font-medium' : ''}`}
                       >
                         CNY (¥)
                       </button>
                       <button
                         onClick={() => handleCurrencyChange('MMK')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'MMK' ? 'text-purple-600 font-medium' : ''}`}
+                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'MMK' ? 'text-orange-600 font-medium' : ''}`}
                       >
                         MMK (K)
                       </button>
@@ -279,8 +279,8 @@ export default function Header() {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
                     activeCategory === cat
-                      ? 'text-purple-600 font-medium'
-                      : 'text-gray-700 hover:text-purple-600'
+                      ? 'text-orange-600 font-medium'
+                      : 'text-gray-700 hover:text-orange-600'
                   }`}
                 >
                   {cat}
@@ -303,14 +303,14 @@ export default function Header() {
                 </Link>
               </div>
               <div className="flex flex-wrap gap-2 pt-2 border-t">
-                <button onClick={() => handleLanguageChange('zh')} className={`px-3 py-1 rounded text-sm ${language === 'zh' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100'}`}>中文</button>
-                <button onClick={() => handleLanguageChange('my')} className={`px-3 py-1 rounded text-sm ${language === 'my' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100'}`}>မြန်မာ</button>
-                <button onClick={() => handleLanguageChange('en')} className={`px-3 py-1 rounded text-sm ${language === 'en' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100'}`}>English</button>
+                <button onClick={() => handleLanguageChange('zh')} className={`px-3 py-1 rounded text-sm ${language === 'zh' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>中文</button>
+                <button onClick={() => handleLanguageChange('my')} className={`px-3 py-1 rounded text-sm ${language === 'my' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>မြန်မာ</button>
+                <button onClick={() => handleLanguageChange('en')} className={`px-3 py-1 rounded text-sm ${language === 'en' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>English</button>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => handleCurrencyChange('USD')} className={`flex-1 py-1 rounded text-sm ${currency === 'USD' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100'}`}>USD</button>
-                <button onClick={() => handleCurrencyChange('CNY')} className={`flex-1 py-1 rounded text-sm ${currency === 'CNY' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100'}`}>CNY</button>
-                <button onClick={() => handleCurrencyChange('MMK')} className={`flex-1 py-1 rounded text-sm ${currency === 'MMK' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100'}`}>MMK</button>
+                <button onClick={() => handleCurrencyChange('USD')} className={`flex-1 py-1 rounded text-sm ${currency === 'USD' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>USD</button>
+                <button onClick={() => handleCurrencyChange('CNY')} className={`flex-1 py-1 rounded text-sm ${currency === 'CNY' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>CNY</button>
+                <button onClick={() => handleCurrencyChange('MMK')} className={`flex-1 py-1 rounded text-sm ${currency === 'MMK' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>MMK</button>
               </div>
             </div>
           </div>
