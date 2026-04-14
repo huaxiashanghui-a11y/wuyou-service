@@ -107,6 +107,13 @@ const translations: Translations = {
   'forex.sell': { zh: '卖出价', en: 'Sell Rate', my: 'ရောင်းဈေး' },
   'forex.lastUpdate': { zh: '最后更新', en: 'Last Update', my: 'နောက်ဆုံးပြင်ဆင်' },
   'forex.categories': { zh: '分类导航', en: 'Categories', my: 'အမျိုးအစားများ' },
+  'forex.live': { zh: '实时更新', en: 'Live Update', my: 'အချိန်နှင့်တပြေးတည်' },
+  'forex.viewAll': { zh: '查看全部', en: 'View All', my: 'အားလုံးကြည့်မည်' },
+  'forex.quickConvert': { zh: '快速换算', en: 'Quick Convert', my: 'မြန်မြန်ပြောင်းလဲ' },
+  'forex.featured': { zh: '精选推荐', en: 'Featured', my: 'အထူးသင့်တင်သည်' },
+  'forex.learnMore': { zh: '了解更多', en: 'Learn More', my: 'ပိုမိုသိမှတ်မည်' },
+  'forex.liveRates': { zh: '实时汇率', en: 'Live Rates', my: 'အချက်အလက်နှုန်းများ' },
+  'forex.updateTime': { zh: '更新时间', en: 'Update Time', my: 'ပြင်ဆင်ချိန်' },
 };
 
 interface CurrencyRates {

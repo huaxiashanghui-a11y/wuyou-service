@@ -6,7 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore } from '@/lib/store';
 import { useApp } from '@/lib/i18n';
-import { ChevronLeft, ChevronRight, ArrowUp, MessageCircle, QrCode, Star, Clock, Shield, Headphones, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowUp, MessageCircle, QrCode, Star, Clock, Shield, Headphones, TrendingUp, ArrowUpRight, ArrowDownRight, Calculator, Globe } from 'lucide-react';
 
 const leftCategories = [
   { name: '直播平台', icon: '📺', href: '/category/直播平台' },
@@ -110,6 +110,22 @@ const rightGames = [
   { name: '鸣潮', icon: '🌊', href: '/category/鸣潮' },
 ];
 
+// Exchange rates data
+const exchangeRates = [
+  { code: 'CNY', name: { zh: '人民币', my: 'တရုတ်ငွေ', en: 'Chinese Yuan' }, rate: 7.24, change: 0.02, flag: '🇨🇳' },
+  { code: 'MMK', name: { zh: '缅币', my: 'မြန်မာကျပ်', en: 'Myanmar Kyat' }, rate: 2100, change: -0.15, flag: '🇲🇲' },
+  { code: 'USD', name: { zh: '美元', my: 'ဒေါ်လာ', en: 'US Dollar' }, rate: 1, change: 0, flag: '🇺🇸' },
+  { code: 'THB', name: { zh: '泰铢', my: 'ဘတ်', en: 'Thai Baht' }, rate: 35.5, change: 0.01, flag: '🇹🇭' },
+  { code: 'SGD', name: { zh: '新币', my: 'စင်ကာပူ', en: 'Singapore Dollar' }, rate: 1.34, change: -0.01, flag: '🇸🇬' },
+];
+
+// QR codes for carousel
+const qrCodes = [
+  { id: 1, title: { zh: '微信客服', my: 'ဝက်ဘ်ဝန်ဆောင်မှု', en: 'WeChat Service' } },
+  { id: 2, title: { zh: 'QQ客服', my: 'QQ ဝန်ဆောင်မှု', en: 'QQ Service' } },
+  { id: 3, title: { zh: 'Telegram', my: 'Telegram', en: 'Telegram' } },
+];
+
 interface Product {
   id: string;
   price: number;
@@ -131,10 +147,14 @@ const products: Product[] = [
 
 export default function HomePage() {
   const { addItem } = useCartStore();
-  const { t, formatPrice } = useApp();
+  const { t, formatPrice, language } = useApp();
   const [currentBanner, setCurrentBanner] = useState(0);
   const [currentSidebar, setCurrentSidebar] = useState(0);
+  const [currentQR, setCurrentQR] = useState(0);
   const [hotProductIndex, setHotProductIndex] = useState(0);
+  const [forexAmount, setForexAmount] = useState('100');
+  const [forexFrom, setForexFrom] = useState('USD');
+  const [forexTo, setForexTo] = useState('MMK');
 
   // Auto-play banner every 20 seconds
   useEffect(() => {
@@ -151,6 +171,21 @@ export default function HomePage() {
     }, 15000);
     return () => clearInterval(timer);
   }, []);
+
+  // Auto-play QR carousel every 10 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentQR((prev) => (prev + 1) % qrCodes.length);
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Convert currency
+  const convertCurrency = (amount: number, from: string, to: string) => {
+    const fromRate = exchangeRates.find(r => r.code === from)?.rate || 1;
+    const toRate = exchangeRates.find(r => r.code === to)?.rate || 1;
+    return ((amount * fromRate) / toRate).toFixed(2);
+  };
 
   const nextBanner = () => {
     setCurrentBanner((prev) => (prev + 1) % banners.length);
@@ -339,11 +374,55 @@ export default function HomePage() {
               ))}
             </div>
 
-            {/* QR Code */}
+            {/* QR Code Carousel */}
             <div className="border-t pt-4 mb-4 mt-4">
               <div className="text-sm font-medium text-gray-700 mb-2 text-center">{t('sidebar.scan')}</div>
-              <div className="w-24 h-24 bg-gray-200 mx-auto flex items-center justify-center rounded">
-                <QrCode className="w-16 h-16 text-gray-400" />
+              {/* QR Carousel with auto-play */}
+              <div className="relative">
+                <div className="h-28 flex items-center justify-center">
+                  {qrCodes.map((qr, index) => (
+                    <div
+                      key={qr.id}
+                      className={`absolute transition-all duration-500 ${
+                        index === currentQR
+                          ? 'opacity-100 translate-x-0 scale-100'
+                          : index < currentQR
+                          ? 'opacity-0 -translate-x-8 scale-90'
+                          : 'opacity-0 translate-x-8 scale-90'
+                      }`}
+                    >
+                      <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 mx-auto flex flex-col items-center justify-center rounded-lg border-2 border-purple-200">
+                        <QrCode className="w-12 h-12 text-purple-600 mb-1" />
+                        <span className="text-xs text-purple-600 font-medium">{qr.title[language] || qr.title.zh}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* QR Navigation */}
+                <button
+                  onClick={prevQR}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-gray-200 hover:bg-purple-500 hover:text-white rounded-full flex items-center justify-center transition-all duration-200"
+                >
+                  <ChevronLeft className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={nextQR}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 bg-gray-200 hover:bg-purple-500 hover:text-white rounded-full flex items-center justify-center transition-all duration-200"
+                >
+                  <ChevronRight className="w-3 h-3" />
+                </button>
+              </div>
+              {/* QR Dots */}
+              <div className="flex justify-center gap-1 mt-2">
+                {qrCodes.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentQR(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                      index === currentQR ? 'bg-purple-600 w-4' : 'bg-gray-300 hover:bg-purple-300'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
 
@@ -351,14 +430,10 @@ export default function HomePage() {
             <div className="border-t pt-4">
               <div className="text-sm font-medium text-gray-700 mb-2">{t('sidebar.social')}</div>
               <div className="flex justify-center gap-2">
-                <a href="#" className="w-8 h-8 bg-blue-500 hover:bg-blue-600 rounded flex items-center justify-center text-white text-xs transition-colors">微</a>
-                <a href="#" className="w-8 h-8 bg-green-500 hover:bg-green-600 rounded flex items-center justify-center text-white text-xs transition-colors">博</a>
-                <a href="#" className="w-8 h-8 bg-pink-500 hover:bg-pink-600 rounded flex items-center justify-center text-white text-xs transition-colors">知</a>
+                <a href="#" className="w-8 h-8 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 rounded flex items-center justify-center text-white text-xs transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm hover:shadow">微</a>
+                <a href="#" className="w-8 h-8 bg-green-500 hover:bg-green-600 active:bg-green-700 rounded flex items-center justify-center text-white text-xs transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm hover:shadow">博</a>
+                <a href="#" className="w-8 h-8 bg-pink-500 hover:bg-pink-600 active:bg-pink-700 rounded flex items-center justify-center text-white text-xs transition-all duration-200 hover:scale-110 active:scale-95 shadow-sm hover:shadow">知</a>
               </div>
-              <button className="mt-2 w-full py-1.5 border border-gray-300 hover:bg-gray-50 rounded text-sm text-gray-600 flex items-center justify-center gap-1 transition-colors">
-                <Plus className="w-4 h-4" />
-                添加好友
-              </button>
             </div>
 
             {/* Back to Top */}
@@ -479,36 +554,107 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Quick Recharge Section */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-8">
+        {/* Worry-Free Forex Section */}
+        <div className="bg-gradient-to-r from-green-600 to-teal-600 rounded-lg shadow-lg p-6 mb-8 text-white">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-green-500" />
-              <h3 className="font-bold text-lg text-gray-800">{t('section.quickRecharge')}</h3>
+              <Globe className="w-6 h-6" />
+              <h3 className="font-bold text-xl">{t('forex.title') || '无忧外汇'}</h3>
+              <span className="px-2 py-0.5 bg-white/20 rounded text-xs">LIVE</span>
             </div>
+            <Link href="/forex" className="px-4 py-1.5 bg-white text-green-600 rounded-lg text-sm font-medium hover:bg-gray-100 transition-all duration-200 hover:scale-105 active:scale-95 shadow-md">
+              {t('forex.viewMore') || '查看更多'}
+            </Link>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-gray-50 rounded-lg p-3 text-center hover:shadow-md transition-shadow"
-              >
-                {product.label && (
-                  <div className="inline-block px-2 py-0.5 bg-red-500 text-white text-xs rounded mb-1">
-                    {product.label}
-                  </div>
-                )}
-                <div className="text-xl font-bold text-red-500">{formatPrice(product.price)}</div>
-                <div className="text-xs text-gray-500 mb-2">{product.coins.toLocaleString()}币</div>
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  className="w-full py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs rounded hover:opacity-90 transition-opacity"
-                >
-                  {t('common.buy')}
-                </button>
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Exchange Rates */}
+            <div className="bg-white/10 backdrop-blur rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5" />
+                <span className="font-medium">{language === 'zh' ? '实时汇率' : language === 'my' ? 'အချက်အလက်နှုန်း' : 'Live Rates'}</span>
               </div>
-            ))}
+              <div className="space-y-2">
+                {exchangeRates.slice(0, 5).map((rate) => (
+                  <div key={rate.code} className="flex items-center justify-between py-2 px-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">{rate.flag}</span>
+                      <div>
+                        <div className="font-medium">{rate.code}</div>
+                        <div className="text-xs text-white/70">{rate.name[language] || rate.name.zh}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">{rate.rate.toFixed(2)}</div>
+                      <div className={`text-xs flex items-center justify-end gap-1 ${rate.change >= 0 ? 'text-green-300' : 'text-red-300'}`}>
+                        {rate.change >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                        {Math.abs(rate.change).toFixed(2)}%
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Calculator */}
+            <div className="bg-white rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-3 text-green-600">
+                <Calculator className="w-5 h-5" />
+                <span className="font-medium">{language === 'zh' ? '汇率计算器' : language === 'my' ? 'ငွေလဲဂဏန်း' : 'Calculator'}</span>
+              </div>
+              <div className="space-y-3">
+                {/* Amount Input */}
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{language === 'zh' ? '金额' : language === 'my' ? 'ငွေပမာဏ' : 'Amount'}</label>
+                  <input
+                    type="number"
+                    value={forexAmount}
+                    onChange={(e) => setForexAmount(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                    placeholder="100"
+                  />
+                </div>
+                {/* From Currency */}
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{language === 'zh' ? '从' : language === 'my' ? 'မှ' : 'From'}</label>
+                  <select
+                    value={forexFrom}
+                    onChange={(e) => setForexFrom(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  >
+                    {exchangeRates.map((r) => (
+                      <option key={r.code} value={r.code}>{r.flag} {r.code} - {r.name[language] || r.name.zh}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* To Currency */}
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">{language === 'zh' ? '到' : language === 'my' ? 'သို့' : 'To'}</label>
+                  <select
+                    value={forexTo}
+                    onChange={(e) => setForexTo(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
+                  >
+                    {exchangeRates.map((r) => (
+                      <option key={r.code} value={r.code}>{r.flag} {r.code} - {r.name[language] || r.name.zh}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Result */}
+                <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-lg p-4 text-white text-center">
+                  <div className="text-sm opacity-80 mb-1">{language === 'zh' ? '转换结果' : language === 'my' ? 'ရလဒ်' : 'Result'}</div>
+                  <div className="text-2xl font-bold">
+                    {convertCurrency(parseFloat(forexAmount) || 0, forexFrom, forexTo)} {forexTo}
+                  </div>
+                </div>
+                <Link
+                  href="/forex"
+                  className="block w-full py-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white text-center rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg"
+                >
+                  {language === 'zh' ? '查看详细汇率' : language === 'my' ? 'အသေးစိတ်ကြည့်ရန်' : 'View Details'}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 

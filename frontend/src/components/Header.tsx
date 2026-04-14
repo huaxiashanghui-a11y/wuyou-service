@@ -84,16 +84,16 @@ export default function Header() {
         <div className="bg-gray-900 text-white">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between h-12">
-              {/* Logo & Forex Button */}
+              {/* Logo & All Services */}
               <div className="flex items-center gap-4">
-                {/* All Services Dropdown - Moved to top left */}
+                {/* All Services Dropdown - Top left of header */}
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={() => setShowServiceDropdown(!showServiceDropdown)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 active:bg-purple-800 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap shadow-md hover:shadow-lg"
                   >
                     {t('cat.allServices')}
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showServiceDropdown ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showServiceDropdown ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Service Dropdown Modal */}
@@ -119,22 +119,14 @@ export default function Header() {
                 </div>
 
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center">
+                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
                     <span className="text-white font-bold text-sm">无</span>
                   </div>
                   <div className="hidden sm:block">
                     <div className="text-sm font-bold">无忧服务</div>
                     <div className="text-[10px] text-gray-400">WORRY-FREE SERVICE</div>
                   </div>
-                </Link>
-
-                {/* Forex Button */}
-                <Link
-                  href="/forex"
-                  className="px-3 py-1.5 bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600 rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
-                >
-                  {getForexText()}
                 </Link>
               </div>
 
