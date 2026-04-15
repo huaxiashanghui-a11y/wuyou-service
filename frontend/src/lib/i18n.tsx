@@ -150,6 +150,32 @@ const translations: Translations = {
   'recharge.kbz': { zh: 'KBZ', en: 'KBZ', my: 'KBZ' },
   'recharge.mopay': { zh: 'MoPay', en: 'MoPay', my: 'MoPay' },
   'recharge.usdt': { zh: 'USDT', en: 'USDT', my: 'USDT' },
+
+  // Shop Categories
+  'shop.allCategories': { zh: '全部分类', en: 'All Categories', my: 'အမျိုးအစားအားလုံး' },
+  'shop.recharge': { zh: '话费充值', en: 'Mobile Recharge', my: 'မိုဘိုင်းဖုန်းငွေဖြည့်သွင်းမှု' },
+  'shop.rechargeDesc': { zh: '缅甸话费秒充，支持MPT/Ooredoo/MyTel/Telenor全运营商', en: 'Myanmar credit instant recharge, all operators supported', my: 'မြန်မာငွေဖြည့်သွင်းမှု၊ MPT/Ooredoo/MyTel/Telenor အားလုံးထောက်ပံ့' },
+  'shop.games': { zh: '游戏代充', en: 'Game Recharge', my: 'ဂိမ်းဖြည့်သွင်းမှု' },
+  'shop.gamesDesc': { zh: '热门游戏点卡充值，官方渠道安全可靠', en: 'Hot game card recharge, official channels', my: 'ရေပန်းစားဂိမ်းကတ်ဖြည့်သွင်းမှု' },
+  'shop.pcGames': { zh: 'PC端游戏', en: 'PC Games', my: 'PCဂိမ်းများ' },
+  'shop.pcGamesDesc': { zh: 'Steam、Epic、Origin等PC游戏平台点卡', en: 'Steam, Epic, Origin PC game platform cards', my: 'Steam, Epic, Origin PCဂိမ်းပလက်ဖောင်းကတ်များ' },
+  'shop.webGames': { zh: '网页游戏', en: 'Web Games', my: 'Webဂိမ်းများ' },
+  'shop.webGamesDesc': { zh: '网页游戏点卡，便捷充值', en: 'Web game cards, convenient recharge', my: 'Webဂိမ်းကတ်များ၊ အဆင်ပြေသောဖြည့်သွင်းမှု' },
+  'shop.mobileGames': { zh: '手游充值', en: 'Mobile Top-up', my: 'Mobile Top-up' },
+  'shop.mobileGamesDesc': { zh: '王者荣耀、原神、和平精英等手游充值', en: 'Honor of Kings, Genshin, PUBG Mobile recharge', my: 'Honor of Kings, Genshin, PUBG Mobile ဖြည့်သွင်းမှု' },
+  'shop.playstation': { zh: 'PlayStation', en: 'PlayStation', my: 'PlayStation' },
+  'shop.playstationDesc': { zh: 'PS5/PS4游戏、会员、点卡充值', en: 'PS5/PS4 games, memberships, card recharge', my: 'PS5/PS4 ဂိမ်းများ၊ membership၊ ကတ်ဖြည့်သွင်းမှု' },
+  'shop.xbox': { zh: 'Xbox', en: 'Xbox', my: 'Xbox' },
+  'shop.xboxDesc': { zh: 'Xbox游戏、Game Pass、金币充值', en: 'Xbox games, Game Pass, coins recharge', my: 'Xbox ဂိမ်းများ၊ Game Pass၊ coinsဖြည့်သွင်းမှု' },
+  'shop.switch': { zh: 'Nintendo Switch', en: 'Nintendo Switch', my: 'Nintendo Switch' },
+  'shop.switchDesc': { zh: 'Switch游戏卡带、会员、点数充值', en: 'Switch game cards, memberships, points', my: 'Switch ဂိမ်းကတ်များ၊ membership၊ pointsဖြည့်သွင်းမှု' },
+  'shop.forex': { zh: '无忧外汇', en: 'Forex Exchange', my: 'ငွေလဲလှယ်မှု' },
+  'shop.forexDesc': { zh: '实时汇率换算，多币种交易服务', en: 'Real-time exchange rates, multi-currency service', my: 'အချိန်နှင့်တပြေးတည်ငွေလဲလှယ်မှု' },
+  'shop.giftCards': { zh: '礼品卡', en: 'Gift Cards', my: 'လက်မှတ်ကတ်များ' },
+  'shop.giftCardsDesc': { zh: '视频、音乐、会员等多种礼品卡', en: 'Video, music, membership gift cards', my: 'ဗီဒီယို၊ ဂီတ၊ membershipလက်မှတ်ကတ်များ' },
+  'shop.otherServices': { zh: '其他服务', en: 'Other Services', my: 'အခြားဝန်ဆောင်မှုများ' },
+  'shop.otherServicesDesc': { zh: '更多增值服务，敬请期待', en: 'More value-added services coming soon', my: 'အခြားတန်ဖိုးထုတ်ဝန်ဆောင်မှုများမကြာမီရောက်လာပါမည်' },
+  'shop.instantRecharge': { zh: '秒到账', en: 'Instant', my: 'ချက်ချင်း' },
 };
 
 interface CurrencyRates {
