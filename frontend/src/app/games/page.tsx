@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import { useApp } from '@/lib/i18n';
-import { Gamepad2, Monitor, Globe, Smartphone, Play, Xbox, Crosshair, Heart, ShoppingCart, Star } from 'lucide-react';
+import { Gamepad2, Monitor, Globe, Smartphone, Play, Box, Crosshair, Heart, ShoppingCart, Star } from 'lucide-react';
 
 // Platform categories
 type Platform = 'pc' | 'web' | 'mobile' | 'playstation' | 'xbox' | 'switch';
@@ -21,7 +21,7 @@ const platforms: PlatformCategory[] = [
   { id: 'web', name: { zh: '网页游戏', my: 'Web Games', en: 'Web Games' }, icon: <Globe className="w-5 h-5" />, count: 432 },
   { id: 'mobile', name: { zh: '移动端', my: 'Mobile', en: 'Mobile' }, icon: <Smartphone className="w-5 h-5" />, count: 1723 },
   { id: 'playstation', name: { zh: 'PlayStation', my: 'PlayStation', en: 'PlayStation' }, icon: <Play className="w-5 h-5" />, count: 234 },
-  { id: 'xbox', name: { zh: 'Xbox', my: 'Xbox', en: 'Xbox' }, icon: <Xbox className="w-5 h-5" />, count: 189 },
+  { id: 'xbox', name: { zh: 'Xbox', my: 'Xbox', en: 'Xbox' }, icon: <Box className="w-5 h-5" />, count: 189 },
   { id: 'switch', name: { zh: 'Nintendo Switch', my: 'Nintendo Switch', en: 'Nintendo Switch' }, icon: <Crosshair className="w-5 h-5" />, count: 156 },
 ];
 
