@@ -246,7 +246,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       <Header />
 
-      <main className="max-w-7xl mx-auto px-4 pt-48">
+      <main className="max-w-7xl mx-auto px-4 pt-48 pb-8 min-h-[70vh]">
         {/* Main Content Grid */}
         <div className="flex gap-4 mb-8">
           {/* Left Sidebar - Category Menu */}
