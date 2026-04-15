@@ -15,7 +15,7 @@ const categories = [
 const serviceCategories = [
   { name: '直播平台', icon: '📺', color: 'bg-orange-500', href: '/coming-soon' },
   { name: '平台点卡', icon: '💳', color: 'bg-orange-500', href: '/coming-soon' },
-  { name: '游戏充值', icon: '🎮', color: 'bg-orange-500', href: '/coming-soon' },
+  { name: '游戏充值', icon: '🎮', color: 'bg-orange-500', href: '/games' },
   { name: '视频音频', icon: '🎬', color: 'bg-teal-500', href: '/coming-soon' },
   { name: '陪玩陪聊', icon: '🎯', color: 'bg-pink-500', href: '/coming-soon' },
   { name: '语音交友', icon: '🎤', color: 'bg-pink-400', href: '/coming-soon' },
@@ -272,20 +272,26 @@ export default function Header() {
         <div className="glass border-b">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center h-12 gap-2 overflow-x-auto">
-              {categories.map((cat) => (
-                <Link
-                  key={cat}
-                  href={cat === '首页' ? '/' : cat === '游戏代充' ? '/games' : '/coming-soon'}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
-                    activeCategory === cat
-                      ? 'text-orange-600 font-medium'
-                      : 'text-gray-700 hover:text-orange-600'
-                  }`}
-                >
-                  {cat}
-                </Link>
-              ))}
+              {categories.map((cat) => {
+                let href = '/coming-soon';
+                if (cat === '首页') href = '/';
+                else if (cat === '游戏代充') href = '/games';
+                else if (cat === '话费充值') href = '/recharge';
+                return (
+                  <Link
+                    key={cat}
+                    href={href}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
+                      activeCategory === cat
+                        ? 'text-orange-600 font-medium'
+                        : 'text-gray-700 hover:text-orange-600'
+                    }`}
+                  >
+                    {cat}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
