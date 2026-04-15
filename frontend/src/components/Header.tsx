@@ -9,7 +9,7 @@ import CartDrawer from './CartDrawer';
 
 const categories = [
   '首页', '产品', '点卡', '微信游戏', '抖音', 'Q币', '苹果充值',
-  '陌陌直播', 'Mycard', '直播平台', '游戏代充', '台服/港服', '交友/陪玩'
+  '陌陌直播', 'Mycard', '直播平台', '游戏代充', '话费充值', '交友/陪玩'
 ];
 
 const serviceCategories = [
@@ -275,7 +275,7 @@ export default function Header() {
               {categories.map((cat) => (
                 <Link
                   key={cat}
-                  href={cat === '首页' ? '/' : '/coming-soon'}
+                  href={cat === '首页' ? '/' : cat === '游戏代充' ? '/games' : '/coming-soon'}
                   onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
                     activeCategory === cat
