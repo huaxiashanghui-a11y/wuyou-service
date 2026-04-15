@@ -8,8 +8,19 @@ import { useApp } from '@/lib/i18n';
 import CartDrawer from './CartDrawer';
 
 const categories = [
-  '首页', '产品', '点卡', '微信游戏', '抖音', 'Q币', '苹果充值',
-  '陌陌直播', 'Mycard', '直播平台', '游戏代充', '话费充值', '交友/陪玩'
+  { id: 'home', names: { zh: '首页', en: 'Home', my: 'ပင်မ' }, href: '/' },
+  { id: 'shop', names: { zh: '产品', en: 'Products', my: 'ထုတ်ကုန်များ' }, href: '/shop' },
+  { id: 'points', names: { zh: '点卡', en: 'Point Cards', my: 'ပွိုင့်ကတ်' }, href: '/coming-soon' },
+  { id: 'wechat', names: { zh: '微信游戏', en: 'WeChat Games', my: 'WeChat Games' }, href: '/coming-soon' },
+  { id: 'douyin', names: { zh: '抖音', en: 'Douyin', my: 'Douyin' }, href: '/coming-soon' },
+  { id: 'vip', names: { zh: '会员充值', en: 'Membership', my: 'အဖွဲ့ဝင်' }, href: '/coming-soon' },
+  { id: 'apple', names: { zh: '苹果充值', en: 'Apple Top-up', my: 'Apple' }, href: '/coming-soon' },
+  { id: 'momo', names: { zh: '陌陌直播', en: 'Momo Live', my: 'Momo' }, href: '/coming-soon' },
+  { id: 'mycard', names: { zh: 'Mycard', en: 'Mycard', my: 'Mycard' }, href: '/coming-soon' },
+  { id: 'live', names: { zh: '直播平台', en: 'Live Platform', my: 'တိုက်ရိုက်' }, href: '/coming-soon' },
+  { id: 'games', names: { zh: '游戏代充', en: 'Game Recharge', my: 'ဂိမ်း' }, href: '/games' },
+  { id: 'recharge', names: { zh: '话费充值', en: 'Mobile Recharge', my: 'ဖုန်းငွေ' }, href: '/recharge' },
+  { id: 'companion', names: { zh: '交友/陪玩', en: 'Social', my: 'သူငယ်ချင်း' }, href: '/coming-soon' },
 ];
 
 const serviceCategories = [
@@ -27,7 +38,7 @@ const serviceCategories = [
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('首页');
+  const [activeCategory, setActiveCategory] = useState('home');
   const [showServiceDropdown, setShowServiceDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
@@ -272,26 +283,20 @@ export default function Header() {
         <div className="glass border-b">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center h-12 gap-2 overflow-x-auto">
-              {categories.map((cat) => {
-                let href = '/coming-soon';
-                if (cat === '首页') href = '/';
-                else if (cat === '游戏代充') href = '/games';
-                else if (cat === '话费充值') href = '/recharge';
-                return (
-                  <Link
-                    key={cat}
-                    href={href}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
-                      activeCategory === cat
-                        ? 'text-orange-600 font-medium'
-                        : 'text-gray-700 hover:text-orange-600'
-                    }`}
-                  >
-                    {cat}
-                  </Link>
-                );
-              })}
+              {categories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={cat.href}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
+                    activeCategory === cat.id
+                      ? 'text-orange-600 font-medium'
+                      : 'text-gray-700 hover:text-orange-600'
+                  }`}
+                >
+                  {cat.names[language]}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
