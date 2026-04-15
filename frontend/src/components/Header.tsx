@@ -13,16 +13,16 @@ const categories = [
 ];
 
 const serviceCategories = [
-  { name: '直播平台', icon: '📺', color: 'bg-orange-500' },
-  { name: '平台点卡', icon: '💳', color: 'bg-orange-500' },
-  { name: '游戏充值', icon: '🎮', color: 'bg-orange-500' },
-  { name: '视频音频', icon: '🎬', color: 'bg-teal-500' },
-  { name: '陪玩陪聊', icon: '🎯', color: 'bg-pink-500' },
-  { name: '语音交友', icon: '🎤', color: 'bg-pink-400' },
-  { name: '生活日常', icon: '💝', color: 'bg-blue-400' },
-  { name: '社交平台', icon: '💬', color: 'bg-green-500' },
-  { name: '文学动漫', icon: '📚', color: 'bg-yellow-500' },
-  { name: '加速工具', icon: '🔔', color: 'bg-orange-400' },
+  { name: '直播平台', icon: '📺', color: 'bg-orange-500', href: '/coming-soon' },
+  { name: '平台点卡', icon: '💳', color: 'bg-orange-500', href: '/coming-soon' },
+  { name: '游戏充值', icon: '🎮', color: 'bg-orange-500', href: '/coming-soon' },
+  { name: '视频音频', icon: '🎬', color: 'bg-teal-500', href: '/coming-soon' },
+  { name: '陪玩陪聊', icon: '🎯', color: 'bg-pink-500', href: '/coming-soon' },
+  { name: '语音交友', icon: '🎤', color: 'bg-pink-400', href: '/coming-soon' },
+  { name: '生活日常', icon: '💝', color: 'bg-blue-400', href: '/coming-soon' },
+  { name: '社交平台', icon: '💬', color: 'bg-green-500', href: '/coming-soon' },
+  { name: '文学动漫', icon: '📚', color: 'bg-yellow-500', href: '/coming-soon' },
+  { name: '加速工具', icon: '🔔', color: 'bg-orange-400', href: '/coming-soon' },
 ];
 
 export default function Header() {
@@ -109,12 +109,12 @@ export default function Header() {
 
                   {/* Service Dropdown Modal */}
                   {showServiceDropdown && (
-                    <div className="absolute left-0 top-full mt-2 bg-white rounded-xl shadow-2xl border p-4 z-50 w-96">
+                    <div className="absolute left-0 top-full mt-2 glass rounded-xl shadow-2xl p-4 z-50 w-96">
                       <div className="grid grid-cols-5 gap-2">
                         {serviceCategories.map((cat) => (
                           <Link
                             key={cat.name}
-                            href={`/category/${encodeURIComponent(cat.name)}`}
+                            href={cat.href}
                             onClick={() => setShowServiceDropdown(false)}
                             className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-50 transition-colors"
                           >
@@ -269,13 +269,13 @@ export default function Header() {
         </div>
 
         {/* Category Navigation Bar */}
-        <div className="bg-white border-b shadow-sm">
+        <div className="glass border-b">
           <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center h-12 gap-2 overflow-x-auto">
               {categories.map((cat) => (
                 <Link
                   key={cat}
-                  href={cat === '首页' ? '/' : `/category/${encodeURIComponent(cat)}`}
+                  href={cat === '首页' ? '/' : '/coming-soon'}
                   onClick={() => setActiveCategory(cat)}
                   className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
                     activeCategory === cat
@@ -292,7 +292,7 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t shadow-lg">
+          <div className="md:hidden glass border-t">
             <div className="p-4 space-y-3">
               <div className="flex gap-2">
                 <Link href="/forex" onClick={() => setMobileMenuOpen(false)} className="flex-1 py-2 bg-green-600 text-white text-center rounded-lg text-sm">
