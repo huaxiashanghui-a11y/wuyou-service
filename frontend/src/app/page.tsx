@@ -9,14 +9,14 @@ import { useApp } from '@/lib/i18n';
 import { ChevronLeft, ChevronRight, ArrowUp, MessageCircle, QrCode, Star, Clock, Shield, Headphones, TrendingUp, ArrowUpRight, ArrowDownRight, Calculator, Globe } from 'lucide-react';
 
 const leftCategories = [
-  { name: '直播平台', icon: '📺', href: '/category/直播平台' },
-  { name: '陪玩陪聊', icon: '🎮', href: '/category/陪玩陪聊' },
-  { name: '游戏点卡', icon: '💳', href: '/category/游戏点卡' },
-  { name: '小说动漫', icon: '📚', href: '/category/小说动漫' },
-  { name: '视频音频', icon: '🎬', href: '/category/视频音频' },
-  { name: '游戏充值', icon: '🎯', href: '/category/游戏充值' },
-  { name: '社交平台', icon: '💬', href: '/category/社交平台' },
-  { name: '生活服务', icon: '🛒', href: '/category/生活服务' },
+  { name: '全部分类', icon: '📦', href: '/shop' },
+  { name: '话费充值', icon: '📱', href: '/recharge' },
+  { name: '游戏代充', icon: '🎮', href: '/games' },
+  { name: '游戏点卡', icon: '💳', href: '/shop' },
+  { name: '视频音频', icon: '🎬', href: '/shop' },
+  { name: '直播平台', icon: '📺', href: '/shop' },
+  { name: '礼品卡', icon: '🎁', href: '/shop' },
+  { name: '无忧外汇', icon: '💱', href: '/forex' },
 ];
 
 const banners = [
@@ -93,21 +93,21 @@ const hotProducts = [
 ];
 
 const leftPlatforms = [
-  { name: '抖音充值', icon: '🎵', href: '/category/抖音' },
-  { name: '快手充值', icon: '🎥', href: '/category/快手' },
-  { name: 'B站大会员', icon: '📺', href: '/category/B站' },
-  { name: '小红书薯币', icon: '📕', href: '/category/小红书' },
-  { name: '陌陌直播', icon: '💬', href: '/category/陌陌' },
-  { name: '探探充值', icon: '💕', href: '/category/探探' },
+  { name: '抖音充值', icon: '🎵', href: '/shop' },
+  { name: '快手充值', icon: '🎥', href: '/shop' },
+  { name: 'B站大会员', icon: '📺', href: '/shop' },
+  { name: '小红书薯币', icon: '📕', href: '/shop' },
+  { name: '陌陌直播', icon: '💬', href: '/shop' },
+  { name: '探探充值', icon: '💕', href: '/shop' },
 ];
 
 const rightGames = [
-  { name: '王者荣耀', icon: '👑', href: '/category/王者荣耀' },
-  { name: '原神', icon: '⚔️', href: '/category/原神' },
-  { name: '英雄联盟', icon: '🎮', href: '/category/英雄联盟' },
-  { name: '和平精英', icon: '🔫', href: '/category/和平精英' },
-  { name: '崩坏星穹铁道', icon: '🚀', href: '/category/崩坏星穹铁道' },
-  { name: '鸣潮', icon: '🌊', href: '/category/鸣潮' },
+  { name: '王者荣耀', icon: '👑', href: '/games' },
+  { name: '原神', icon: '⚔️', href: '/games' },
+  { name: '英雄联盟', icon: '🎮', href: '/games' },
+  { name: '和平精英', icon: '🔫', href: '/games' },
+  { name: '崩坏星穹铁道', icon: '🚀', href: '/games' },
+  { name: '鸣潮', icon: '🌊', href: '/games' },
 ];
 
 // Exchange rates data
@@ -264,7 +264,7 @@ export default function HomePage() {
                 </Link>
               ))}
             </div>
-            <Link href="/categories" className="block mt-4 text-sm text-orange-600 hover:underline">
+            <Link href="/shop" className="block mt-4 text-sm text-orange-600 hover:underline">
               {t('section.viewMore')} &gt;
             </Link>
           </div>
