@@ -9,14 +9,14 @@ import { useApp } from '@/lib/i18n';
 import { ChevronLeft, ChevronRight, ArrowUp, MessageCircle, QrCode, Star, Clock, Shield, Headphones, TrendingUp, ArrowUpRight, ArrowDownRight, Calculator, Globe } from 'lucide-react';
 
 const leftCategories = [
-  { name: '全部分类', icon: '📦', href: '/shop' },
-  { name: '话费充值', icon: '📱', href: '/recharge' },
-  { name: '游戏代充', icon: '🎮', href: '/games' },
-  { name: '游戏点卡', icon: '💳', href: '/shop' },
-  { name: '视频音频', icon: '🎬', href: '/shop' },
-  { name: '直播平台', icon: '📺', href: '/shop' },
-  { name: '礼品卡', icon: '🎁', href: '/shop' },
-  { name: '无忧外汇', icon: '💱', href: '/forex' },
+  { id: 'all', name: '全部分类', icon: '📦', href: '/shop' },
+  { id: 'recharge', name: '话费充值', icon: '📱', href: '/recharge' },
+  { id: 'games', name: '游戏代充', icon: '🎮', href: '/games' },
+  { id: 'points', name: '游戏点卡', icon: '💳', href: '/shop' },
+  { id: 'video', name: '视频音频', icon: '🎬', href: '/shop' },
+  { id: 'live', name: '直播平台', icon: '📺', href: '/shop' },
+  { id: 'gift', name: '礼品卡', icon: '🎁', href: '/shop' },
+  { id: 'forex', name: '无忧外汇', icon: '💱', href: '/forex' },
 ];
 
 const banners = [
@@ -248,14 +248,14 @@ export default function HomePage() {
 
       <main className="max-w-7xl mx-auto px-4 pt-48 pb-8 min-h-[70vh]">
         {/* Main Content Grid */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-4 mb-8 items-start">
           {/* Left Sidebar - Category Menu */}
-          <div className="hidden lg:block w-48 glass rounded-lg p-4">
+          <div className="hidden lg:block w-48 glass rounded-lg p-4 shrink-0">
             <h3 className="font-bold text-gray-800 mb-4">{t('cat.allCategories')}</h3>
             <div className="space-y-1">
               {leftCategories.map((cat) => (
                 <Link
-                  key={cat.name}
+                  key={cat.id}
                   href={cat.href}
                   className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                 >
@@ -270,7 +270,7 @@ export default function HomePage() {
           </div>
 
           {/* Center - Banner Carousel */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="relative rounded-lg overflow-hidden">
               {/* Banner Images */}
               <div className="relative h-80 md:h-96">
@@ -329,7 +329,7 @@ export default function HomePage() {
           </div>
 
           {/* Right Sidebar - Customer Service Info with Auto-play */}
-          <div className="hidden xl:block w-56 bg-white rounded-lg shadow-sm p-4">
+          <div className="hidden xl:block w-56 glass rounded-lg p-4 shrink-0">
             {/* Auto-play Sidebar Carousel */}
             <div className="relative">
               <div className="min-h-48">
