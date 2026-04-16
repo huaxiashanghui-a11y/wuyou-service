@@ -2,331 +2,257 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { Search, ShoppingCart, MessageCircle, ChevronDown, Globe, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, MessageCircle, Menu, X } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import { useApp } from '@/lib/i18n';
 import CartDrawer from './CartDrawer';
 
-const categories = [
-  { id: 'home', names: { zh: '首页', en: 'Home', my: 'ပင်မ' }, href: '/' },
-  { id: 'shop', names: { zh: '产品', en: 'Products', my: 'ထုတ်ကုန်များ' }, href: '/shop' },
-  { id: 'points', names: { zh: '点卡', en: 'Point Cards', my: 'ပွိုင့်ကတ်' }, href: '/coming-soon' },
-  { id: 'wechat', names: { zh: '微信游戏', en: 'WeChat Games', my: 'WeChat Games' }, href: '/coming-soon' },
-  { id: 'douyin', names: { zh: '抖音', en: 'Douyin', my: 'Douyin' }, href: '/coming-soon' },
-  { id: 'vip', names: { zh: '会员充值', en: 'Membership', my: 'အဖွဲ့ဝင်' }, href: '/coming-soon' },
-  { id: 'apple', names: { zh: '苹果充值', en: 'Apple Top-up', my: 'Apple' }, href: '/coming-soon' },
-  { id: 'momo', names: { zh: '陌陌直播', en: 'Momo Live', my: 'Momo' }, href: '/coming-soon' },
-  { id: 'mycard', names: { zh: 'Mycard', en: 'Mycard', my: 'Mycard' }, href: '/coming-soon' },
-  { id: 'live', names: { zh: '直播平台', en: 'Live Platform', my: 'တိုက်ရိုက်' }, href: '/coming-soon' },
-  { id: 'games', names: { zh: '游戏代充', en: 'Game Recharge', my: 'ဂိမ်း' }, href: '/games' },
-  { id: 'recharge', names: { zh: '话费充值', en: 'Mobile Recharge', my: 'ဖုန်းငွေ' }, href: '/recharge' },
-  { id: 'companion', names: { zh: '交友/陪玩', en: 'Social', my: 'သူငယ်ချင်း' }, href: '/coming-soon' },
-];
-
-const serviceCategories = [
-  { name: '直播平台', icon: '📺', color: 'bg-orange-500', href: '/coming-soon' },
-  { name: '平台点卡', icon: '💳', color: 'bg-orange-500', href: '/coming-soon' },
-  { name: '游戏充值', icon: '🎮', color: 'bg-orange-500', href: '/games' },
-  { name: '视频音频', icon: '🎬', color: 'bg-teal-500', href: '/coming-soon' },
-  { name: '陪玩陪聊', icon: '🎯', color: 'bg-pink-500', href: '/coming-soon' },
-  { name: '语音交友', icon: '🎤', color: 'bg-pink-400', href: '/coming-soon' },
-  { name: '生活日常', icon: '💝', color: 'bg-blue-400', href: '/coming-soon' },
-  { name: '社交平台', icon: '💬', color: 'bg-green-500', href: '/coming-soon' },
-  { name: '文学动漫', icon: '📚', color: 'bg-yellow-500', href: '/coming-soon' },
-  { name: '加速工具', icon: '🔔', color: 'bg-orange-400', href: '/coming-soon' },
+const navItems = [
+  { id: 'home', name: '首页', href: '/' },
+  { id: 'shop', name: '产品', href: '/shop' },
+  { id: 'games', name: '游戏充值', href: '/games' },
+  { id: 'recharge', name: '话费充值', href: '/recharge' },
+  { id: 'forex', name: '无忧外汇', href: '/forex' },
 ];
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('home');
-  const [showServiceDropdown, setShowServiceDropdown] = useState(false);
-  const [showLangDropdown, setShowLangDropdown] = useState(false);
-  const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
+  const [activeNav, setActiveNav] = useState('home');
+  const [showSearch, setShowSearch] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const serviceRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showServiceModal, setShowServiceModal] = useState(false);
   const { getTotalItems, toggleCart } = useCartStore();
-  const { t, language, setLanguage, currency, setCurrency } = useApp();
+  const { language } = useApp();
   const totalItems = getTotalItems();
-
-  // Get language display text
-  const getLangText = () => {
-    if (language === 'zh') return '中文';
-    if (language === 'my') return 'မြန်မာ';
-    return 'English';
-  };
-
-  // Get forex button text based on language
-  const getForexText = () => {
-    if (language === 'zh') return '无忧外汇';
-    if (language === 'my') return 'ငွေလဲလှယ်မှု';
-    return 'Forex';
-  };
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowServiceDropdown(false);
-      }
-      if (serviceRef.current && !serviceRef.current.contains(event.target as Node)) {
-        setShowLangDropdown(false);
-        setShowCurrencyDropdown(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleLanguageChange = (lang: 'zh' | 'en' | 'my') => {
-    setLanguage(lang);
-    setShowLangDropdown(false);
-  };
-
-  const handleCurrencyChange = (curr: 'USD' | 'CNY' | 'MMK') => {
-    setCurrency(curr);
-    setShowCurrencyDropdown(false);
-  };
 
   return (
     <>
-      <header className="sticky top-0 z-50 glass">
-        {/* Top Navigation Bar */}
-        <div className="bg-gray-900 text-white">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center justify-between h-12">
-              {/* Logo & All Services */}
-              <div className="flex items-center gap-4">
-                {/* Logo - Left */}
-                <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity duration-200">
-                  <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md hover:shadow-lg transition-shadow duration-200">
-                    <span className="text-white font-bold text-sm">无</span>
-                  </div>
-                  <div className="hidden sm:block">
-                    <div className="text-sm font-bold">无忧服务</div>
-                    <div className="text-[10px] text-gray-400">WORRY-FREE SERVICE</div>
-                  </div>
-                </Link>
-
-                {/* All Services Dropdown - Right of Logo */}
-                <div ref={dropdownRef} className="relative">
-                  <button
-                    onClick={() => setShowServiceDropdown(!showServiceDropdown)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap shadow-md hover:shadow-lg"
-                  >
-                    {t('cat.allServices')}
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showServiceDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {/* Service Dropdown Modal */}
-                  {showServiceDropdown && (
-                    <div className="absolute left-0 top-full mt-2 glass rounded-xl shadow-2xl p-4 z-50 w-96">
-                      <div className="grid grid-cols-5 gap-2">
-                        {serviceCategories.map((cat) => (
-                          <Link
-                            key={cat.name}
-                            href={cat.href}
-                            onClick={() => setShowServiceDropdown(false)}
-                            className="flex flex-col items-center p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            <div className={`w-10 h-10 ${cat.color} rounded-xl flex items-center justify-center text-xl mb-1`}>
-                              {cat.icon}
-                            </div>
-                            <span className="text-xs text-gray-700 text-center leading-tight">{cat.name}</span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+      {/* Fixed Top Navigation */}
+      <header className="nav-fixed">
+        <div className="container-custom">
+          <div className="flex items-center justify-between h-14">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent-hover rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">无</span>
               </div>
-
-              {/* Search Bar - Center */}
-              <div className="flex-1 max-w-xl mx-4 hidden md:flex">
-                <div className="flex w-full">
-                  <input
-                    type="text"
-                    placeholder={t('nav.search')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="flex-1 px-4 py-2 bg-white text-gray-800 rounded-l-lg text-sm focus:outline-none"
-                  />
-                  <button className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-r-lg transition-colors">
-                    {t('nav.searchBtn')}
-                  </button>
-                </div>
+              <div className="hidden sm:block">
+                <div className="text-sm font-bold text-text-primary">无忧服务</div>
+                <div className="text-[10px] text-text-muted">WORRY-FREE SERVICE</div>
               </div>
+            </Link>
 
-              {/* Right Actions */}
-              <div className="flex items-center gap-3">
-                {/* Language Dropdown */}
-                <div ref={serviceRef} className="relative">
-                  <button
-                    onClick={() => setShowLangDropdown(!showLangDropdown)}
-                    className="flex items-center gap-1 text-sm hover:text-gray-300"
-                  >
-                    <Globe className="w-4 h-4" />
-                    <span className="hidden lg:inline">{getLangText()}</span>
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                  {showLangDropdown && (
-                    <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-32 z-50">
-                      <button
-                        onClick={() => handleLanguageChange('zh')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'zh' ? 'text-orange-600 font-medium' : ''}`}
-                      >
-                        中文
-                      </button>
-                      <button
-                        onClick={() => handleLanguageChange('my')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'my' ? 'text-orange-600 font-medium' : ''}`}
-                      >
-                        မြန်မာ (缅语)
-                      </button>
-                      <button
-                        onClick={() => handleLanguageChange('en')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${language === 'en' ? 'text-orange-600 font-medium' : ''}`}
-                      >
-                        English
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Currency Dropdown */}
-                <div className="relative hidden sm:block">
-                  <button
-                    onClick={() => setShowCurrencyDropdown(!showCurrencyDropdown)}
-                    className="flex items-center gap-1 text-sm hover:text-gray-300"
-                  >
-                    <span>{currency}</span>
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
-                  {showCurrencyDropdown && (
-                    <div className="absolute right-0 top-full mt-1 bg-white text-gray-800 rounded shadow-lg py-1 min-w-24 z-50">
-                      <button
-                        onClick={() => handleCurrencyChange('USD')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'USD' ? 'text-orange-600 font-medium' : ''}`}
-                      >
-                        USD ($)
-                      </button>
-                      <button
-                        onClick={() => handleCurrencyChange('CNY')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'CNY' ? 'text-orange-600 font-medium' : ''}`}
-                      >
-                        CNY (¥)
-                      </button>
-                      <button
-                        onClick={() => handleCurrencyChange('MMK')}
-                        className={`block w-full px-4 py-2 text-sm hover:bg-gray-100 text-left ${currency === 'MMK' ? 'text-orange-600 font-medium' : ''}`}
-                      >
-                        MMK (K)
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Login / Register */}
-                <div className="hidden lg:flex items-center gap-2">
-                  <Link href="/login" className="text-sm hover:text-gray-300">{t('nav.login')}</Link>
-                  <span className="text-gray-600">|</span>
-                  <Link href="/register" className="text-sm hover:text-gray-300">{t('nav.register')}</Link>
-                </div>
-
-                {/* Customer Service */}
-                <button className="p-2 hover:bg-gray-800 rounded transition-colors" title={t('sidebar.service24')}>
-                  <MessageCircle className="w-5 h-5" />
-                </button>
-
-                {/* Cart */}
-                <button
-                  onClick={toggleCart}
-                  className="relative p-2 hover:bg-gray-800 rounded transition-colors"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  {totalItems > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                      {totalItems}
-                    </span>
-                  )}
-                </button>
-
-                {/* Mobile Menu Toggle */}
-                <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="md:hidden p-2 hover:bg-gray-800 rounded transition-colors"
-                >
-                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            {/* Mobile Search */}
-            <div className="md:hidden pb-3">
-              <div className="flex">
-                <input
-                  type="text"
-                  placeholder={t('nav.search')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-4 py-2 bg-white text-gray-800 rounded-l-lg text-sm focus:outline-none"
-                />
-                <button className="px-6 py-2 bg-red-500 text-white text-sm font-medium rounded-r-lg">
-                  {t('nav.searchBtn')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Category Navigation Bar */}
-        <div className="glass border-b">
-          <div className="max-w-7xl mx-auto px-4">
-            <div className="flex items-center h-12 gap-2 overflow-x-auto">
-              {categories.map((cat) => (
+            {/* Center Navigation - Desktop */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {navItems.map((item) => (
                 <Link
-                  key={cat.id}
-                  href={cat.href}
-                  onClick={() => setActiveCategory(cat.id)}
-                  className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
-                    activeCategory === cat.id
-                      ? 'text-orange-600 font-medium'
-                      : 'text-gray-700 hover:text-orange-600'
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => setActiveNav(item.id)}
+                  className={`px-4 py-2 text-sm rounded transition-colors ${
+                    activeNav === item.id
+                      ? 'text-accent font-medium bg-accent/10'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
                   }`}
                 >
-                  {cat.names[language]}
+                  {item.name}
                 </Link>
               ))}
+            </nav>
+
+            {/* Right Actions */}
+            <div className="flex items-center gap-2">
+              {/* Search Toggle */}
+              <button
+                onClick={() => setShowSearch(!showSearch)}
+                className="p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+                title="搜索"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+
+              {/* Customer Service */}
+              <button
+                onClick={() => setShowServiceModal(true)}
+                className="p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+                title="客服"
+              >
+                <MessageCircle className="w-5 h-5" />
+              </button>
+
+              {/* Cart */}
+              <button
+                onClick={toggleCart}
+                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+
+              {/* User Actions */}
+              <div className="hidden lg:flex items-center gap-2 ml-2">
+                <Link href="/login" className="px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
+                  登录
+                </Link>
+                <Link href="/register" className="px-3 py-1.5 text-sm bg-accent hover:bg-accent-hover text-white rounded transition-colors">
+                  注册
+                </Link>
+              </div>
+
+              {/* Mobile Menu Toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
+
+          {/* Search Bar */}
+          {showSearch && (
+            <div className="py-3 border-t border-dark-border animate-slide-down">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="搜索商品..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="input-dark flex-1"
+                  autoFocus
+                />
+                <Link
+                  href={`/shop?search=${searchQuery}`}
+                  className="btn-primary"
+                  onClick={() => setShowSearch(false)}
+                >
+                  搜索
+                </Link>
+              </div>
+              {searchQuery && (
+                <div className="mt-2 text-sm text-text-muted">
+                  按回车搜索 &quot;{searchQuery}&quot;
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden glass border-t">
-            <div className="p-4 space-y-3">
-              <div className="flex gap-2">
-                <Link href="/forex" onClick={() => setMobileMenuOpen(false)} className="flex-1 py-2 bg-green-600 text-white text-center rounded-lg text-sm">
-                  无忧外汇
-                </Link>
-                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="flex-1 py-2 border border-gray-300 text-gray-700 text-center rounded-lg text-sm">
+          <div className="lg:hidden border-t border-dark-border bg-dark-nav">
+            <div className="container-custom py-4">
+              <nav className="flex flex-col gap-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => {
+                      setActiveNav(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`px-4 py-3 text-sm rounded transition-colors ${
+                      activeNav === item.id
+                        ? 'text-accent font-medium bg-accent/10'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </nav>
+              <div className="flex gap-2 mt-4 pt-4 border-t border-dark-border">
+                <Link href="/login" className="flex-1 py-2 text-center text-sm border border-dark-border text-text-secondary rounded hover:bg-dark-card transition-colors">
                   登录
                 </Link>
-              </div>
-              <div className="flex flex-wrap gap-2 pt-2 border-t">
-                <button onClick={() => handleLanguageChange('zh')} className={`px-3 py-1 rounded text-sm ${language === 'zh' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>中文</button>
-                <button onClick={() => handleLanguageChange('my')} className={`px-3 py-1 rounded text-sm ${language === 'my' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>မြန်မာ</button>
-                <button onClick={() => handleLanguageChange('en')} className={`px-3 py-1 rounded text-sm ${language === 'en' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>English</button>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleCurrencyChange('USD')} className={`flex-1 py-1 rounded text-sm ${currency === 'USD' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>USD</button>
-                <button onClick={() => handleCurrencyChange('CNY')} className={`flex-1 py-1 rounded text-sm ${currency === 'CNY' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>CNY</button>
-                <button onClick={() => handleCurrencyChange('MMK')} className={`flex-1 py-1 rounded text-sm ${currency === 'MMK' ? 'bg-orange-100 text-orange-600' : 'bg-gray-100'}`}>MMK</button>
+                <Link href="/register" className="flex-1 py-2 text-center text-sm bg-accent text-white rounded hover:bg-accent-hover transition-colors">
+                  注册
+                </Link>
               </div>
             </div>
           </div>
         )}
       </header>
+
+      {/* Customer Service Modal */}
+      {showServiceModal && (
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 modal-overlay"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowServiceModal(false);
+          }}
+        >
+          <div className="bg-dark-nav border border-dark-border rounded-xl w-full max-w-md p-6 animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-text-primary">在线客服</h3>
+              <button
+                onClick={() => setShowServiceModal(false)}
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* WeChat */}
+              <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
+                <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">💬</span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-text-primary">微信客服</div>
+                  <div className="text-sm text-text-muted">工作时间：9:00-24:00</div>
+                </div>
+                <button className="btn-buy text-sm">咨询</button>
+              </div>
+
+              {/* QQ */}
+              <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
+                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">🐧</span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-text-primary">QQ客服</div>
+                  <div className="text-sm text-text-muted">QQ号：88888888</div>
+                </div>
+                <button className="btn-buy text-sm">咨询</button>
+              </div>
+
+              {/* Telegram */}
+              <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
+                <div className="w-12 h-12 bg-sky-500/20 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">✈️</span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-text-primary">Telegram</div>
+                  <div className="text-sm text-text-muted">@wuyou_service</div>
+                </div>
+                <button className="btn-buy text-sm">咨询</button>
+              </div>
+
+              {/* Email */}
+              <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
+                <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">📧</span>
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-text-primary">邮件支持</div>
+                  <div className="text-sm text-text-muted">support@wuyou.com</div>
+                </div>
+                <button className="btn-primary text-sm">发送</button>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-dark-border text-center text-sm text-text-muted">
+              遇到问题？我们随时为您服务
+            </div>
+          </div>
+        </div>
+      )}
 
       <CartDrawer />
     </>

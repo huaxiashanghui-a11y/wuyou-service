@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ChevronDown, ChevronUp, Mail, Phone, MessageCircle, HelpCircle } from 'lucide-react';
@@ -34,17 +35,7 @@ const faqs = [
   {
     question: '订单可以退款吗？',
     answer:
-      '由于数字商品的特殊性，一旦卡密发送成功（即订单状态变为"已完成"），不支持退款。在卡密发送前，您可以申请取消订单并退款。',
-  },
-  {
-    question: '如何联系客服？',
-    answer:
-      '您可以通过以下方式联系我们的客服：邮箱 support@wuyou.com，电话 400-888-8888，或者在工作时间（9:00-21:00）使用在线客服。',
-  },
-  {
-    question: '是否支持批量购买？',
-    answer:
-      '是的，我们支持批量购买。您可以在结算页面调整商品数量，或者联系客服进行批量采购，我们会有相应的优惠政策。',
+      '由于数字商品的特殊性，一旦卡密发送成功（即订单状态变为&quot;已完成&quot;），不支持退款。在卡密发送前，您可以申请取消订单并退款。',
   },
 ];
 
@@ -78,43 +69,49 @@ export default function HelpPage() {
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      <main className="flex-1 pt-16">
+      <main className="flex-1 pt-14">
         <div className="container-custom py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2">帮助中心</h1>
-            <p className="text-gray-600">遇到问题？在这里找到答案</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-text-primary mb-2">帮助中心</h1>
+            <p className="text-text-muted">遇到问题？在这里找到答案</p>
           </div>
 
           {/* Quick Contact */}
-          <div className="glass rounded-2xl p-6 mb-8">
-            <h2 className="text-lg font-semibold mb-4">快速联系客服</h2>
+          <div className="card-dark p-6 mb-8">
+            <h2 className="text-lg font-bold text-text-primary mb-4">快速联系客服</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <a
                 href="mailto:support@wuyou.com"
-                className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
+                className="flex items-center gap-3 p-4 bg-dark-primary rounded-xl hover:bg-accent/10 transition-colors border border-dark-border"
               >
-                <Mail className="w-6 h-6 text-blue-500" />
+                <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-accent" />
+                </div>
                 <div>
-                  <p className="font-medium">邮箱联系</p>
-                  <p className="text-sm text-gray-600">support@wuyou.com</p>
+                  <p className="font-medium text-text-primary">邮箱联系</p>
+                  <p className="text-sm text-text-muted">support@wuyou.com</p>
                 </div>
               </a>
               <a
                 href="tel:400-888-8888"
-                className="flex items-center gap-3 p-4 bg-green-50 rounded-xl hover:bg-green-100 transition-colors"
+                className="flex items-center gap-3 p-4 bg-dark-primary rounded-xl hover:bg-success/10 transition-colors border border-dark-border"
               >
-                <Phone className="w-6 h-6 text-green-500" />
+                <div className="w-12 h-12 bg-success/20 rounded-xl flex items-center justify-center">
+                  <Phone className="w-6 h-6 text-success" />
+                </div>
                 <div>
-                  <p className="font-medium">电话客服</p>
-                  <p className="text-sm text-gray-600">400-888-8888</p>
+                  <p className="font-medium text-text-primary">电话客服</p>
+                  <p className="text-sm text-text-muted">400-888-8888</p>
                 </div>
               </a>
-              <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-xl">
-                <MessageCircle className="w-6 h-6 text-orange-500" />
+              <div className="flex items-center gap-3 p-4 bg-dark-primary rounded-xl border border-dark-border">
+                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-orange-500" />
+                </div>
                 <div>
-                  <p className="font-medium">在线客服</p>
-                  <p className="text-sm text-gray-600">9:00 - 21:00</p>
+                  <p className="font-medium text-text-primary">在线客服</p>
+                  <p className="text-sm text-text-muted">9:00 - 21:00</p>
                 </div>
               </div>
             </div>
@@ -122,19 +119,19 @@ export default function HelpPage() {
 
           {/* Guides */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6">使用指南</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h2 className="text-xl font-bold text-text-primary mb-4">使用指南</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {guides.map((guide) => (
-                <div key={guide.title} className="glass rounded-2xl p-6">
+                <div key={guide.title} className="card-dark p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <span className="text-3xl">{guide.icon}</span>
-                    <h3 className="text-lg font-semibold">{guide.title}</h3>
+                    <h3 className="text-lg font-bold text-text-primary">{guide.title}</h3>
                   </div>
                   <ul className="space-y-2">
                     {guide.steps.map((step, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <span className="text-primary-500 font-bold">{index + 1}.</span>
-                        <span className="text-gray-700">{step}</span>
+                      <li key={index} className="flex items-start gap-2 text-sm">
+                        <span className="text-accent font-bold">{index + 1}.</span>
+                        <span className="text-text-secondary">{step}</span>
                       </li>
                     ))}
                   </ul>
@@ -145,26 +142,26 @@ export default function HelpPage() {
 
           {/* FAQ */}
           <div>
-            <h2 className="text-2xl font-bold mb-6">常见问题</h2>
-            <div className="space-y-3">
+            <h2 className="text-xl font-bold text-text-primary mb-4">常见问题</h2>
+            <div className="space-y-2">
               {faqs.map((faq, index) => (
-                <div key={index} className="glass rounded-xl overflow-hidden">
+                <div key={index} className="card-dark overflow-hidden">
                   <button
                     onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-dark-primary transition-colors"
                   >
-                    <span className="font-medium flex items-center gap-2">
-                      <HelpCircle className="w-5 h-5 text-primary-500" />
+                    <span className="font-medium text-text-primary flex items-center gap-2">
+                      <HelpCircle className="w-5 h-5 text-accent" />
                       {faq.question}
                     </span>
                     {openFaq === index ? (
-                      <ChevronUp className="w-5 h-5 text-gray-500" />
+                      <ChevronUp className="w-5 h-5 text-text-muted" />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-gray-500" />
+                      <ChevronDown className="w-5 h-5 text-text-muted" />
                     )}
                   </button>
                   {openFaq === index && (
-                    <div className="px-6 pb-4 text-gray-600 leading-relaxed">
+                    <div className="px-4 pb-4 text-sm text-text-secondary leading-relaxed border-t border-dark-border pt-3">
                       {faq.answer}
                     </div>
                   )}

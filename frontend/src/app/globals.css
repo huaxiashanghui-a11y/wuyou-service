@@ -3,13 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --primary-50: #f0f9ff;
-  --primary-100: #e0f2fe;
-  --primary-500: #0ea5e9;
-  --primary-600: #0284c7;
-  --primary-700: #0369a1;
-  --orange-from: #f97316;
-  --orange-to: #ea580c;
+  /* AccountBoy Dark Theme Colors */
+  --bg-primary: #121212;
+  --bg-nav: #1E1E1E;
+  --bg-card: #252525;
+  --border-color: #333333;
+  --accent-color: #007bff;
+  --success-color: #28a745;
+  --text-primary: #ffffff;
+  --text-secondary: #cccccc;
+  --text-muted: #888888;
 }
 
 * {
@@ -23,68 +26,212 @@ html {
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
-/* 全局玻璃态效果 - 用于所有白色卡片 */
+/* AccountBoy Style Glass Effect for Dark Theme */
 .glass {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(37, 37, 37, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-/* 深色玻璃态 - 用于深色背景上的卡片 */
 .glass-dark {
-  background: rgba(30, 30, 50, 0.85);
+  background: rgba(30, 30, 30, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-/* 全局卡片样式优化 - 自动应用磨砂效果 */
-.bg-white,
-[class*="bg-white"],
-[class*="rounded-xl"],
-[class*="shadow-sm"] {
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* Card Styles - AccountBoy Style */
+.card-dark {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
-/* 渐变文字 */
+.card-dark:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border-color: var(--accent-color);
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: var(--accent-color);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-buy {
+  background-color: var(--success-color);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-buy:hover {
+  opacity: 0.9;
+  background-color: var(--success-color);
+}
+
+.btn-buy:active {
+  transform: scale(0.98);
+}
+
+/* Navigation Styles */
+.nav-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: var(--bg-nav);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Sidebar Styles */
+.sidebar-fixed {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  bottom: 0;
+  width: 200px;
+  background-color: var(--bg-nav);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  z-index: 50;
+}
+
+/* Input Styles */
+.input-dark {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.input-dark:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.input-dark::placeholder {
+  color: var(--text-muted);
+}
+
+/* Text Colors */
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-accent {
+  color: var(--accent-color);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+/* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #dc2626 100%);
+  background: linear-gradient(135deg, var(--accent-color) 0%, #0056b3 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* 橙色渐变按钮 */
-.btn-orange-gradient {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-  color: white;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.btn-orange-gradient:hover {
-  background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(249, 115, 22, 0.5);
+::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 4px;
 }
 
-.btn-orange-gradient:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(249, 115, 22, 0.4);
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
-/* 骨架屏动画 */
+::-webkit-scrollbar-thumb:hover {
+  background: #444444;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+/* Product Grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .sidebar-fixed {
+    display: none;
+  }
+}
+
+/* Animations */
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
@@ -97,88 +244,116 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(200, 200, 200, 0.3) 25%,
-    rgba(230, 230, 230, 0.5) 50%,
-    rgba(200, 200, 200, 0.3) 75%
+    var(--bg-card) 25%,
+    #333333 50%,
+    var(--bg-card) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* 自定义滚动条 */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+@keyframes slideUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(249, 115, 22, 0.5);
-  border-radius: 4px;
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(249, 115, 22, 0.7);
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
 }
 
-/* 按钮悬停效果 */
+/* Button Hover Effects */
 .btn-hover {
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
-/* 卡片悬停效果 */
+/* Card Hover Effects */
 .card-hover {
   transition: all 0.3s ease;
 }
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-/* 容器样式 */
+/* Utility Classes */
 .container-custom {
-  max-width: 1280px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 16px;
 }
 
 @media (min-width: 640px) {
   .container-custom {
-    padding: 0 1.5rem;
+    padding: 0 24px;
   }
 }
 
 @media (min-width: 1024px) {
   .container-custom {
-    padding: 0 2rem;
+    padding: 0 32px;
   }
 }
 
-/* 模态框遮罩优化 */
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+/* Price Tag */
+.price-tag {
+  color: var(--success-color);
+  font-weight: 700;
+  font-size: 16px;
 }
 
-/* 下拉菜单优化 */
-.dropdown-menu {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-/* 轮播遮罩优化 */
-.carousel-overlay {
-  background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%);
+.badge-primary {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.badge-success {
+  background-color: var(--success-color);
+  color: white;
+}
+
+/* Divider */
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+/* Link Styles */
+.link {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.link:hover {
+  opacity: 0.8;
+}
+
+/* Focus Ring */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color);
 }
