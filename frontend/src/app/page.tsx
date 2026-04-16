@@ -328,6 +328,61 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Quick Category Cards - Below Banner */}
+          <div className="hidden xl:flex gap-3 mb-4">
+            {/* 社交账号 */}
+            <Link href="/coming-soon" className="flex-1 glass rounded-lg p-3 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-xl">💬</span>
+              </div>
+              <h4 className="font-bold text-gray-800 text-sm mb-1">
+                {language === 'zh' ? '社交账号' : language === 'en' ? 'Social' : 'လူမှု'}
+              </h4>
+              <p className="text-xs text-gray-500">
+                {language === 'zh' ? '账号交易' : language === 'en' ? 'Account trading' : 'အကောင်အထည်'}
+              </p>
+            </Link>
+
+            {/* 游戏ID平台 */}
+            <Link href="/coming-soon" className="flex-1 glass rounded-lg p-3 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-xl">🎮</span>
+              </div>
+              <h4 className="font-bold text-gray-800 text-sm mb-1">
+                {language === 'zh' ? '游戏ID平台' : language === 'en' ? 'Game ID' : 'ဂိမ်း ID'}
+              </h4>
+              <p className="text-xs text-gray-500">
+                {language === 'zh' ? '游戏账号' : language === 'en' ? 'Game account' : 'ဂိမ်း'}
+              </p>
+            </Link>
+
+            {/* 代购平台 */}
+            <Link href="/coming-soon" className="flex-1 glass rounded-lg p-3 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-xl">🛒</span>
+              </div>
+              <h4 className="font-bold text-gray-800 text-sm mb-1">
+                {language === 'zh' ? '代购平台' : language === 'en' ? 'Proxy' : 'အစားဝယ်'}
+              </h4>
+              <p className="text-xs text-gray-500">
+                {language === 'zh' ? '海外代购' : language === 'en' ? 'Overseas' : 'နိုင်ငံခြား'}
+              </p>
+            </Link>
+
+            {/* 二手商品平台 */}
+            <Link href="/coming-soon" className="flex-1 glass rounded-lg p-3 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-500 rounded-lg flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                <span className="text-xl">🔄</span>
+              </div>
+              <h4 className="font-bold text-gray-800 text-sm mb-1">
+                {language === 'zh' ? '二手商品' : language === 'en' ? 'Second-hand' : 'အေးအိုး'}
+              </h4>
+              <p className="text-xs text-gray-500">
+                {language === 'zh' ? '闲置交易' : language === 'en' ? 'Trading' : 'ပစ္စည်း'}
+              </p>
+            </Link>
+          </div>
+
           {/* Right Sidebar - Customer Service Info with Auto-play */}
           <div className="hidden xl:block w-56 glass rounded-lg p-4 shrink-0">
             {/* Auto-play Sidebar Carousel */}
@@ -452,63 +507,6 @@ export default function HomePage() {
               <ArrowUp className="w-4 h-4" />
               {t('sidebar.backTop')}
             </button>
-          </div>
-        </div>
-
-        {/* New Category Cards Section */}
-        <div className="mb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* 社交账号 */}
-            <Link href="/coming-soon" className="glass rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <span className="text-2xl">💬</span>
-              </div>
-              <h4 className="font-bold text-gray-800 mb-1">
-                {language === 'zh' ? '社交账号' : language === 'en' ? 'Social Accounts' : 'လူမှုရေး'}
-              </h4>
-              <p className="text-xs text-gray-500">
-                {language === 'zh' ? '账号交易安全便捷' : language === 'en' ? 'Safe account trading' : 'အကောင်းဆုံးအကောင်အထည်'}
-              </p>
-            </Link>
-
-            {/* 游戏ID平台 */}
-            <Link href="/coming-soon" className="glass rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <span className="text-2xl">🎮</span>
-              </div>
-              <h4 className="font-bold text-gray-800 mb-1">
-                {language === 'zh' ? '游戏ID平台' : language === 'en' ? 'Game ID Platform' : 'ဂိမ်း ID'}
-              </h4>
-              <p className="text-xs text-gray-500">
-                {language === 'zh' ? '游戏账号交易平台' : language === 'en' ? 'Game account trading' : 'ဂိမ်းအကောင်အထည်'}
-              </p>
-            </Link>
-
-            {/* 代购平台 */}
-            <Link href="/coming-soon" className="glass rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <span className="text-2xl">🛒</span>
-              </div>
-              <h4 className="font-bold text-gray-800 mb-1">
-                {language === 'zh' ? '代购平台' : language === 'en' ? 'Proxy Purchase' : 'အစားဝယ်'}
-              </h4>
-              <p className="text-xs text-gray-500">
-                {language === 'zh' ? '海外商品代购服务' : language === 'en' ? 'Overseas purchasing' : 'နိုင်ငံခြားဝယ်ယူ'}
-              </p>
-            </Link>
-
-            {/* 二手商品平台 */}
-            <Link href="/coming-soon" className="glass rounded-xl p-4 text-center hover:scale-105 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                <span className="text-2xl">🔄</span>
-              </div>
-              <h4 className="font-bold text-gray-800 mb-1">
-                {language === 'zh' ? '二手商品平台' : language === 'en' ? 'Second-hand' : 'အေးအိုး'}
-              </h4>
-              <p className="text-xs text-gray-500">
-                {language === 'zh' ? '二手物品交易平台' : language === 'en' ? 'Second-hand trading' : 'အေးအိုးပစ္စည်း'}
-              </p>
-            </Link>
           </div>
         </div>
 
