@@ -6,11 +6,11 @@ import { ChevronDown } from 'lucide-react';
 
 const categories = [
   { id: 'all', name: '全部分类', icon: '📦', href: '/shop' },
-  { id: 'bilibili', name: 'B站大会员', icon: '📺', href: '/shop' },
-  { id: 'xiaohongshu', name: '小红书', icon: '📕', href: '/shop' },
+  { id: 'bilibili', name: '会员充值', icon: '📺', href: '/shop' },
+  { id: 'xiaohongshu', name: '充值平台', icon: '📕', href: '/shop' },
   { id: 'games', name: '游戏代充', icon: '🎮', href: '/games' },
   { id: 'recharge', name: '话费充值', icon: '📱', href: '/recharge' },
-  { id: 'video', name: '视频音频', icon: '🎬', href: '/shop' },
+  { id: 'video', name: '影音账号', icon: '🎬', href: '/shop' },
   { id: 'social', name: '社交账号', icon: '💬', href: '/coming-soon' },
   { id: 'gameaccount', name: '游戏账号', icon: '🎮', href: '/coming-soon' },
   { id: 'proxy', name: '代购平台', icon: '🛒', href: '/coming-soon' },
