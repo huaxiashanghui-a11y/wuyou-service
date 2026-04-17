@@ -48,7 +48,7 @@ const sampleProducts: Product[] = [
 // Platform cards data - 4 cards below banner
 const platformCards = [
   { id: 'social', name: '社交账号', icon: '💬', description: '账号交易', href: '/coming-soon', color: 'from-pink-500 to-pink-600' },
-  { id: 'gameid', name: '游戏ID平台', icon: '🎮', description: '游戏账号', href: '/coming-soon', color: 'from-blue-500 to-blue-600' },
+  { id: 'gameaccount', name: '游戏账号', icon: '🎮', description: '游戏交易', href: '/coming-soon', color: 'from-blue-500 to-blue-600' },
   { id: 'proxy', name: '代购平台', icon: '🛒', description: '海外代购', href: '/coming-soon', color: 'from-orange-500 to-orange-600' },
   { id: 'secondhand', name: '二手商品', icon: '🔄', description: '闲置交易', href: '/coming-soon', color: 'from-green-500 to-green-600' },
 ];

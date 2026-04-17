@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { Search, ShoppingCart, MessageCircle, Menu, X } from 'lucide-react';
+import { Search, ShoppingCart, MessageCircle, Menu, X, ChevronDown } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import { useApp } from '@/lib/i18n';
 import CartDrawer from './CartDrawer';
@@ -15,15 +15,41 @@ const navItems = [
   { id: 'forex', name: '无忧外汇', href: '/forex' },
 ];
 
+// 外卖平台子菜单
+const deliverySubMenu = [
+  { id: 'food', name: '美食', href: '/coming-soon' },
+  { id: 'delivery', name: '外卖', href: '/coming-soon' },
+  { id: 'errand', name: '跑腿', href: '/coming-soon' },
+  { id: 'taxi', name: '滴滴车', href: '/coming-soon' },
+  { id: 'rental', name: '房屋租赁', href: '/coming-soon' },
+  { id: 'recruit', name: '招租信息', href: '/coming-soon' },
+  { id: 'hotel', name: '酒店公寓', href: '/coming-soon' },
+  { id: 'news', name: '新闻公告', href: '/coming-soon' },
+  { id: 'trade', name: '收购/出售', href: '/coming-soon' },
+];
+
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeNav, setActiveNav] = useState('home');
   const [showSearch, setShowSearch] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
+  const [showDeliveryDropdown, setShowDeliveryDropdown] = useState(false);
+  const deliveryDropdownRef = useRef<HTMLDivElement>(null);
   const { getTotalItems, toggleCart } = useCartStore();
   const { language } = useApp();
   const totalItems = getTotalItems();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (deliveryDropdownRef.current && !deliveryDropdownRef.current.contains(event.target as Node)) {
+        setShowDeliveryDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -58,6 +84,40 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+
+              {/* 外卖平台 Dropdown */}
+              <div ref={deliveryDropdownRef} className="relative">
+                <button
+                  onClick={() => setShowDeliveryDropdown(!showDeliveryDropdown)}
+                  className={`px-4 py-2 text-sm rounded transition-colors flex items-center gap-1 ${
+                    activeNav === 'delivery'
+                      ? 'text-accent font-medium bg-accent/10'
+                      : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
+                  }`}
+                >
+                  外卖平台
+                  <ChevronDown className={`w-4 h-4 transition-transform ${showDeliveryDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showDeliveryDropdown && (
+                  <div className="absolute left-0 top-full mt-1 w-48 bg-dark-nav border border-dark-border rounded-xl shadow-2xl p-2 z-50 animate-slide-down">
+                    {deliverySubMenu.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        onClick={() => {
+                          setActiveNav('delivery');
+                          setShowDeliveryDropdown(false);
+                        }}
+                        className="block px-4 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
             </nav>
 
             {/* Right Actions */}
@@ -164,6 +224,38 @@ export default function Header() {
                     {item.name}
                   </Link>
                 ))}
+
+                {/* 外卖平台 - Mobile */}
+                <div>
+                  <button
+                    onClick={() => setShowDeliveryDropdown(!showDeliveryDropdown)}
+                    className={`w-full px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
+                      activeNav === 'delivery'
+                        ? 'text-accent font-medium bg-accent/10'
+                        : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
+                    }`}
+                  >
+                    <span>外卖平台</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${showDeliveryDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {showDeliveryDropdown && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {deliverySubMenu.map((item) => (
+                        <Link
+                          key={item.id}
+                          href={item.href}
+                          onClick={() => {
+                            setActiveNav('delivery');
+                            setMobileMenuOpen(false);
+                          }}
+                          className="block px-4 py-2.5 text-sm text-text-muted hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </nav>
               <div className="flex gap-2 mt-4 pt-4 border-t border-dark-border">
                 <Link href="/login" className="flex-1 py-2 text-center text-sm border border-dark-border text-text-secondary rounded hover:bg-dark-card transition-colors">
@@ -191,7 +283,7 @@ export default function Header() {
               <h3 className="text-lg font-bold text-text-primary">在线客服</h3>
               <button
                 onClick={() => setShowServiceModal(false)}
-                className="p-2 text-text-muted hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+                className="p-2 text-text-muted hover:text-text-primary hover:bg-dark-card rounded-full transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
