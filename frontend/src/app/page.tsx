@@ -6,7 +6,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LeftSidebar from '@/components/LeftSidebar';
 import ProductCard from '@/components/ProductCard';
-import { ChevronLeft, ChevronRight, Star, Zap, Shield, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star, Zap, Shield, Clock, MessageCircle, Users, ArrowUp, Bell, Gift } from 'lucide-react';
 import { Product } from '@/lib/types';
 
 const banners = [
@@ -37,30 +37,54 @@ const banners = [
 const sampleProducts: Product[] = [
   { id: '1', name: '抖音充值 100币', price: 98, originalPrice: 100, image: 'https://picsum.photos/300/300?random=1', category: 'douyin', stock: 999, sold: 9999, featured: true, status: 'active', description: '抖音充值 100薯币，秒到账', sort: 0, createdAt: '', updatedAt: '' },
   { id: '2', name: '抖音充值 500币', price: 485, originalPrice: 500, image: 'https://picsum.photos/300/300?random=2', category: 'douyin', stock: 999, sold: 8888, featured: false, status: 'active', description: '抖音充值 500薯币，秒到账', sort: 0, createdAt: '', updatedAt: '' },
-  { id: '3', name: '小红书充值 100币', price: 95, originalPrice: 100, image: 'https://picsum.photos/300/300?random=3', category: 'xiaohongshu', stock: 999, sold: 7777, featured: true, status: 'active', description: '小红书薯币充值，秒到账', sort: 0, createdAt: '', updatedAt: '' },
+  { id: '3', name: '充值平台 100币', price: 95, originalPrice: 100, image: 'https://picsum.photos/300/300?random=3', category: 'xiaohongshu', stock: 999, sold: 7777, featured: true, status: 'active', description: '充值平台薯币充值，秒到账', sort: 0, createdAt: '', updatedAt: '' },
   { id: '4', name: '王者荣耀 648点券', price: 618, originalPrice: 648, image: 'https://picsum.photos/300/300?random=4', category: 'game', stock: 999, sold: 6666, featured: false, status: 'active', description: '王者荣耀648点券直充', sort: 0, createdAt: '', updatedAt: '' },
   { id: '5', name: '原神 328创世结晶', price: 318, originalPrice: 328, image: 'https://picsum.photos/300/300?random=5', category: 'game', stock: 999, sold: 5555, featured: false, status: 'active', description: '原神328元礼包直充', sort: 0, createdAt: '', updatedAt: '' },
-  { id: '6', name: 'B站大会员月卡', price: 25, originalPrice: 30, image: 'https://picsum.photos/300/300?random=6', category: 'bilibili', stock: 999, sold: 4444, featured: false, status: 'active', description: 'B站大会员月卡', sort: 0, createdAt: '', updatedAt: '' },
+  { id: '6', name: '会员充值月卡', price: 25, originalPrice: 30, image: 'https://picsum.photos/300/300?random=6', category: 'bilibili', stock: 999, sold: 4444, featured: false, status: 'active', description: '会员充值月卡', sort: 0, createdAt: '', updatedAt: '' },
   { id: '7', name: '快手充值 100币', price: 90, originalPrice: 100, image: 'https://picsum.photos/300/300?random=7', category: 'kuaishou', stock: 999, sold: 3333, featured: false, status: 'active', description: '快手充值 100快币', sort: 0, createdAt: '', updatedAt: '' },
   { id: '8', name: '陌陌充值 60币', price: 55, originalPrice: 60, image: 'https://picsum.photos/300/300?random=8', category: 'momo', stock: 999, sold: 2222, featured: false, status: 'active', description: '陌陌充值 60陌陌币', sort: 0, createdAt: '', updatedAt: '' },
+  { id: '9', name: '游戏代充 100元', price: 95, originalPrice: 100, image: 'https://picsum.photos/300/300?random=9', category: 'game', stock: 999, sold: 1111, featured: false, status: 'active', description: '游戏代充 100元', sort: 0, createdAt: '', updatedAt: '' },
+  { id: '10', name: '话费充值 100元', price: 98, originalPrice: 100, image: 'https://picsum.photos/300/300?random=10', category: 'recharge', stock: 999, sold: 999, featured: false, status: 'active', description: '话费充值 100元', sort: 0, createdAt: '', updatedAt: '' },
+  { id: '11', name: '影音账号 月卡', price: 35, originalPrice: 40, image: 'https://picsum.photos/300/300?random=11', category: 'video', stock: 999, sold: 888, featured: false, status: 'active', description: '影音账号 月卡', sort: 0, createdAt: '', updatedAt: '' },
+  { id: '12', name: '游戏点卡 100元', price: 90, originalPrice: 100, image: 'https://picsum.photos/300/300?random=12', category: 'game', stock: 999, sold: 777, featured: false, status: 'active', description: '游戏点卡 100元', sort: 0, createdAt: '', updatedAt: '' },
 ];
 
-// Platform cards data - 4 cards below banner
-const platformCards = [
-  { id: 'social', name: '社交账号', icon: '💬', description: '账号交易', href: '/coming-soon', color: 'from-pink-500 to-pink-600' },
-  { id: 'gameaccount', name: '游戏账号', icon: '🎮', description: '游戏交易', href: '/coming-soon', color: 'from-blue-500 to-blue-600' },
-  { id: 'proxy', name: '代购平台', icon: '🛒', description: '海外代购', href: '/coming-soon', color: 'from-orange-500 to-orange-600' },
-  { id: 'secondhand', name: '二手商品', icon: '🔄', description: '闲置交易', href: '/coming-soon', color: 'from-green-500 to-green-600' },
+// 主营业务卡片
+const mainBusinessCards = [
+  { id: 'food', name: '同城外卖', icon: '🍜', description: '美食外卖', color: 'from-red-500 to-orange-500', href: 'https://frontend-one-coral-41.vercel.app/food' },
+  { id: 'errand', name: '同城跑腿', icon: '🏃', description: '帮我跑腿', color: 'from-blue-500 to-cyan-500', href: 'https://frontend-one-coral-41.vercel.app/errand' },
+  { id: 'taxi', name: '同城滴滴车', icon: '🚗', description: '打车出行', color: 'from-green-500 to-emerald-500', href: 'https://frontend-one-coral-41.vercel.app/taxi' },
+  { id: 'buy', name: '帮买帮送', icon: '📦', description: '代买代送', color: 'from-purple-500 to-pink-500', href: 'https://frontend-one-coral-41.vercel.app/buy' },
+  { id: 'secondhand', name: '二手商品', icon: '🔄', description: '闲置交易', color: 'from-yellow-500 to-orange-500', href: 'https://frontend-one-coral-41.vercel.app/secondhand' },
+  { id: 'proxy', name: '平台代购', icon: '🛒', description: '海外代购', color: 'from-pink-500 to-rose-500', href: 'https://frontend-one-coral-41.vercel.app/proxy' },
+];
+
+// 热门会员/活动卡片
+const memberCards = [
+  { id: 'newuser', title: '新人专享', subtitle: '首单立减10元', icon: '🎁', color: 'from-green-500 to-emerald-500', href: '/shop' },
+  { id: 'vip', title: '会员特权', subtitle: '开通享8折', icon: '👑', color: 'from-yellow-500 to-amber-500', href: '/shop' },
+  { id: 'recharge', title: '充值返利', subtitle: '充100送20', icon: '💰', color: 'from-blue-500 to-indigo-500', href: '/shop' },
+  { id: 'game', title: '游戏狂欢', subtitle: '限时8折起', icon: '🎮', color: 'from-purple-500 to-violet-500', href: '/games' },
+  { id: 'festival', title: '节日活动', subtitle: '更多优惠', icon: '🎉', color: 'from-pink-500 to-rose-500', href: '/shop' },
 ];
 
 export default function HomePage() {
   const [currentBanner, setCurrentBanner] = useState(0);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentBanner((prev) => (prev + 1) % banners.length);
     }, 5000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const nextBanner = () => {
@@ -71,111 +95,189 @@ export default function HomePage() {
     setCurrentBanner((prev) => (prev - 1 + banners.length) % banners.length);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
 
-      {/* Main Layout with Sidebar */}
-      <div className="flex flex-1 pt-14">
-        {/* Left Sidebar */}
+      {/* Main Layout */}
+      <div className="flex flex-1 pt-[106px] lg:pt-[138px]">
         <LeftSidebar />
 
-        {/* Main Content */}
         <main className="flex-1 lg:ml-[200px] min-h-screen">
           <div className="container-custom py-6">
-            {/* Banner Carousel */}
-            <div className="relative rounded-xl overflow-hidden mb-6">
-              <div className="relative h-64 md:h-80 lg:h-96">
-                {banners.map((banner, index) => (
-                  <div
-                    key={banner.id}
-                    className={`absolute inset-0 transition-opacity duration-500 ${
-                      index === currentBanner ? 'opacity-100' : 'opacity-0'
-                    }`}
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient}`}>
-                      <div className="absolute inset-0 flex items-center px-8 md:px-16">
-                        <div className="text-white">
-                          <h2 className="text-3xl md:text-5xl font-bold mb-2">{banner.title}</h2>
-                          <p className="text-xl md:text-2xl mb-2 opacity-90">{banner.subtitle}</p>
-                          <p className="text-sm md:text-base opacity-75 mb-4">{banner.description}</p>
-                          <Link href="/shop" className="inline-block px-6 py-2 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
-                            立即购买
-                          </Link>
+
+            {/* Section 1: Important Announcement Banner */}
+            <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-lg mb-6 overflow-hidden">
+              <div className="flex items-center">
+                <div className="flex items-center gap-2 px-4 py-3 bg-orange-700/50">
+                  <Bell className="w-5 h-5" />
+                  <span className="font-bold text-sm whitespace-nowrap">重要公告</span>
+                </div>
+                <div className="flex-1 overflow-hidden py-3">
+                  <div className="animate-scroll-left whitespace-nowrap text-sm">
+                    限时优惠：会员充值年卡仅需168元 | 新用户首单满50减10 | 游戏代充全场8折起 | 充值平台秒到账，安全可靠！
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Banner Carousel */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+              <div className="lg:col-span-3">
+                <div className="relative rounded-xl overflow-hidden">
+                  <div className="relative h-64 md:h-80 lg:h-96">
+                    {banners.map((banner, index) => (
+                      <div
+                        key={banner.id}
+                        className={`absolute inset-0 transition-opacity duration-500 ${
+                          index === currentBanner ? 'opacity-100' : 'opacity-0'
+                        }`}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient}`}>
+                          <div className="absolute inset-0 flex items-center px-8 md:px-16">
+                            <div className="text-white">
+                              <h2 className="text-3xl md:text-5xl font-bold mb-2">{banner.title}</h2>
+                              <p className="text-xl md:text-2xl mb-2 opacity-90">{banner.subtitle}</p>
+                              <p className="text-sm md:text-base opacity-75 mb-4">{banner.description}</p>
+                              <Link href="/shop" className="inline-block px-6 py-2 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+                                立即购买
+                              </Link>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                  <button onClick={prevBanner} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
+                    <ChevronLeft className="w-6 h-6" />
+                  </button>
+                  <button onClick={nextBanner} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
+                    <ChevronRight className="w-6 h-6" />
+                  </button>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    {banners.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentBanner(index)}
+                        className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                          index === currentBanner ? 'bg-white' : 'bg-white/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              {/* Banner Navigation */}
-              <button
-                onClick={prevBanner}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                onClick={nextBanner}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
+              {/* Right Side Info Cards */}
+              <div className="hidden lg:flex flex-col gap-4">
+                <div className="card-dark p-4 flex-1">
+                  <h4 className="font-bold text-text-primary mb-3 flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-orange-500" />
+                    快速服务
+                  </h4>
+                  <div className="space-y-2">
+                    <Link href="/shop" className="flex items-center gap-2 text-sm text-text-secondary hover:text-orange-500 transition-colors">
+                      <span>📦</span> 自动发货
+                    </Link>
+                    <Link href="/shop" className="flex items-center gap-2 text-sm text-text-secondary hover:text-orange-500 transition-colors">
+                      <span>⏰</span> 24小时在线
+                    </Link>
+                    <Link href="/shop" className="flex items-center gap-2 text-sm text-text-secondary hover:text-orange-500 transition-colors">
+                      <span>🔒</span> 安全交易
+                    </Link>
+                    <Link href="/shop" className="flex items-center gap-2 text-sm text-text-secondary hover:text-orange-500 transition-colors">
+                      <span>💬</span> 专属客服
+                    </Link>
+                  </div>
+                </div>
 
-              {/* Banner Dots */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                {banners.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentBanner(index)}
-                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                      index === currentBanner ? 'bg-white' : 'bg-white/50'
-                    }`}
-                  />
-                ))}
+                <div className="card-dark p-4">
+                  <h4 className="font-bold text-text-primary mb-3">平台数据</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-orange-500">9999+</div>
+                      <div className="text-xs text-text-muted">成交订单</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-500">99.9%</div>
+                      <div className="text-xs text-text-muted">好评率</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Platform Cards - Below Banner (Red Box Area) */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {platformCards.map((card) => (
-                <Link
-                  key={card.id}
-                  href={card.href}
-                  className="group"
-                >
-                  <div className="card-dark p-4 text-center hover:border-accent transition-all duration-300">
-                    <div className={`w-14 h-14 bg-gradient-to-br ${card.color} rounded-xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <span className="text-2xl">{card.icon}</span>
-                    </div>
-                    <h4 className="font-bold text-text-primary text-sm mb-1 group-hover:text-accent transition-colors">
-                      {card.name}
-                    </h4>
-                    <p className="text-xs text-text-muted">
-                      {card.description}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            {/* Section 3: Main Business Category Cards */}
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                  <span className="w-1 h-6 bg-orange-500 rounded-full"></span>
+                  主营业务
+                </h3>
+              </div>
 
-            {/* Hot Products Section */}
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                {mainBusinessCards.map((card) => (
+                  <Link
+                    key={card.id}
+                    href={card.href}
+                    className="group"
+                  >
+                    <div className={`card-dark p-4 bg-gradient-to-br ${card.color} hover:scale-105 transition-all duration-300`}>
+                      <div className="text-3xl mb-2">{card.icon}</div>
+                      <h4 className="font-bold text-white text-sm mb-1">{card.name}</h4>
+                      <p className="text-white/80 text-xs">{card.description}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
+            {/* Section 4: Hot Products */}
             <section className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-accent" />
-                  <h3 className="text-lg font-bold text-text-primary">热门商品</h3>
+                  <Star className="w-5 h-5 text-orange-500" />
+                  <h3 className="text-lg font-bold text-text-primary">热门推荐</h3>
                 </div>
-                <Link href="/shop" className="text-sm text-accent hover:text-accent-hover transition-colors">
+                <Link href="/shop" className="text-sm text-orange-500 hover:text-orange-400 transition-colors">
                   查看全部 &gt;
                 </Link>
               </div>
 
-              {/* Product Grid */}
-              <div className="product-grid">
-                {sampleProducts.map((product) => (
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {sampleProducts.slice(0, 12).map((product) => (
                   <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </section>
+
+            {/* Section 5: Hot Member/Activity Cards */}
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                  <span className="w-1 h-6 bg-pink-500 rounded-full"></span>
+                  热门会员
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {memberCards.map((card) => (
+                  <Link
+                    key={card.id}
+                    href={card.href}
+                    className="group"
+                  >
+                    <div className={`card-dark p-5 bg-gradient-to-br ${card.color} hover:scale-105 transition-all duration-300`}>
+                      <div className="text-3xl mb-2">{card.icon}</div>
+                      <h4 className="font-bold text-white text-sm mb-1">{card.title}</h4>
+                      <p className="text-white/80 text-xs">{card.subtitle}</p>
+                    </div>
+                  </Link>
                 ))}
               </div>
             </section>
@@ -183,8 +285,8 @@ export default function HomePage() {
             {/* Features Section */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <div className="card-dark p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-accent/20 rounded-xl flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-accent" />
+                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-orange-500" />
                 </div>
                 <div>
                   <h4 className="font-bold text-text-primary">快速发货</h4>
@@ -192,8 +294,8 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="card-dark p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-success/20 rounded-xl flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-success" />
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-green-500" />
                 </div>
                 <div>
                   <h4 className="font-bold text-text-primary">安全可靠</h4>
@@ -214,18 +316,37 @@ export default function HomePage() {
             {/* Purchase Notice */}
             <section className="card-dark p-4 mb-8">
               <h4 className="font-bold text-text-primary mb-3">购买须知</h4>
-              <div className="text-sm text-text-muted space-y-2 max-h-32 overflow-y-auto">
+              <div className="text-sm text-text-muted space-y-2">
                 <p>1. 自动发货：付款成功后，系统将在5秒内自动发送卡密到您的订单页面。</p>
                 <p>2. 卡密查询：请前往&quot;我的订单&quot;查看卡密信息。</p>
                 <p>3. 充值说明：按照卡密上的指引在对应平台进行充值，或联系客服协助。</p>
-                <p>4. 禁止用途：本平台仅提供正规充值服务，严禁用于任何违法用途。</p>
-                <p>5. 退款政策：因平台原因导致的充值失败，经核实后可申请退款。</p>
               </div>
             </section>
           </div>
 
           <Footer />
         </main>
+      </div>
+
+      {/* Right Floating Sidebar */}
+      <div className="floating-sidebar">
+        <button className="floating-btn" title="在线客服">
+          <MessageCircle className="w-5 h-5" />
+        </button>
+        <button className="floating-btn" title="消息通知">
+          <Bell className="w-5 h-5" />
+        </button>
+        <button className="floating-btn" title="活动优惠">
+          <Gift className="w-5 h-5" />
+        </button>
+        <button className="floating-btn" title="商务合作">
+          <Users className="w-5 h-5" />
+        </button>
+        {showBackToTop && (
+          <button onClick={scrollToTop} className="floating-btn" title="回到顶部">
+            <ArrowUp className="w-5 h-5" />
+          </button>
+        )}
       </div>
     </div>
   );
