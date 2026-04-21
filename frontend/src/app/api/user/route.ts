@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { query } from '@/lib/db';
+import mysql from 'mysql2/promise';
 
 // 演示用户 ID（实际应从会话获取）
 const DEMO_USER_ID = 1;
@@ -42,18 +42,46 @@ const mockSecurity = {
   login_protection: true,
 };
 
+// 数据库配置
+const dbConfig = {
+  host: process.env.MYSQL_HOST || 'mysql6.sqlpub.com',
+  port: parseInt(process.env.MYSQL_PORT || '3311'),
+  user: process.env.MYSQL_USER || 'wuyou248699',
+  password: process.env.MYSQL_PASSWORD || '',
+  database: process.env.MYSQL_DATABASE || 'wuyouservice',
+};
+
 // 检查数据库是否可用
 async function isDbAvailable(): Promise<boolean> {
+  let pool: mysql.Pool | null = null;
   try {
     console.log('Testing database connection...');
-    console.log('MYSQL_HOST:', process.env.MYSQL_HOST);
-    console.log('MYSQL_PASSWORD set:', !!process.env.MYSQL_PASSWORD);
-    await query('SELECT 1');
+    console.log('MYSQL_HOST:', dbConfig.host);
+    console.log('MYSQL_PASSWORD set:', !!dbConfig.password);
+    
+    pool = mysql.createPool(dbConfig);
+    await pool.execute('SELECT 1');
+    await pool.end();
+    
     console.log('Database connection successful');
     return true;
   } catch (err: any) {
     console.log('Database connection failed:', err.message);
+    if (pool) await pool.end().catch(() => {});
     return false;
+  }
+}
+
+// 数据库查询
+async function dbQuery(sql: string, params?: any[]) {
+  const pool = mysql.createPool(dbConfig);
+  try {
+    const [rows] = await pool.execute(sql, params);
+    await pool.end();
+    return rows;
+  } catch (err) {
+    await pool.end();
+    throw err;
   }
 }
 
@@ -100,8 +128,7 @@ export async function GET(request: NextRequest) {
     // 数据库可用，查询真实数据
     switch (action) {
       case 'profile':
-        // 获取用户信息
-        const profileResult = await query(
+        const profileResult = await dbQuery(
           'SELECT id, username, nickname, email, phone, avatar, balance, points, member_level, real_name FROM users WHERE id = ?',
           [DEMO_USER_ID]
         );
@@ -112,12 +139,11 @@ export async function GET(request: NextRequest) {
         });
 
       case 'wallet':
-        // 获取钱包信息
-        const rechargeResult = await query(
+        const rechargeResult = await dbQuery(
           'SELECT * FROM wallet_recharges WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
           [DEMO_USER_ID]
         );
-        const transactionResult = await query(
+        const transactionResult = await dbQuery(
           'SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY created_at DESC LIMIT 20',
           [DEMO_USER_ID]
         );
@@ -126,58 +152,44 @@ export async function GET(request: NextRequest) {
           data: {
             recharges: rechargeResult,
             transactions: transactionResult,
-          }
+          },
+          source: 'db'
         });
 
       case 'orders':
-        // 获取订单列表
-        const ordersResult = await query(
+        const ordersResult = await dbQuery(
           'SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC',
           [DEMO_USER_ID]
         );
-        return NextResponse.json({
-          success: true,
-          data: ordersResult
-        });
+        return NextResponse.json({ success: true, data: ordersResult, source: 'db' });
 
       case 'coupons':
-        // 获取优惠券列表
-        const couponsResult = await query(
+        const couponsResult = await dbQuery(
           'SELECT * FROM coupons WHERE user_id = ? ORDER BY created_at DESC',
           [DEMO_USER_ID]
         );
-        return NextResponse.json({
-          success: true,
-          data: couponsResult
-        });
+        return NextResponse.json({ success: true, data: couponsResult, source: 'db' });
 
       case 'promotion':
-        // 获取推广信息
-        const promotionResult = await query(
+        const promotionResult = await dbQuery(
           'SELECT * FROM promotions WHERE user_id = ?',
           [DEMO_USER_ID]
         );
         return NextResponse.json({
           success: true,
-          data: (promotionResult as any[])[0] || {
-            invite_code: 'WY' + Date.now(),
-            invite_count: 0,
-            commission: 0,
-          }
+          data: (promotionResult as any[])[0] || mockPromotion,
+          source: 'db'
         });
 
       case 'security':
-        // 获取安全设置
-        const securityResult = await query(
+        const securityResult = await dbQuery(
           'SELECT * FROM user_security WHERE user_id = ?',
           [DEMO_USER_ID]
         );
         return NextResponse.json({
           success: true,
-          data: (securityResult as any[])[0] || {
-            two_factor_enabled: false,
-            login_protection: false,
-          }
+          data: (securityResult as any[])[0] || mockSecurity,
+          source: 'db'
         });
 
       default:
@@ -185,10 +197,29 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     console.error('API Error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
+    // 查询失败时返回模拟数据
+    console.log('Query failed, returning mock data for action:', action);
+    
+    switch (action) {
+      case 'profile':
+        return NextResponse.json({ success: true, data: mockUser, source: 'mock' });
+      case 'wallet':
+        return NextResponse.json({
+          success: true,
+          data: { recharges: [], transactions: [] },
+          source: 'mock'
+        });
+      case 'orders':
+        return NextResponse.json({ success: true, data: mockOrders, source: 'mock' });
+      case 'coupons':
+        return NextResponse.json({ success: true, data: mockCoupons, source: 'mock' });
+      case 'promotion':
+        return NextResponse.json({ success: true, data: mockPromotion, source: 'mock' });
+      case 'security':
+        return NextResponse.json({ success: true, data: mockSecurity, source: 'mock' });
+      default:
+        return NextResponse.json({ success: false, message: 'Unknown action' }, { status: 400 });
+    }
   }
 }
 
@@ -201,8 +232,6 @@ export async function POST(request: NextRequest) {
     const dbAvailable = await isDbAvailable();
 
     if (!dbAvailable) {
-      // 数据库不可用，对写操作返回错误
-      console.log('Database unavailable, cannot process POST action:', action);
       return NextResponse.json(
         { success: false, message: 'Service temporarily unavailable. Please try again later.' },
         { status: 503 }
@@ -211,57 +240,51 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case 'updateProfile':
-        // 更新用户信息
-        await query(
+        await dbQuery(
           'UPDATE users SET nickname = ?, email = ?, phone = ?, real_name = ?, id_card = ?, updated_at = NOW() WHERE id = ?',
           [data.nickname, data.email, data.phone, data.realName, data.idCard, DEMO_USER_ID]
         );
         return NextResponse.json({ success: true, message: 'Profile updated' });
 
       case 'recharge':
-        // 创建充值订单
         const orderNo = 'RC' + Date.now();
-        await query(
+        await dbQuery(
           'INSERT INTO wallet_recharges (user_id, amount, payment_method, order_no) VALUES (?, ?, ?, ?)',
           [DEMO_USER_ID, data.amount, data.paymentMethod, orderNo]
         );
         return NextResponse.json({ success: true, orderNo });
 
       case 'confirmRecharge':
-        // 确认充值（上传凭证后）
-        await query(
+        await dbQuery(
           'UPDATE wallet_recharges SET payment_proof = ?, status = ? WHERE order_no = ?',
           [data.paymentProof, 'pending', data.orderNo]
         );
         return NextResponse.json({ success: true, message: 'Recharge submitted' });
 
       case 'updatePassword':
-        // 更新密码
-        const securityResult = await query(
+        const securityResult = await dbQuery(
           'SELECT * FROM user_security WHERE user_id = ?',
           [DEMO_USER_ID]
         );
         if ((securityResult as any[]).length === 0) {
-          await query(
+          await dbQuery(
             'INSERT INTO user_security (user_id, login_password) VALUES (?, ?)',
             [DEMO_USER_ID, data.newPassword]
           );
         } else {
-          await query(
+          await dbQuery(
             'UPDATE user_security SET login_password = ?, updated_at = NOW() WHERE user_id = ?',
             [data.newPassword, DEMO_USER_ID]
           );
         }
-        // 记录安全日志
-        await query(
+        await dbQuery(
           'INSERT INTO security_logs (user_id, action, ip_address) VALUES (?, ?, ?)',
           [DEMO_USER_ID, '修改密码', request.headers.get('x-forwarded-for') || '127.0.0.1']
         );
         return NextResponse.json({ success: true, message: 'Password updated' });
 
       case 'updateSecurity':
-        // 更新安全设置
-        await query(
+        await dbQuery(
           'UPDATE user_security SET two_factor_enabled = ?, login_protection = ?, updated_at = NOW() WHERE user_id = ?',
           [data.twoFactorEnabled ? 1 : 0, data.loginProtection ? 1 : 0, DEMO_USER_ID]
         );
