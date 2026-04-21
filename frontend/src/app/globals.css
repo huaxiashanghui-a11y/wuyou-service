@@ -123,7 +123,7 @@ body {
 .sidebar-fixed {
   position: fixed;
   left: 0;
-  top: 60px;
+  top: 96px;
   bottom: 0;
   width: 200px;
   background-color: var(--bg-nav);
@@ -356,4 +356,76 @@ body {
 .focus-ring:focus {
   outline: none;
   box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+/* Scrollbar Hide */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Announcement Banner Scroll Animation */
+@keyframes scroll-left {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 20s linear infinite;
+}
+
+/* Floating Sidebar */
+.floating-sidebar {
+  position: fixed;
+  right: 16px;
+  bottom: 100px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.floating-btn {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.floating-btn:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Category Carousel */
+.category-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 8px;
+}
+
+.category-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.category-carousel-item {
+  scroll-snap-align: start;
+  flex-shrink: 0;
 }

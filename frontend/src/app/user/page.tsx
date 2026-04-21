@@ -1,458 +1,213 @@
 'use client';
 
 import { useState } from 'react';
-import { useApp } from '@/lib/i18n';
-import { AlertTriangle, Check, X, Eye, EyeOff, Upload, Smartphone, Mail, Lock, User, Shield } from 'lucide-react';
+import Link from 'next/link';
 import UserLayout from '@/components/user/UserLayout';
+import {
+  FileText,
+  Wallet,
+  Gift,
+  Star,
+  Heart,
+  MapPin,
+  Headphones,
+  Settings,
+  CreditCard,
+  Bell,
+  HelpCircle,
+  ChevronRight,
+  TrendingUp,
+  Clock,
+  CheckCircle
+} from 'lucide-react';
 
-export default function AccountPage() {
-  const { language } = useApp();
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showBindPhoneModal, setShowBindPhoneModal] = useState(false);
-  const [showPassword, setShowPassword] = useState({ old: false, new: false, confirm: false });
-  const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({ show: false, message: '', type: 'success' });
+export default function UserHomePage() {
+  const [showNotify, setShowNotify] = useState(false);
 
-  // Form states
-  const [profileForm, setProfileForm] = useState({
-    name: '无优服务',
-    gender: 'male',
-    contactType: '',
-    contactValue: ''
-  });
-
-  const [passwordForm, setPasswordForm] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-
-  const [bindPhoneForm, setBindPhoneForm] = useState({
-    phone: '',
-    code: ''
-  });
-
-  const passwordRequirements = [
-    { label: { zh: '至少6个字符', my: '၆လုံးအနည်းဆုံး', en: 'At least 6 characters' }, test: (p: string) => p.length >= 6 },
-    { label: { zh: '包含数字', my: 'ဂဏန်းပါ', en: 'Contains numbers' }, test: (p: string) => /\d/.test(p) },
-    { label: { zh: '包含字母', my: 'စာလုံးပါ', en: 'Contains letters' }, test: (p: string) => /[a-zA-Z]/.test(p) },
+  // 功能卡片数据
+  const featureCards = [
+    { id: 'orders', icon: FileText, label: '订单管理', color: 'from-blue-500 to-blue-600', href: '/user/orders' },
+    { id: 'wallet', icon: Wallet, label: '我的钱包', color: 'from-green-500 to-green-600', href: '/user/wallet' },
+    { id: 'coupons', icon: Gift, label: '优惠券', color: 'from-orange-500 to-orange-600', href: '/user/coupons' },
+    { id: 'points', icon: Star, label: '我的积分', color: 'from-yellow-500 to-yellow-600', href: '/user/stats', badge: '580' },
+    { id: 'favorites', icon: Heart, label: '我的收藏', color: 'from-pink-500 to-pink-600', href: '/user/favorites' },
+    { id: 'address', icon: MapPin, label: '收货地址', color: 'from-purple-500 to-purple-600', href: '/user/address' },
+    { id: 'service', icon: Headphones, label: '售后中心', color: 'from-cyan-500 to-cyan-600', href: '/user/service' },
+    { id: 'settings', icon: Settings, label: '设置', color: 'from-gray-500 to-gray-600', href: '/user/security' },
   ];
 
-  const isPasswordValid = (req: typeof passwordRequirements[0]) => req.test(passwordForm.newPassword);
+  // 账户概览数据
+  const accountStats = [
+    { label: '账户余额', value: '¥1,280.00', icon: Wallet, color: 'text-green-500', bg: 'bg-green-500/20' },
+    { label: '我的积分', value: '580', icon: Star, color: 'text-yellow-500', bg: 'bg-yellow-500/20' },
+    { label: '优惠券', value: '3张', icon: Gift, color: 'text-orange-500', bg: 'bg-orange-500/20' },
+    { label: '待处理订单', value: '2笔', icon: Clock, color: 'text-blue-500', bg: 'bg-blue-500/20' },
+  ];
 
-  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ ...toast, show: false }), 3000);
-  };
+  // 快捷入口数据
+  const quickLinks = [
+    { id: 'payment', icon: CreditCard, label: '支付方式', href: '/user/wallet' },
+    { id: 'notifications', icon: Bell, label: '消息通知', href: '/user/notifications' },
+    { id: 'help', icon: HelpCircle, label: '帮助中心', href: '/user/service' },
+  ];
 
-  const handleSaveProfile = () => {
-    if (!profileForm.name || profileForm.name.length < 2) {
-      showToast(language === 'zh' ? '姓名至少2个字符' : language === 'my' ? 'နာမည်အနည်းဆုံး၂လုံး' : 'Name at least 2 characters', 'error');
-      return;
-    }
-    showToast(language === 'zh' ? '保存成功！' : language === 'my' ? 'ကယ်ဆိုင်ပါ' : 'Saved successfully!');
-  };
-
-  const handleSavePassword = () => {
-    if (!passwordForm.oldPassword) {
-      showToast(language === 'zh' ? '请输入旧密码' : language === 'my' ? 'စကားဝှက်အဟောင်းထည့်ပါ' : 'Enter old password', 'error');
-      return;
-    }
-    if (!passwordRequirements.every(r => r.test(passwordForm.newPassword))) {
-      showToast(language === 'zh' ? '新密码不符合要求' : language === 'my' ? 'စကားဝှက်သစ်မှန်ကန်မှုမရှိ' : 'New password invalid', 'error');
-      return;
-    }
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      showToast(language === 'zh' ? '两次密码不一致' : language === 'my' ? 'စကားဝှက်၂ကြိမ်မတူ' : 'Passwords do not match', 'error');
-      return;
-    }
-    showToast(language === 'zh' ? '密码修改成功！' : language === 'my' ? 'စကားဝှက်ပြောင်းပါ' : 'Password changed!');
-  };
+  // 待处理事项
+  const pendingItems = [
+    { id: 1, type: 'order', title: '待付款订单', desc: '您有1笔订单待付款', action: '立即付款', href: '/user/orders?tab=unpaid' },
+    { id: 2, type: 'review', title: '待评价订单', desc: '您有1笔订单待评价', action: '去评价', href: '/user/orders?tab=completed' },
+  ];
 
   return (
-    <UserLayout activeTab="account">
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* 1. 账户基础信息 */}
-        <div className="bg-gray-50 rounded-xl p-5">
-          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-orange-500" />
-            {language === 'zh' ? '账户基础信息' : language === 'my' ? 'အကောင့်အခြေအနေ' : 'Account Basic Info'}
-          </h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                {language === 'zh' ? '账户ID' : language === 'my' ? 'အကောင့်ID' : 'Account ID'}
-              </span>
-              <span className="font-medium">51966932</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">
-                {language === 'zh' ? '邮箱' : language === 'my' ? 'အီးမေးလ်' : 'Email'}
-              </span>
-              <div className="text-right">
-                <div className="font-medium">huaxiashanghui@gmail.com</div>
-                <div className="text-xs text-orange-500">
-                  ({language === 'zh' ? '可用于登录' : language === 'my' ? '၀င်ဝင်၀င်ရောက်' : 'Can login'})
-                </div>
+    <UserLayout>
+      <div className="max-w-6xl mx-auto">
+        {/* 顶部欢迎区域 */}
+        <div className="bg-gradient-to-r from-orange-500/20 to-orange-600/10 rounded-2xl p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-2xl">优</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">欢迎回来，无忧用户</h1>
+                <p className="text-[#ccc] text-sm mt-1">ID: 51966932 · 普通会员</p>
               </div>
             </div>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full mt-4 py-2.5 border-2 border-red-300 text-red-500 rounded-xl hover:bg-red-50 active:scale-95 transition-all duration-200 font-medium text-sm"
+            <Link
+              href="/user/profile"
+              className="px-4 py-2 bg-[#252525] text-white rounded-lg hover:bg-[#333] transition-colors text-sm font-medium"
             >
-              {language === 'zh' ? '删除账号' : language === 'my' ? 'အကောင့်ဖျက်မည်' : 'Delete Account'}
-            </button>
+              编辑资料
+            </Link>
           </div>
         </div>
 
-        {/* 2. 账户绑定信息 */}
-        <div className="bg-gray-50 rounded-xl p-5">
-          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-orange-500" />
-            {language === 'zh' ? '账户绑定信息' : language === 'my' ? 'အကောင့်ချိတ်အိတ်' : 'Account Binding'}
-          </h3>
-          <div className="space-y-4">
-            {/* Phone */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">
-                {language === 'zh' ? '手机号' : language === 'my' ? 'ဖုန်းနံပါတ်' : 'Phone'}
-              </label>
-              <button
-                onClick={() => setShowBindPhoneModal(true)}
-                className="w-full py-2.5 px-4 border border-gray-200 rounded-xl text-left text-gray-500 hover:border-orange-300 hover:bg-orange-50 transition-all duration-200 text-sm flex items-center gap-2"
-              >
-                <Smartphone className="w-4 h-4" />
-                <span>{language === 'zh' ? '绑定手机号' : language === 'my' ? 'ဖုန်းနံပါတ်ချိတ်မည်' : 'Bind Phone'}</span>
-              </button>
-            </div>
-            {/* Google */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">Google</label>
-              <div className="flex items-center justify-between py-2.5 px-4 bg-green-50 border border-green-200 rounded-xl">
-                <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-green-500" />
-                  <span className="text-green-700 font-medium text-sm">
-                    {language === 'zh' ? '已绑定' : language === 'my' ? 'ချိတ်ပြီး' : 'Bound'}
-                  </span>
+        {/* 账户概览 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {accountStats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div key={index} className="bg-[#252525] rounded-xl p-4 hover:bg-[#2a2a2a] transition-colors cursor-pointer">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`w-10 h-10 ${stat.bg} rounded-lg flex items-center justify-center`}>
+                    <Icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
                 </div>
-                <button className="text-xs text-green-600 hover:underline">
-                  {language === 'zh' ? '解绑' : language === 'my' ? 'ဖြည်ချိတ်' : 'Unbind'}
-                </button>
+                <p className="text-2xl font-bold text-white mb-1">{stat.value}</p>
+                <p className="text-[#888] text-sm">{stat.label}</p>
               </div>
-            </div>
-            {/* Telegram */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">Telegram</label>
-              <button className="w-full py-2.5 px-4 border border-gray-200 rounded-xl text-left text-gray-500 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-sm flex items-center gap-2">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="#0088cc">
-                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                </svg>
-                <span>{language === 'zh' ? '绑定Telegram' : language === 'my' ? 'Telegramချိတ်မည်' : 'Bind Telegram'}</span>
-              </button>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
-        {/* 3. 个人联系信息 */}
-        <div className="bg-gray-50 rounded-xl p-5">
-          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <User className="w-5 h-5 text-orange-500" />
-            {language === 'zh' ? '个人联系信息' : language === 'my' ? 'ကိုယ်ရေးအချက်အလက်' : 'Personal Info'}
-          </h3>
-          <div className="space-y-4">
-            {/* Name */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">
-                {language === 'zh' ? '姓名' : language === 'my' ? 'နာမည်' : 'Name'}
-              </label>
-              <input
-                type="text"
-                value={profileForm.name}
-                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                className="w-full py-2.5 px-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-200"
-                placeholder={language === 'zh' ? '请输入姓名' : language === 'my' ? 'နာမည်ထည့်ပါ' : 'Enter name'}
-              />
+        {/* 待处理事项 */}
+        {pendingItems.length > 0 && (
+          <div className="bg-[#252525] rounded-xl p-4 mb-6">
+            <h3 className="text-white font-bold mb-4 flex items-center gap-2">
+              <Clock className="w-5 h-5 text-orange-500" />
+              待处理事项
+            </h3>
+            <div className="space-y-3">
+              {pendingItems.map((item) => (
+                <div key={item.id} className="flex items-center justify-between bg-[#1e1e1e] rounded-lg p-4">
+                  <div>
+                    <p className="text-white font-medium">{item.title}</p>
+                    <p className="text-[#888] text-sm mt-1">{item.desc}</p>
+                  </div>
+                  <Link
+                    href={item.href}
+                    className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium whitespace-nowrap"
+                  >
+                    {item.action}
+                  </Link>
+                </div>
+              ))}
             </div>
-            {/* Gender */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-2">
-                {language === 'zh' ? '性别' : language === 'my' ? 'ကျား/မ' : 'Gender'}
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="male"
-                    checked={profileForm.gender === 'male'}
-                    onChange={() => setProfileForm({ ...profileForm, gender: 'male' })}
-                    className="w-4 h-4 text-orange-500"
-                  />
-                  <span className="text-sm">{language === 'zh' ? '男' : language === 'my' ? 'ကျား' : 'Male'}</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value="female"
-                    checked={profileForm.gender === 'female'}
-                    onChange={() => setProfileForm({ ...profileForm, gender: 'female' })}
-                    className="w-4 h-4 text-orange-500"
-                  />
-                  <span className="text-sm">{language === 'zh' ? '女' : language === 'my' ? 'မ' : 'Female'}</span>
-                </label>
-              </div>
-            </div>
-            {/* Contact */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">
-                {language === 'zh' ? '其他联系方式' : language === 'my' ? 'ဆက်သွယ်ရန်နည်းလမ်းအခြား' : 'Other Contact'}
-              </label>
-              <div className="flex gap-2">
-                <select
-                  value={profileForm.contactType}
-                  onChange={(e) => setProfileForm({ ...profileForm, contactType: e.target.value })}
-                  className="w-32 py-2.5 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                >
-                  <option value="">{language === 'zh' ? '请选择' : language === 'my' ? 'ရွေးချယ်ပါ' : 'Select'}</option>
-                  <option value="wechat">{language === 'zh' ? '微信' : language === 'my' ? 'ဝက်ချက်' : 'WeChat'}</option>
-                  <option value="qq">QQ</option>
-                  <option value="telegram">Telegram</option>
-                </select>
-                <input
-                  type="text"
-                  value={profileForm.contactValue}
-                  onChange={(e) => setProfileForm({ ...profileForm, contactValue: e.target.value })}
-                  className="flex-1 py-2.5 px-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                  placeholder={language === 'zh' ? '请输入联系方式' : language === 'my' ? 'ဆက်သွယ်ရန်ထည့်ပါ' : 'Enter contact'}
-                />
-              </div>
-            </div>
-            <button
-              onClick={handleSaveProfile}
-              className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl hover:from-orange-600 hover:to-orange-500 active:scale-95 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
-            >
-              {language === 'zh' ? '保存' : language === 'my' ? 'ကယ်မည်' : 'Save'}
-            </button>
           </div>
-        </div>
+        )}
 
-        {/* 4. 账户密码修改 */}
-        <div className="bg-gray-50 rounded-xl p-5">
-          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Lock className="w-5 h-5 text-orange-500" />
-            {language === 'zh' ? '账户密码修改' : language === 'my' ? 'စကားဝှက်ပြောင်းမည်' : 'Change Password'}
-          </h3>
-          <div className="space-y-4">
-            {/* Old Password */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">
-                {language === 'zh' ? '旧密码' : language === 'my' ? 'စကားဝှက်အဟောင်း' : 'Old Password'}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type={showPassword.old ? 'text' : 'password'}
-                  value={passwordForm.oldPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
-                  className="w-full py-2.5 pl-10 pr-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                  placeholder={language === 'zh' ? '请输入旧密码' : language === 'my' ? 'စကားဝှက်အဟောင်းထည့်ပါ' : 'Enter old password'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword({ ...showPassword, old: !showPassword.old })}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        {/* 功能卡片网格 */}
+        <div className="bg-[#252525] rounded-xl p-4 mb-6">
+          <h3 className="text-white font-bold mb-4">快捷服务</h3>
+          <div className="grid grid-cols-4 md:grid-cols-4 lg:grid-cols-8 gap-3">
+            {featureCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <Link
+                  key={card.id}
+                  href={card.href}
+                  className="group"
                 >
-                  {showPassword.old ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-            <p className="text-xs text-orange-500 -mt-2">
-              {language === 'zh' ? '如忘记密码，请' : language === 'my' ? 'စကားဝှက်မေ့နေပါက' : 'If forgot password'}
-              <a href="/forgot-password" className="underline ml-1">
-                {language === 'zh' ? '点击此处找回' : language === 'my' ? 'ဤနေရာနှိပ်ပါ' : 'click here'}
-              </a>
-            </p>
-
-            {/* New Password */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">
-                {language === 'zh' ? '新密码' : language === 'my' ? 'စကားဝှက်သစ်' : 'New Password'}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type={showPassword.new ? 'text' : 'password'}
-                  value={passwordForm.newPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                  className="w-full py-2.5 pl-10 pr-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                  placeholder={language === 'zh' ? '请输入新密码' : language === 'my' ? 'စကားဝှက်သစ်ထည့်ပါ' : 'Enter new password'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword({ ...showPassword, new: !showPassword.new })}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showPassword.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {/* Password Requirements */}
-              {passwordForm.newPassword && (
-                <div className="mt-2 space-y-1 p-2 bg-white rounded-lg">
-                  {passwordRequirements.map((req, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs">
-                      {isPasswordValid(req) ? (
-                        <Check className="w-3 h-3 text-green-500" />
-                      ) : (
-                        <X className="w-3 h-3 text-gray-300" />
-                      )}
-                      <span className={isPasswordValid(req) ? 'text-green-600' : 'text-gray-400'}>
-                        {req.label[language] || req.label.zh}
-                      </span>
+                  <div className={`bg-gradient-to-br ${card.color} rounded-xl p-3 text-center transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg`}>
+                    <div className="w-10 h-10 mx-auto mb-2 bg-white/20 rounded-lg flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <p className="text-white text-xs font-medium">{card.label}</p>
+                    {card.badge && (
+                      <span className="inline-block mt-1 px-1.5 py-0.5 bg-white/30 rounded text-white text-xs">
+                        {card.badge}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
 
-            {/* Confirm Password */}
-            <div>
-              <label className="text-sm text-gray-600 block mb-1">
-                {language === 'zh' ? '确认密码' : language === 'my' ? 'စကားဝှက်အတည်ပြု' : 'Confirm Password'}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type={showPassword.confirm ? 'text' : 'password'}
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                  className="w-full py-2.5 pl-10 pr-10 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
-                  placeholder={language === 'zh' ? '请再次输入新密码' : language === 'my' ? 'စကားဝှက်ပြန်လည်ထည့်ပါ' : 'Confirm new password'}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword({ ...showPassword, confirm: !showPassword.confirm })}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        {/* 快捷入口 */}
+        <div className="bg-[#252525] rounded-xl p-4 mb-6">
+          <h3 className="text-white font-bold mb-4">快捷入口</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {quickLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.id}
+                  href={link.href}
+                  className="flex items-center justify-between p-4 bg-[#1e1e1e] rounded-xl hover:bg-[#2a2a2a] transition-colors"
                 >
-                  {showPassword.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                      <Icon className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <span className="text-white font-medium">{link.label}</span>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-[#666]" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
 
-            <button
-              onClick={handleSavePassword}
-              className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl hover:from-orange-600 hover:to-orange-500 active:scale-95 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
-            >
-              {language === 'zh' ? '保存' : language === 'my' ? 'ကယ်မည်' : 'Save'}
-            </button>
+        {/* 会员权益 */}
+        <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-purple-400" />
+              会员专属权益
+            </h3>
+            <Link href="/user/stats" className="text-orange-500 text-sm hover:underline">
+              查看详情
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { icon: CheckCircle, text: '专属客服优先接待' },
+              { icon: CheckCircle, text: '生日专属优惠券' },
+              { icon: CheckCircle, text: '积分翻倍特权' },
+              { icon: CheckCircle, text: '新品优先购买权' },
+            ].map((item, index) => {
+              const Icon = item.icon;
+              return (
+                <div key={index} className="flex items-center gap-2 text-[#ccc] text-sm">
+                  <Icon className="w-4 h-4 text-green-500" />
+                  <span>{item.text}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-
-      {/* Delete Account Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-500" />
-              </div>
-              <div>
-                <h3 className="font-bold text-gray-800">
-                  {language === 'zh' ? '确认删除账号' : language === 'my' ? 'အကောင့်ဖျက်မှာသေချာလား' : 'Confirm Delete'}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {language === 'zh' ? '删除后无法恢复' : language === 'my' ? 'ဖျက်လိုက်ရင်ပြန်မရတော့ပါ' : 'Cannot be recovered'}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
-              >
-                {language === 'zh' ? '取消' : language === 'my' ? 'မလုပ်' : 'Cancel'}
-              </button>
-              <button
-                onClick={() => {
-                  setShowDeleteConfirm(false);
-                  showToast(language === 'zh' ? '账号已删除' : language === 'my' ? 'အကောင့်ဖျက်ပြီး' : 'Account deleted');
-                }}
-                className="flex-1 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium"
-              >
-                {language === 'zh' ? '确认删除' : language === 'my' ? 'ဖျက်မည်' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bind Phone Modal */}
-      {showBindPhoneModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-bold text-gray-800">
-                {language === 'zh' ? '绑定手机号' : language === 'my' ? 'ဖုန်းနံပါတ်ချိတ်မည်' : 'Bind Phone'}
-              </h3>
-              <button onClick={() => setShowBindPhoneModal(false)} className="text-gray-400 hover:text-gray-600">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm text-gray-600 block mb-1">
-                  {language === 'zh' ? '手机号' : language === 'my' ? 'ဖုန်းနံပါတ်' : 'Phone'}
-                </label>
-                <input
-                  type="tel"
-                  value={bindPhoneForm.phone}
-                  onChange={(e) => setBindPhoneForm({ ...bindPhoneForm, phone: e.target.value })}
-                  className="w-full py-3 px-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  placeholder={language === 'zh' ? '请输入手机号' : language === 'my' ? 'ဖုန်းနံပါတ်ထည့်ပါ' : 'Enter phone'}
-                />
-              </div>
-              <div>
-                <label className="text-sm text-gray-600 block mb-1">
-                  {language === 'zh' ? '验证码' : language === 'my' ? 'အတည်ပြုကုဒ်' : 'Verification Code'}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={bindPhoneForm.code}
-                    onChange={(e) => setBindPhoneForm({ ...bindPhoneForm, code: e.target.value })}
-                    className="flex-1 py-3 px-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
-                    placeholder={language === 'zh' ? '请输入验证码' : language === 'my' ? 'ကုဒ်ထည့်ပါ' : 'Enter code'}
-                  />
-                  <button className="px-4 py-3 bg-orange-100 text-orange-600 rounded-xl hover:bg-orange-200 transition-colors font-medium text-sm">
-                    {language === 'zh' ? '获取验证码' : language === 'my' ? 'ကုဒ်ရမည်' : 'Get Code'}
-                  </button>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowBindPhoneModal(false);
-                  showToast(language === 'zh' ? '绑定成功！' : language === 'my' ? 'ချိတ်ပြီး' : 'Bound successfully!');
-                }}
-                className="w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl hover:from-orange-600 hover:to-orange-500 transition-colors font-medium"
-              >
-                {language === 'zh' ? '绑定' : language === 'my' ? 'ချိတ်မည်' : 'Bind'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Toast */}
-      {toast.show && (
-        <div className={`fixed top-4 right-4 px-6 py-3 rounded-xl shadow-lg z-50 animate-pulse ${
-          toast.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
-        }`}>
-          <div className="flex items-center gap-2">
-            {toast.type === 'success' ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
-            {toast.message}
-          </div>
-        </div>
-      )}
     </UserLayout>
   );
 }

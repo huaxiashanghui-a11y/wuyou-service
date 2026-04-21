@@ -1,176 +1,302 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useApp } from '@/lib/i18n';
+import { usePathname, useRouter } from 'next/navigation';
 import {
+  Home,
+  Wallet,
   User,
   FileText,
+  Headphones,
+  BarChart3,
   Shield,
-  Gift,
-  HelpCircle,
+  Settings,
   LogOut,
-  Home,
-  CheckCircle
+  ChevronLeft,
+  ChevronRight,
+  Bell,
+  Menu,
+  X
 } from 'lucide-react';
 
-type ActiveTab = 'account' | 'orders' | 'verification' | 'coupons' | 'help';
+type NavItem = {
+  id: string;
+  icon: typeof Home;
+  label: string;
+  href: string;
+};
+
+const navItems: NavItem[] = [
+  { id: 'home', icon: Home, label: '首页', href: '/user' },
+  { id: 'wallet', icon: Wallet, label: '钱包充值', href: '/user/wallet' },
+  { id: 'profile', icon: User, label: '个人资料', href: '/user/profile' },
+  { id: 'orders', icon: FileText, label: '订单管理', href: '/user/orders' },
+  { id: 'service', icon: Headphones, label: '客服中心', href: '/user/service' },
+  { id: 'stats', icon: BarChart3, label: '数据统计', href: '/user/stats' },
+  { id: 'security', icon: Shield, label: '账户安全', href: '/user/security' },
+  { id: 'settings', icon: Settings, label: '设置', href: '/user/settings' },
+];
 
 interface UserLayoutProps {
   children: React.ReactNode;
-  activeTab: ActiveTab;
 }
 
-const navItems = [
-  { id: 'account' as ActiveTab, icon: User, labelKey: 'user.account' },
-  { id: 'orders' as ActiveTab, icon: FileText, label: '我的订单' },
-  { id: 'verification' as ActiveTab, icon: Shield, label: '我的认证' },
-  { id: 'coupons' as ActiveTab, icon: Gift, label: '我的优惠券' },
-  { id: 'help' as ActiveTab, icon: HelpCircle, label: '帮助中心' },
-];
-
-const navLabels: Record<ActiveTab, { zh: string; en: string; my: string }> = {
-  account: { zh: '我的账户', en: 'My Account', my: 'ကျွန်ုပ်၏အကောင့်' },
-  orders: { zh: '我的订单', en: 'My Orders', my: 'ကျွန်ုပ်၏အမှာစာများ' },
-  verification: { zh: '我的认证', en: 'My Verification', my: 'ကျွန်ုပ်၏အတည်ပြုချက်' },
-  coupons: { zh: '我的优惠券', en: 'My Coupons', my: 'ကျွန်ုပ်၏လျှော့စျေးစင်တင်' },
-  help: { zh: '帮助中心', en: 'Help Center', my: 'အကူအညီစင်တာ' },
-};
-
-export default function UserLayout({ children, activeTab }: UserLayoutProps) {
+export default function UserLayout({ children }: UserLayoutProps) {
+  const pathname = usePathname();
   const router = useRouter();
-  const { language, t } = useApp();
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showMobileNav, setShowMobileNav] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const getNavLabel = (item: typeof navItems[0]) => {
-    if (item.label) {
-      // Custom labels for some items
-      if (item.id === 'account') return navLabels.account[language] || navLabels.account.zh;
-      return item.label;
-    }
-    return navLabels[item.id][language] || navLabels[item.id].zh;
+  // 检测是否为移动端
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // 获取当前激活的导航项
+  const getActiveItem = () => {
+    const current = navItems.find(item => pathname === item.href);
+    return current?.id || 'home';
   };
 
   const handleLogout = () => {
-    setShowLogoutConfirm(true);
-  };
-
-  const confirmLogout = () => {
-    // Simulate logout
+    setShowLogoutModal(false);
     router.push('/');
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Background Decorations */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 text-6xl opacity-10">🎮</div>
-        <div className="absolute top-40 right-20 text-5xl opacity-10">🖱️</div>
-        <div className="absolute bottom-40 left-20 text-5xl opacity-10">🤖</div>
-        <div className="absolute bottom-20 right-10 text-6xl opacity-10">▶️</div>
-      </div>
+    <div className="min-h-screen bg-[#121212]">
+      {/* 移动端顶部导航 */}
+      {isMobile && (
+        <div className="fixed top-0 left-0 right-0 h-14 bg-[#1e1e1e] border-b border-[#333] z-50 flex items-center justify-between px-4">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">无</span>
+            </div>
+            <span className="text-white font-medium">个人中心</span>
+          </Link>
+          <button
+            onClick={() => setShowMobileNav(true)}
+            className="p-2 text-white hover:bg-[#333] rounded-lg transition-colors"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
-      <div className="relative max-w-7xl mx-auto px-4 py-8">
-        <div className="flex gap-6">
-          {/* Left Sidebar */}
-          <div className="w-56 flex-shrink-0">
-            <div className="glass rounded-2xl p-4 sticky top-8">
-              {/* Logo */}
-              <div className="text-center pb-4 border-b border-gray-100">
-                <Link href="/" className="inline-flex items-center gap-2">
-                  <div className="w-10 h-10 bg-gradient-to-br from-orange-600 to-orange-500 rounded-xl flex items-center justify-center">
-                    <span className="text-white font-bold">无</span>
-                  </div>
-                </Link>
-                <div className="mt-2 text-sm font-medium text-gray-800">
-                  {language === 'zh' ? '我的账户' : language === 'my' ? 'ကျွန်ုပ်၏အကောင့်' : 'My Account'}
+      {/* 移动端侧边导航抽屉 */}
+      {showMobileNav && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/60"
+            onClick={() => setShowMobileNav(false)}
+          />
+          <div className="absolute left-0 top-0 bottom-0 w-64 bg-[#1e1e1e] animate-slide-in">
+            {/* 用户信息头部 */}
+            <div className="p-4 border-b border-[#333]">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                  <span className="text-white font-bold">优</span>
+                </div>
+                <div>
+                  <p className="text-white font-medium">无忧用户</p>
+                  <p className="text-[#888] text-sm">ID: 51966932</p>
                 </div>
               </div>
-
-              {/* Navigation */}
-              <nav className="mt-4 space-y-1">
-                {navItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = activeTab === item.id;
-                  return (
-                    <Link
-                      key={item.id}
-                      href={`/user/${item.id === 'account' ? '' : item.id}`}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
-                        isActive
-                          ? 'bg-gradient-to-r from-orange-500 to-orange-400 text-white shadow-lg shadow-orange-200'
-                          : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600'
-                      }`}
-                    >
-                      <Icon className={`w-5 h-5 ${isActive ? 'text-white' : ''}`} />
-                      <span className="font-medium text-sm">{getNavLabel(item)}</span>
-                      {isActive && <CheckCircle className="w-4 h-4 ml-auto" />}
-                    </Link>
-                  );
-                })}
-
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 mt-4 border-t border-gray-100 pt-4"
-                >
-                  <LogOut className="w-5 h-5" />
-                  <span className="font-medium text-sm">
-                    {language === 'zh' ? '退出登录' : language === 'my' ? 'ထွက်မည်' : 'Logout'}
-                  </span>
-                </button>
-              </nav>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 min-h-screen">
-            {/* Return to Home Button */}
-            <div className="flex justify-end mb-4">
-              <Link
-                href="/"
-                className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-xl hover:from-orange-600 hover:to-orange-500 active:scale-95 transition-all duration-200 shadow-lg hover:shadow-xl text-sm font-medium"
-              >
-                {language === 'zh' ? '返回首页' : language === 'my' ? 'ပင်မသို့ပြန်သွားမည်' : 'Back to Home'}
-              </Link>
+              <div className="mt-3 flex gap-3">
+                <div className="flex-1 bg-[#252525] rounded-lg p-2 text-center">
+                  <p className="text-orange-500 font-bold">¥1,280.00</p>
+                  <p className="text-[#888] text-xs">余额</p>
+                </div>
+                <div className="flex-1 bg-[#252525] rounded-lg p-2 text-center">
+                  <p className="text-orange-500 font-bold">580</p>
+                  <p className="text-[#888] text-xs">积分</p>
+                </div>
+              </div>
             </div>
 
-            {/* Content Area */}
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              {children}
-            </div>
-          </div>
-        </div>
-      </div>
+            {/* 导航列表 */}
+            <nav className="p-3">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => setShowMobileNav(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all ${
+                      isActive
+                        ? 'bg-orange-500/20 text-orange-500'
+                        : 'text-[#ccc] hover:bg-[#252525] hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
 
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-            <h3 className="text-lg font-bold text-gray-800 mb-2">
-              {language === 'zh' ? '确认退出' : language === 'my' ? 'ထွက်ခွင့်အတည်ပြုမည်' : 'Confirm Logout'}
-            </h3>
-            <p className="text-gray-600 mb-6">
-              {language === 'zh' ? '确定要退出登录吗？' : language === 'my' ? 'ထွက်မှာသေချာပါသလား?' : 'Are you sure you want to logout?'}
-            </p>
-            <div className="flex gap-3">
+            {/* 退出登录 */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#333]">
               <button
-                onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                onClick={() => {
+                  setShowMobileNav(false);
+                  setShowLogoutModal(true);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#252525] text-red-400 rounded-lg hover:bg-red-500/20 transition-colors"
               >
-                {language === 'zh' ? '取消' : language === 'my' ? 'မလုပ်' : 'Cancel'}
-              </button>
-              <button
-                onClick={confirmLogout}
-                className="flex-1 py-2.5 bg-gradient-to-r from-red-500 to-red-400 text-white rounded-xl hover:from-red-600 hover:to-red-500 transition-colors font-medium"
-              >
-                {language === 'zh' ? '确认退出' : language === 'my' ? 'ထွက်မည်' : 'Logout'}
+                <LogOut className="w-5 h-5" />
+                <span className="font-medium">退出登录</span>
               </button>
             </div>
           </div>
         </div>
       )}
+
+      {/* PC端左侧固定侧边栏 */}
+      {!isMobile && (
+        <aside className="fixed left-0 top-0 bottom-0 w-56 bg-[#1e1e1e] border-r border-[#333] z-40 flex flex-col">
+          {/* Logo 区域 */}
+          <div className="p-4 border-b border-[#333]">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold">无</span>
+              </div>
+              <div>
+                <p className="text-white font-bold">无忧服务</p>
+                <p className="text-[#888] text-xs">个人中心</p>
+              </div>
+            </Link>
+          </div>
+
+          {/* 用户信息区域 */}
+          <div className="p-4 border-b border-[#333]">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                <span className="text-white font-bold">优</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium truncate">无忧用户</p>
+                <p className="text-[#888] text-xs">ID: 51966932</p>
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="bg-[#252525] rounded-lg p-2 text-center">
+                <p className="text-orange-500 font-bold text-sm">¥1,280</p>
+                <p className="text-[#888] text-xs">余额</p>
+              </div>
+              <div className="bg-[#252525] rounded-lg p-2 text-center">
+                <p className="text-orange-500 font-bold text-sm">580</p>
+                <p className="text-[#888] text-xs">积分</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 导航菜单 */}
+          <nav className="flex-1 p-3 overflow-y-auto">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all ${
+                    isActive
+                      ? 'bg-gradient-to-r from-orange-500/20 to-orange-500/10 text-orange-500 border-l-2 border-orange-500'
+                      : 'text-[#ccc] hover:bg-[#252525] hover:text-white'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium text-sm">{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* 底部操作区 */}
+          <div className="p-4 border-t border-[#333]">
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#252525] text-[#ccc] rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-sm font-medium">退出登录</span>
+            </button>
+          </div>
+        </aside>
+      )}
+
+      {/* 主内容区域 */}
+      <main className={`${isMobile ? 'pt-14' : 'ml-56'} min-h-screen`}>
+        <div className="p-4 md:p-6 lg:p-8">
+          {children}
+        </div>
+      </main>
+
+      {/* 退出登录确认弹窗 */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#252525] rounded-2xl p-6 w-full max-w-sm animate-fade-in">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">确认退出</h3>
+              <p className="text-[#ccc] text-sm">确定要退出登录吗？</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-3 bg-[#333] text-white rounded-xl hover:bg-[#444] transition-colors font-medium"
+              >
+                取消
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors font-medium"
+              >
+                确认退出
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx global>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(-100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+      `}</style>
     </div>
   );
 }

@@ -2,49 +2,24 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
-import { Search, ShoppingCart, MessageCircle, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, ShoppingCart, MessageCircle, Menu, X, ChevronDown, Globe, User, Bell, Gift } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
-import { useApp } from '@/lib/i18n';
 import CartDrawer from './CartDrawer';
-
-const navItems = [
-  { id: 'home', name: '首页', href: '/' },
-  { id: 'shop', name: '产品', href: '/shop' },
-  { id: 'games', name: '游戏充值', href: '/games' },
-  { id: 'recharge', name: '话费充值', href: '/recharge' },
-  { id: 'forex', name: '无忧外汇', href: '/forex' },
-];
-
-// 外卖平台子菜单
-const deliverySubMenu = [
-  { id: 'food', name: '美食', href: '/coming-soon' },
-  { id: 'delivery', name: '外卖', href: '/coming-soon' },
-  { id: 'errand', name: '跑腿', href: '/coming-soon' },
-  { id: 'taxi', name: '滴滴车', href: '/coming-soon' },
-  { id: 'rental', name: '房屋租赁', href: '/coming-soon' },
-  { id: 'recruit', name: '招租信息', href: '/coming-soon' },
-  { id: 'hotel', name: '酒店公寓', href: '/coming-soon' },
-  { id: 'news', name: '新闻公告', href: '/coming-soon' },
-  { id: 'trade', name: '收购/出售', href: '/coming-soon' },
-];
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeNav, setActiveNav] = useState('home');
-  const [showSearch, setShowSearch] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showServiceModal, setShowServiceModal] = useState(false);
-  const [showDeliveryDropdown, setShowDeliveryDropdown] = useState(false);
-  const deliveryDropdownRef = useRef<HTMLDivElement>(null);
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
   const { getTotalItems, toggleCart } = useCartStore();
-  const { language } = useApp();
   const totalItems = getTotalItems();
 
-  // Close dropdown when clicking outside
+  // Close lang dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (deliveryDropdownRef.current && !deliveryDropdownRef.current.contains(event.target as Node)) {
-        setShowDeliveryDropdown(false);
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+        setShowLangDropdown(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -53,153 +28,150 @@ export default function Header() {
 
   return (
     <>
-      {/* Fixed Top Navigation */}
       <header className="nav-fixed">
+        {/* Top Bar - Logo, Search, Actions */}
         <div className="container-custom">
           <div className="flex items-center justify-between h-14">
-            {/* Logo */}
+            {/* Logo - Left */}
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent-hover rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">无</span>
+              <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-white font-bold text-sm">WY</span>
               </div>
               <div className="hidden sm:block">
                 <div className="text-sm font-bold text-text-primary">无忧服务</div>
-                <div className="text-[10px] text-text-muted">WORRY-FREE SERVICE</div>
+                <div className="text-[10px] text-text-muted">WY.ai</div>
               </div>
             </Link>
 
-            {/* Center Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {navItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  onClick={() => setActiveNav(item.id)}
-                  className={`px-4 py-2 text-sm rounded transition-colors ${
-                    activeNav === item.id
-                      ? 'text-accent font-medium bg-accent/10'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-              {/* 外卖平台 Dropdown */}
-              <div ref={deliveryDropdownRef} className="relative">
-                <button
-                  onClick={() => setShowDeliveryDropdown(!showDeliveryDropdown)}
-                  className={`px-4 py-2 text-sm rounded transition-colors flex items-center gap-1 ${
-                    activeNav === 'delivery'
-                      ? 'text-accent font-medium bg-accent/10'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
-                  }`}
-                >
-                  外卖平台
-                  <ChevronDown className={`w-4 h-4 transition-transform ${showDeliveryDropdown ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {showDeliveryDropdown && (
-                  <div className="absolute left-0 top-full mt-1 w-48 bg-dark-nav border border-dark-border rounded-xl shadow-2xl p-2 z-50 animate-slide-down">
-                    {deliverySubMenu.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        onClick={() => {
-                          setActiveNav('delivery');
-                          setShowDeliveryDropdown(false);
-                        }}
-                        className="block px-4 py-2.5 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
-                  </div>
+            {/* Search Bar - Center */}
+            <div className="flex-1 max-w-xl mx-4 hidden md:block">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="搜索商品..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-dark-card border border-dark-border rounded-full py-2 pl-10 pr-4 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-orange-500 transition-colors"
+                />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                {searchQuery && (
+                  <Link
+                    href={`/shop?search=${searchQuery}`}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-orange-500 hover:text-orange-400"
+                  >
+                    搜索
+                  </Link>
                 )}
               </div>
-            </nav>
+            </div>
 
             {/* Right Actions */}
             <div className="flex items-center gap-2">
-              {/* Search Toggle */}
-              <button
-                onClick={() => setShowSearch(!showSearch)}
-                className="p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
-                title="搜索"
-              >
-                <Search className="w-5 h-5" />
-              </button>
+              {/* Language/Currency Selector */}
+              <div ref={langDropdownRef} className="relative hidden sm:block">
+                <button
+                  onClick={() => setShowLangDropdown(!showLangDropdown)}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
+                >
+                  <Globe className="w-4 h-4" />
+                  <span className="hidden lg:inline">中文</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
 
-              {/* Customer Service */}
-              <button
-                onClick={() => setShowServiceModal(true)}
-                className="p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
-                title="客服"
-              >
-                <MessageCircle className="w-5 h-5" />
+                {showLangDropdown && (
+                  <div className="absolute right-0 top-full mt-1 w-40 bg-dark-nav border border-dark-border rounded-xl shadow-2xl p-2 z-50 animate-slide-down">
+                    <button className="w-full text-left px-4 py-2 text-sm text-text-primary bg-accent/10 rounded-lg">
+                      中文
+                    </button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg">
+                      English
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Login/Register */}
+              <div className="hidden lg:flex items-center gap-2">
+                <Link href="/login" className="px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
+                  登录
+                </Link>
+                <Link href="/register" className="px-3 py-1.5 text-sm bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium">
+                  注册
+                </Link>
+              </div>
+
+              {/* User Center */}
+              <Link href="/user" className="p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors hidden sm:block">
+                <User className="w-5 h-5" />
+              </Link>
+
+              {/* Notifications */}
+              <button className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
 
               {/* Cart */}
               <button
                 onClick={toggleCart}
-                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+                className="relative p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
               >
                 <ShoppingCart className="w-5 h-5" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-accent text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                     {totalItems}
                   </span>
                 )}
               </button>
 
-              {/* User Actions */}
-              <div className="hidden lg:flex items-center gap-2 ml-2">
-                <Link href="/login" className="px-3 py-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors">
-                  登录
-                </Link>
-                <Link href="/register" className="px-3 py-1.5 text-sm bg-accent hover:bg-accent-hover text-white rounded transition-colors">
-                  注册
-                </Link>
-              </div>
-
               {/* Mobile Menu Toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded transition-colors"
+                className="p-2 text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
-          {/* Search Bar */}
-          {showSearch && (
-            <div className="py-3 border-t border-dark-border animate-slide-down">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="搜索商品..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input-dark flex-1"
-                  autoFocus
-                />
-                <Link
-                  href={`/shop?search=${searchQuery}`}
-                  className="btn-primary"
-                  onClick={() => setShowSearch(false)}
-                >
-                  搜索
-                </Link>
-              </div>
-              {searchQuery && (
-                <div className="mt-2 text-sm text-text-muted">
-                  按回车搜索 &quot;{searchQuery}&quot;
-                </div>
-              )}
+          {/* Mobile Search Bar */}
+          <div className="md:hidden pb-3">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="搜索商品..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-dark-card border border-dark-border rounded-full py-2 pl-10 pr-4 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-orange-500 transition-colors"
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Navigation Bar - Below Header */}
+        <div className="bg-gradient-to-r from-orange-600 to-orange-500 hidden lg:block">
+          <div className="container-custom">
+            <div className="flex items-center gap-1 py-2">
+              {[
+                { id: 'home', name: '首页', href: '/' },
+                { id: 'hot', name: '热门产品', href: '/shop' },
+                { id: 'delivery', name: '外卖平台', href: '/coming-soon' },
+                { id: 'game', name: '游戏直充', href: '/games' },
+                { id: 'recharge', name: '话费充值', href: '/recharge' },
+                { id: 'sim', name: '海外手机卡', href: '/coming-soon' },
+                { id: 'forex', name: '货币外汇', href: '/forex' },
+              ].map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="px-5 py-2 text-sm text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors font-medium whitespace-nowrap"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -207,61 +179,30 @@ export default function Header() {
           <div className="lg:hidden border-t border-dark-border bg-dark-nav">
             <div className="container-custom py-4">
               <nav className="flex flex-col gap-1">
-                {navItems.map((item) => (
+                {[
+                  { id: 'home', name: '首页', href: '/' },
+                  { id: 'hot', name: '热门产品', href: '/shop' },
+                  { id: 'delivery', name: '外卖平台', href: '/coming-soon' },
+                  { id: 'game', name: '游戏直充', href: '/games' },
+                  { id: 'recharge', name: '话费充值', href: '/recharge' },
+                  { id: 'sim', name: '海外手机卡', href: '/coming-soon' },
+                  { id: 'forex', name: '货币外汇', href: '/forex' },
+                ].map((item) => (
                   <Link
                     key={item.id}
                     href={item.href}
-                    onClick={() => {
-                      setActiveNav(item.id);
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`px-4 py-3 text-sm rounded transition-colors ${
-                      activeNav === item.id
-                        ? 'text-accent font-medium bg-accent/10'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
-                    }`}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-4 py-3 text-sm text-text-secondary hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
                   >
                     {item.name}
                   </Link>
                 ))}
-
-                {/* 外卖平台 - Mobile */}
-                <div>
-                  <button
-                    onClick={() => setShowDeliveryDropdown(!showDeliveryDropdown)}
-                    className={`w-full px-4 py-3 text-sm rounded transition-colors flex items-center justify-between ${
-                      activeNav === 'delivery'
-                        ? 'text-accent font-medium bg-accent/10'
-                        : 'text-text-secondary hover:text-text-primary hover:bg-dark-card'
-                    }`}
-                  >
-                    <span>外卖平台</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform ${showDeliveryDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                  {showDeliveryDropdown && (
-                    <div className="ml-4 mt-1 space-y-1">
-                      {deliverySubMenu.map((item) => (
-                        <Link
-                          key={item.id}
-                          href={item.href}
-                          onClick={() => {
-                            setActiveNav('delivery');
-                            setMobileMenuOpen(false);
-                          }}
-                          className="block px-4 py-2.5 text-sm text-text-muted hover:text-text-primary hover:bg-dark-card rounded-lg transition-colors"
-                        >
-                          {item.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </nav>
               <div className="flex gap-2 mt-4 pt-4 border-t border-dark-border">
                 <Link href="/login" className="flex-1 py-2 text-center text-sm border border-dark-border text-text-secondary rounded hover:bg-dark-card transition-colors">
                   登录
                 </Link>
-                <Link href="/register" className="flex-1 py-2 text-center text-sm bg-accent text-white rounded hover:bg-accent-hover transition-colors">
+                <Link href="/register" className="flex-1 py-2 text-center text-sm bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
                   注册
                 </Link>
               </div>
@@ -290,7 +231,6 @@ export default function Header() {
             </div>
 
             <div className="space-y-4">
-              {/* WeChat */}
               <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
                 <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
                   <span className="text-2xl">💬</span>
@@ -302,7 +242,6 @@ export default function Header() {
                 <button className="btn-buy text-sm">咨询</button>
               </div>
 
-              {/* QQ */}
               <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
                 <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center">
                   <span className="text-2xl">🐧</span>
@@ -314,7 +253,6 @@ export default function Header() {
                 <button className="btn-buy text-sm">咨询</button>
               </div>
 
-              {/* Telegram */}
               <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
                 <div className="w-12 h-12 bg-sky-500/20 rounded-lg flex items-center justify-center">
                   <span className="text-2xl">✈️</span>
@@ -324,18 +262,6 @@ export default function Header() {
                   <div className="text-sm text-text-muted">@wuyou_service</div>
                 </div>
                 <button className="btn-buy text-sm">咨询</button>
-              </div>
-
-              {/* Email */}
-              <div className="flex items-center gap-4 p-4 bg-dark-card rounded-lg">
-                <div className="w-12 h-12 bg-accent/20 rounded-lg flex items-center justify-center">
-                  <span className="text-2xl">📧</span>
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-text-primary">邮件支持</div>
-                  <div className="text-sm text-text-muted">support@wuyou.com</div>
-                </div>
-                <button className="btn-primary text-sm">发送</button>
               </div>
             </div>
 
