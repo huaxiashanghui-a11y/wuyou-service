@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import UserLayout from '@/components/user/UserLayout';
 import {
   Package,
@@ -11,7 +12,7 @@ import {
   RefreshCw,
   Search,
   ChevronRight,
-  AlertCircle
+  ShoppingBag
 } from 'lucide-react';
 
 type TabType = 'all' | 'unpaid' | 'pending' | 'shipped' | 'completed' | 'refund';
@@ -21,18 +22,19 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const tabs: { id: TabType; label: string; count?: number }[] = [
-    { id: 'all', label: '全部', count: 0 },
+    { id: 'all', label: '全部', count: 3 },
     { id: 'unpaid', label: '待付款', count: 1 },
     { id: 'pending', label: '待发货', count: 0 },
     { id: 'shipped', label: '待收货', count: 1 },
-    { id: 'completed', label: '已完成', count: 0 },
+    { id: 'completed', label: '已完成', count: 1 },
     { id: 'refund', label: '售后退款', count: 0 },
   ];
 
   // 示例订单数据
   const orders = [
     {
-      id: 'ORD20260421001',
+      id: '1',
+      orderNo: 'ORD20260421001',
       shop: '抖音旗舰店',
       product: '抖音充值 100币',
       price: 98,
@@ -41,7 +43,8 @@ export default function OrdersPage() {
       image: 'https://picsum.photos/80/80?random=1'
     },
     {
-      id: 'ORD20260420002',
+      id: '2',
+      orderNo: 'ORD20260420002',
       shop: '王者荣耀官方',
       product: '648点券直充',
       price: 618,
@@ -49,15 +52,25 @@ export default function OrdersPage() {
       time: '2026-04-20 15:20',
       image: 'https://picsum.photos/80/80?random=2'
     },
+    {
+      id: '3',
+      orderNo: 'ORD20260419003',
+      shop: 'B站会员购',
+      product: 'B站大会员年卡',
+      price: 168,
+      status: 'completed',
+      time: '2026-04-19 09:15',
+      image: 'https://picsum.photos/80/80?random=3'
+    },
   ];
 
   const getStatusInfo = (status: string) => {
     const statusMap: Record<string, { label: string; color: string; bg: string }> = {
-      unpaid: { label: '待付款', color: 'text-orange-500', bg: 'bg-orange-500/20' },
-      pending: { label: '待发货', color: 'text-blue-500', bg: 'bg-blue-500/20' },
-      shipped: { label: '待收货', color: 'text-purple-500', bg: 'bg-purple-500/20' },
-      completed: { label: '已完成', color: 'text-green-500', bg: 'bg-green-500/20' },
-      refund: { label: '售后退款', color: 'text-red-500', bg: 'bg-red-500/20' },
+      unpaid: { label: '待付款', color: 'text-orange-400', bg: 'bg-orange-400/20' },
+      pending: { label: '待发货', color: 'text-blue-400', bg: 'bg-blue-400/20' },
+      shipped: { label: '待收货', color: 'text-purple-400', bg: 'bg-purple-400/20' },
+      completed: { label: '已完成', color: 'text-account-success', bg: 'bg-account-success/20' },
+      refund: { label: '售后退款', color: 'text-account-danger', bg: 'bg-account-danger/20' },
     };
     return statusMap[status] || statusMap.completed;
   };
@@ -66,19 +79,19 @@ export default function OrdersPage() {
     switch (status) {
       case 'unpaid':
         return (
-          <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium">
+          <button className="px-5 py-2 bg-account-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
             立即付款
           </button>
         );
       case 'shipped':
         return (
-          <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm font-medium">
+          <button className="px-5 py-2 bg-account-success text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-medium">
             确认收货
           </button>
         );
       case 'completed':
         return (
-          <button className="px-4 py-2 bg-[#444] text-white rounded-lg hover:bg-[#555] transition-colors text-sm font-medium">
+          <button className="px-5 py-2 bg-account-bg text-account-secondary rounded-lg hover:bg-account-border transition-colors text-sm font-medium">
             申请售后
           </button>
         );
@@ -89,7 +102,7 @@ export default function OrdersPage() {
 
   const filteredOrders = orders.filter(order => {
     const matchesTab = activeTab === 'all' || order.status === activeTab;
-    const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = order.orderNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          order.product.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
@@ -101,18 +114,18 @@ export default function OrdersPage() {
 
         {/* 搜索框 */}
         <div className="relative mb-4">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#666]" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-account-secondary" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="搜索订单号或商品名称..."
-            className="w-full pl-12 pr-4 py-3 bg-[#252525] text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full pl-12 pr-4 py-3.5 bg-account-card text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-account-primary border border-account-border"
           />
         </div>
 
         {/* 标签页 */}
-        <div className="bg-[#252525] rounded-xl mb-6 overflow-hidden">
+        <div className="bg-account-card rounded-xl mb-6 overflow-hidden border border-account-border">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => (
               <button
@@ -120,13 +133,13 @@ export default function OrdersPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-5 py-4 text-sm font-medium whitespace-nowrap transition-all ${
                   activeTab === tab.id
-                    ? 'text-orange-500 border-b-2 border-orange-500 bg-[#1e1e1e]'
-                    : 'text-[#ccc] hover:text-white hover:bg-[#2a2a2a]'
+                    ? 'text-account-primary border-b-2 border-account-primary bg-account-primary/10'
+                    : 'text-account-secondary hover:text-white hover:bg-account-bg'
                 }`}
               >
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="px-1.5 py-0.5 bg-orange-500 text-white text-xs rounded-full">
+                  <span className="px-2 py-0.5 bg-account-primary text-white text-xs rounded-full">
                     {tab.count}
                   </span>
                 )}
@@ -137,15 +150,15 @@ export default function OrdersPage() {
 
         {/* 订单列表 */}
         {filteredOrders.length === 0 ? (
-          <div className="bg-[#252525] rounded-xl p-12 text-center">
-            <div className="w-20 h-20 bg-[#333] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="w-10 h-10 text-[#666]" />
+          <div className="bg-account-card rounded-xl p-12 text-center border border-account-border">
+            <div className="w-20 h-20 bg-account-bg rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShoppingBag className="w-10 h-10 text-account-secondary" />
             </div>
             <h3 className="text-lg font-medium text-white mb-2">暂无订单</h3>
-            <p className="text-[#888] text-sm mb-4">您暂时没有相关订单</p>
+            <p className="text-account-secondary text-sm mb-4">您暂时没有相关订单</p>
             <button
               onClick={() => window.location.href = '/shop'}
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
+              className="px-6 py-2.5 bg-account-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
             >
               去逛逛
             </button>
@@ -155,14 +168,14 @@ export default function OrdersPage() {
             {filteredOrders.map((order) => {
               const statusInfo = getStatusInfo(order.status);
               return (
-                <div key={order.id} className="bg-[#252525] rounded-xl overflow-hidden">
+                <div key={order.id} className="bg-account-card rounded-xl overflow-hidden border border-account-border">
                   {/* 订单头部 */}
-                  <div className="flex items-center justify-between px-4 py-3 bg-[#1e1e1e]">
+                  <div className="flex items-center justify-between px-4 py-3 bg-account-bg">
                     <div className="flex items-center gap-2">
-                      <span className="text-[#ccc] text-sm">{order.shop}</span>
-                      <ChevronRight className="w-4 h-4 text-[#666]" />
+                      <span className="text-account-secondary text-sm">{order.shop}</span>
+                      <ChevronRight className="w-4 h-4 text-account-secondary" />
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}>
+                    <span className={`px-3 py-1 rounded text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}>
                       {statusInfo.label}
                     </span>
                   </div>
@@ -173,24 +186,27 @@ export default function OrdersPage() {
                       <img
                         src={order.image}
                         alt={order.product}
-                        className="w-20 h-20 rounded-lg object-cover bg-[#333]"
+                        className="w-20 h-20 rounded-xl object-cover bg-account-bg"
                       />
                       <div className="flex-1 min-w-0">
                         <h4 className="text-white font-medium mb-1">{order.product}</h4>
-                        <p className="text-[#888] text-sm mb-2">订单号: {order.id}</p>
-                        <p className="text-[#666] text-xs">{order.time}</p>
+                        <p className="text-account-secondary text-sm mb-2">订单号: {order.orderNo}</p>
+                        <p className="text-account-secondary/60 text-xs">{order.time}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-orange-500 font-bold text-lg">¥{order.price}</p>
+                        <p className="text-account-primary font-bold text-lg">¥{order.price}</p>
                       </div>
                     </div>
 
                     {/* 操作按钮 */}
-                    <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-[#333]">
+                    <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-account-border">
                       {getActionButton(order.status)}
-                      <button className="px-4 py-2 bg-[#333] text-[#ccc] rounded-lg hover:bg-[#444] transition-colors text-sm font-medium">
+                      <Link
+                        href={`/user/orders/${order.id}`}
+                        className="px-5 py-2 bg-account-bg text-account-secondary rounded-lg hover:bg-account-border transition-colors text-sm font-medium"
+                      >
                         订单详情
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

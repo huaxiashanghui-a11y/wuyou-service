@@ -9,7 +9,8 @@ import {
   Shield,
   Info,
   ChevronRight,
-  Check
+  Check,
+  RefreshCw
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -56,7 +57,7 @@ export default function SettingsPage() {
       items: [
         { id: 'privacy', icon: Shield, label: '隐私协议', type: 'link' },
         { id: 'terms', icon: Info, label: '用户协议', type: 'link' },
-        { id: 'about', icon: Info, label: '关于我们', type: 'link' },
+        { id: 'about', icon: RefreshCw, label: '关于我们', type: 'link' },
       ],
     },
   ];
@@ -67,8 +68,8 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold text-white mb-6">设置</h1>
 
         {settingGroups.map((group, groupIndex) => (
-          <div key={groupIndex} className="bg-[#252525] rounded-xl overflow-hidden mb-4">
-            <div className="px-4 py-3 bg-[#1e1e1e]">
+          <div key={groupIndex} className="bg-account-card rounded-xl overflow-hidden mb-4 border border-account-border">
+            <div className="px-5 py-3 bg-account-bg">
               <h3 className="text-white font-medium text-sm">{group.title}</h3>
             </div>
             <div>
@@ -78,19 +79,19 @@ export default function SettingsPage() {
                 return (
                   <div
                     key={item.id}
-                    className={`flex items-center justify-between px-4 py-4 hover:bg-[#2a2a2a] transition-colors ${
-                      !isLast ? 'border-b border-[#333]' : ''
+                    className={`flex items-center justify-between px-5 py-4 hover:bg-account-bg transition-colors ${
+                      !isLast ? 'border-b border-account-border' : ''
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="w-5 h-5 text-[#888]" />
+                      <Icon className="w-5 h-5 text-account-secondary" />
                       <span className="text-white">{item.label}</span>
                     </div>
                     {item.type === 'switch' ? (
                       <button
                         onClick={() => toggleSwitch(item.id)}
                         className={`w-12 h-6 rounded-full transition-colors relative ${
-                          (item as any).value ? 'bg-orange-500' : 'bg-[#444]'
+                          (item as any).value ? 'bg-account-primary' : 'bg-account-border'
                         }`}
                       >
                         <div
@@ -101,11 +102,11 @@ export default function SettingsPage() {
                       </button>
                     ) : item.type === 'value' ? (
                       <div className="flex items-center gap-2">
-                        <span className="text-[#888] text-sm">{(item as any).value}</span>
-                        <ChevronRight className="w-5 h-5 text-[#666]" />
+                        <span className="text-account-secondary text-sm">{(item as any).value}</span>
+                        <ChevronRight className="w-5 h-5 text-account-secondary" />
                       </div>
                     ) : (
-                      <ChevronRight className="w-5 h-5 text-[#666]" />
+                      <ChevronRight className="w-5 h-5 text-account-secondary" />
                     )}
                   </div>
                 );
@@ -115,7 +116,7 @@ export default function SettingsPage() {
         ))}
 
         {/* 版本信息 */}
-        <div className="text-center text-[#666] text-sm mt-8">
+        <div className="text-center text-account-secondary text-sm mt-8">
           <p>无忧服务 v2.0.0</p>
           <p className="mt-1">© {new Date().getFullYear()} 无忧服务 版权所有</p>
         </div>
