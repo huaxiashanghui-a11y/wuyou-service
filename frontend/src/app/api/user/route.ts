@@ -45,9 +45,14 @@ const mockSecurity = {
 // 检查数据库是否可用
 async function isDbAvailable(): Promise<boolean> {
   try {
+    console.log('Testing database connection...');
+    console.log('MYSQL_HOST:', process.env.MYSQL_HOST);
+    console.log('MYSQL_PASSWORD set:', !!process.env.MYSQL_PASSWORD);
     await query('SELECT 1');
+    console.log('Database connection successful');
     return true;
-  } catch {
+  } catch (err: any) {
+    console.log('Database connection failed:', err.message);
     return false;
   }
 }
