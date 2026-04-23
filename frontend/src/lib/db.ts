@@ -165,8 +165,35 @@ export async function initTables(): Promise<void> {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       INDEX idx_user_id (user_id),
       INDEX idx_token (token)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS merchant_apply (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
+      shop_name VARCHAR(100) NOT NULL,
+      contact_phone VARCHAR(20) NOT NULL,
+      business_category VARCHAR(50),
+      remark TEXT,
+      status VARCHAR(20) DEFAULT 'pending',
+      admin_remark TEXT,
+      reviewed_at TIMESTAMP NULL,
+      reviewed_by INT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_user_id (user_id),
+      INDEX idx_status (status)
     )`
   ];
+
+  // 更新 users 表添加 is_merchant 字段
+  try {
+    await p.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_merchant TINYINT DEFAULT 0`);
+  } catch (e: any) {
+    // 如果字段已存在会报错，忽略即可
+    if (!e.message.includes('Duplicate column')) {
+      console.error('添加 is_merchant 字段失败:', e.message);
+    }
+  }
 
   for (const sql of tables) {
     await p.execute(sql);
@@ -253,4 +280,19 @@ export interface Session {
   device: string | null;
   expires_at: Date;
   created_at: Date;
+}
+
+export interface MerchantApply {
+  id: number;
+  user_id: number;
+  shop_name: string;
+  contact_phone: string;
+  business_category: string | null;
+  remark: string | null;
+  status: string;
+  admin_remark: string | null;
+  reviewed_at: Date | null;
+  reviewed_by: number | null;
+  created_at: Date;
+  updated_at: Date;
 }

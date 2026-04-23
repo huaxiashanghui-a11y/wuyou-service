@@ -4,60 +4,48 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  User,
-  Wallet,
+  Users,
+  Store,
   FileText,
-  Gift,
-  TrendingUp,
-  Shield,
+  Settings,
   LogOut,
   Menu,
   X,
   ChevronRight,
   Home,
-  Bell,
-  Settings,
-  Loader2,
-  Store
+  Shield,
+  Loader2
 } from 'lucide-react';
 
 type NavItem = {
   id: string;
-  icon: typeof User;
+  icon: typeof Users;
   label: string;
   href: string;
 };
 
 const navItems: NavItem[] = [
-  { id: 'home', icon: Home, label: '首页概览', href: '/user' },
-  { id: 'profile', icon: User, label: '个人信息', href: '/user/profile' },
-  { id: 'wallet', icon: Wallet, label: '我的钱包', href: '/user/wallet' },
-  { id: 'orders', icon: FileText, label: '我的订单', href: '/user/orders' },
-  { id: 'coupons', icon: Gift, label: '我的优惠券', href: '/user/coupons' },
-  { id: 'promotion', icon: TrendingUp, label: '我的推广', href: '/user/promotion' },
-  { id: 'security', icon: Shield, label: '账户安全', href: '/user/security' },
-  { id: 'merchant', icon: Store, label: '商家入驻', href: '/user/merchant-join' },
+  { id: 'dashboard', icon: Home, label: '后台概览', href: '/admin' },
+  { id: 'merchants', icon: Store, label: '商家审核', href: '/admin/merchants' },
+  { id: 'users', icon: Users, label: '用户管理', href: '/admin/users' },
+  { id: 'orders', icon: FileText, label: '订单管理', href: '/admin/orders' },
 ];
 
-interface UserLayoutProps {
+interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-export default function UserLayout({ children }: UserLayoutProps) {
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState({
+  const [adminData, setAdminData] = useState({
     id: 0,
-    nickname: '用户',
+    nickname: '管理员',
     username: '',
-    avatar: null as string | null,
-    balance: '0.00',
-    points: 0,
-    member_level: 'VIP 1',
   });
 
   // 检测移动端
@@ -70,9 +58,9 @@ export default function UserLayout({ children }: UserLayoutProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 获取用户信息
+  // 获取管理员信息
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchAdminData = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
         router.push('/login');
@@ -95,32 +83,22 @@ export default function UserLayout({ children }: UserLayoutProps) {
 
         const result = await response.json();
         if (result.success && result.data) {
-          setUserData({
+          setAdminData({
             id: result.data.id,
             nickname: result.data.nickname || result.data.username,
             username: result.data.username,
-            avatar: result.data.avatar,
-            balance: (result.data.balance || 0).toFixed(2),
-            points: result.data.points || 0,
-            member_level: result.data.member_level || 'VIP 1',
           });
         }
       } catch (error) {
-        console.error('获取用户信息失败:', error);
+        console.error('获取管理员信息失败:', error);
         router.push('/login');
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchUserData();
+    fetchAdminData();
   }, [router]);
-
-  // 获取当前激活的导航项
-  const getActiveItem = () => {
-    const current = navItems.find(item => pathname === item.href);
-    return current?.id || 'home';
-  };
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
@@ -158,11 +136,11 @@ export default function UserLayout({ children }: UserLayoutProps) {
       {/* 移动端顶部导航 */}
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 h-16 bg-account-card border-b border-account-border z-50 flex items-center justify-between px-4">
-          <Link href="/user" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-account-primary to-blue-700 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">无</span>
+          <Link href="/admin" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-semibold">个人中心</span>
+            <span className="text-white font-semibold">管理后台</span>
           </Link>
           <button
             onClick={() => setShowMobileNav(true)}
@@ -181,7 +159,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
             onClick={() => setShowMobileNav(false)}
           />
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-account-card animate-slide-in">
-            {/* 用户信息头部 */}
+            {/* 头部 */}
             <div className="p-5 border-b border-account-border">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-white font-semibold">菜单</span>
@@ -193,26 +171,12 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-account-primary to-blue-700 flex items-center justify-center">
-                  {userData.avatar ? (
-                    <img src={userData.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    <span className="text-white font-bold text-xl">{userData.nickname.charAt(0)}</span>
-                  )}
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-medium">{userData.nickname}</p>
-                  <p className="text-account-secondary text-sm">ID: {userData.id}</p>
-                </div>
-              </div>
-              <div className="mt-4 flex gap-3">
-                <div className="flex-1 bg-account-bg rounded-lg p-3 text-center">
-                  <p className="text-account-primary font-bold">¥{userData.balance}</p>
-                  <p className="text-account-secondary text-xs">余额</p>
-                </div>
-                <div className="flex-1 bg-account-bg rounded-lg p-3 text-center">
-                  <p className="text-account-gold font-bold">{userData.points}</p>
-                  <p className="text-account-secondary text-xs">积分</p>
+                  <p className="text-white font-medium">{adminData.nickname}</p>
+                  <p className="text-account-secondary text-sm">管理员</p>
                 </div>
               </div>
             </div>
@@ -229,7 +193,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                     onClick={() => setShowMobileNav(false)}
                     className={`flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1 transition-all ${
                       isActive
-                        ? 'bg-account-primary/20 text-account-primary'
+                        ? 'bg-purple-500/20 text-purple-400'
                         : 'text-account-secondary hover:bg-account-bg hover:text-white'
                     }`}
                   >
@@ -263,40 +227,26 @@ export default function UserLayout({ children }: UserLayoutProps) {
         <aside className="fixed left-0 top-0 bottom-0 w-64 bg-account-card border-r border-account-border z-40 flex flex-col">
           {/* Logo 区域 */}
           <div className="p-5 border-b border-account-border">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-account-primary to-blue-700 rounded-xl flex items-center justify-center shadow-glow">
-                <span className="text-white font-bold text-xl">无</span>
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-bold text-lg">返回首页</p>
+                <p className="text-white font-bold text-lg">管理后台</p>
                 <p className="text-account-secondary text-sm">wysz88.com</p>
               </div>
             </Link>
           </div>
 
-          {/* 用户信息区域 */}
+          {/* 管理员信息区域 */}
           <div className="p-5 border-b border-account-border">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-account-primary to-blue-700 flex items-center justify-center">
-                {userData.avatar ? (
-                  <img src={userData.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <span className="text-white font-bold text-xl">{userData.nickname.charAt(0)}</span>
-                )}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                <Shield className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold truncate">{userData.nickname}</p>
-                <p className="text-account-secondary text-sm">ID: {userData.id}</p>
-              </div>
-            </div>
-            <div className="mt-4 flex gap-3">
-              <div className="flex-1 bg-account-bg rounded-xl p-3 text-center">
-                <p className="text-account-primary font-bold text-lg">¥{userData.balance}</p>
-                <p className="text-account-secondary text-xs">余额</p>
-              </div>
-              <div className="flex-1 bg-account-bg rounded-xl p-3 text-center">
-                <p className="text-account-gold font-bold text-lg">{userData.points}</p>
-                <p className="text-account-secondary text-xs">积分</p>
+                <p className="text-white font-semibold truncate">{adminData.nickname}</p>
+                <p className="text-account-secondary text-sm">ID: {adminData.id}</p>
               </div>
             </div>
           </div>
@@ -312,7 +262,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                   href={item.href}
                   className={`flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1 transition-all ${
                     isActive
-                      ? 'bg-gradient-to-r from-account-primary/20 to-transparent text-account-primary border-l-2 border-account-primary'
+                      ? 'bg-gradient-to-r from-purple-500/20 to-transparent text-purple-400 border-l-2 border-purple-500'
                       : 'text-account-secondary hover:bg-account-bg hover:text-white'
                   }`}
                 >
@@ -352,7 +302,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 <LogOut className="w-8 h-8 text-account-danger" />
               </div>
               <h3 className="text-xl font-bold text-white mb-2">确认退出</h3>
-              <p className="text-account-secondary">确定要退出登录吗？</p>
+              <p className="text-account-secondary">确定要退出管理后台吗？</p>
             </div>
             <div className="flex gap-3">
               <button
