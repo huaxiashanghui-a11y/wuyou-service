@@ -185,14 +185,21 @@ export async function initTables(): Promise<void> {
     )`
   ];
 
-  // 更新 users 表添加 is_merchant 字段
+  // 更新 users 表添加 is_merchant 字段（MySQL 需要先检查字段是否存在）
   try {
-    await p.execute(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_merchant TINYINT DEFAULT 0`);
-  } catch (e: any) {
-    // 如果字段已存在会报错，忽略即可
-    if (!e.message.includes('Duplicate column')) {
-      console.error('添加 is_merchant 字段失败:', e.message);
+    // 检查字段是否已存在
+    const [columns] = await p.execute(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'is_merchant'
+    `, [process.env.MYSQL_DATABASE || 'wuyouservice']);
+
+    if ((columns as any[]).length === 0) {
+      await p.execute('ALTER TABLE users ADD COLUMN is_merchant TINYINT DEFAULT 0');
+      console.log('is_merchant 字段添加成功');
     }
+  } catch (e: any) {
+    // 忽略错误
+    console.log('检查/添加 is_merchant 字段:', e.message);
   }
 
   for (const sql of tables) {
@@ -223,6 +230,7 @@ export interface User {
   real_name: string | null;
   id_card: string | null;
   status: number;
+  is_merchant: number;
   created_at: Date;
   updated_at: Date;
 }

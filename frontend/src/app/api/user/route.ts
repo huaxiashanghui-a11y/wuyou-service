@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     switch (action) {
       case 'profile': {
         const users = await dbQuery<User[]>(
-          'SELECT id, username, nickname, email, phone, avatar, balance, points, member_level, real_name, id_card, created_at FROM users WHERE id = ?',
+          'SELECT id, username, nickname, email, phone, avatar, balance, points, member_level, real_name, id_card, is_merchant, created_at FROM users WHERE id = ?',
           [payload.userId]
         );
 
