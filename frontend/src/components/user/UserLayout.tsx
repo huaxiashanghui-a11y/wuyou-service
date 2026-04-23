@@ -16,7 +16,8 @@ import {
   ChevronRight,
   Home,
   Bell,
-  Settings
+  Settings,
+  Loader2
 } from 'lucide-react';
 
 type NavItem = {
@@ -46,11 +47,15 @@ export default function UserLayout({ children }: UserLayoutProps) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState({
+    id: 0,
     nickname: '用户',
+    username: '',
     avatar: null as string | null,
     balance: '0.00',
     points: 0,
+    member_level: 'VIP 1',
   });
 
   // 检测移动端
@@ -63,17 +68,88 @@ export default function UserLayout({ children }: UserLayoutProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // 获取用户信息
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/user?action=profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          router.push('/login');
+          return;
+        }
+
+        const result = await response.json();
+        if (result.success && result.data) {
+          setUserData({
+            id: result.data.id,
+            nickname: result.data.nickname || result.data.username,
+            username: result.data.username,
+            avatar: result.data.avatar,
+            balance: (result.data.balance || 0).toFixed(2),
+            points: result.data.points || 0,
+            member_level: result.data.member_level || 'VIP 1',
+          });
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        router.push('/login');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
+
   // 获取当前激活的导航项
   const getActiveItem = () => {
     const current = navItems.find(item => pathname === item.href);
     return current?.id || 'home';
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user_token');
-    localStorage.removeItem('user_info');
-    router.push('/');
+  const handleLogout = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('登出失败:', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      router.push('/');
+    }
   };
+
+  // 加载状态
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-account-bg flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-account-primary animate-spin mx-auto mb-4" />
+          <p className="text-account-secondary">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-account-bg">
@@ -124,7 +200,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 </div>
                 <div>
                   <p className="text-white font-medium">{userData.nickname}</p>
-                  <p className="text-account-secondary text-sm">ID: 100001</p>
+                  <p className="text-account-secondary text-sm">ID: {userData.id}</p>
                 </div>
               </div>
               <div className="mt-4 flex gap-3">
@@ -190,7 +266,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
                 <span className="text-white font-bold text-xl">无</span>
               </div>
               <div>
-                <p className="text-white font-bold text-lg">无忧服务</p>
+                <p className="text-white font-bold text-lg">返回首页</p>
                 <p className="text-account-secondary text-sm">个人中心</p>
               </div>
             </Link>
@@ -208,7 +284,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold truncate">{userData.nickname}</p>
-                <p className="text-account-secondary text-sm">ID: 100001</p>
+                <p className="text-account-secondary text-sm">ID: {userData.id}</p>
               </div>
             </div>
             <div className="mt-4 flex gap-3">

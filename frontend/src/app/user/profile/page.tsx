@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserLayout from '@/components/user/UserLayout';
 import {
   Camera,
@@ -11,23 +11,53 @@ import {
   Check,
   X,
   Save,
-  Shield
+  Loader2
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const [avatar, setAvatar] = useState<string | null>(null);
-  const [nickname, setNickname] = useState('用户');
+  const [nickname, setNickname] = useState('');
   const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('user@example.com');
+  const [email, setEmail] = useState('');
   const [realName, setRealName] = useState('');
   const [idCard, setIdCard] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'secret'>('secret');
   const [saving, setSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [toast, setToast] = useState<{ show: boolean; message: string; type: 'success' | 'error' }>({
     show: false,
     message: '',
     type: 'success'
   });
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/user?action=profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (data.success) {
+          const user = data.data;
+          setNickname(user.nickname || user.username || '');
+          setPhone(user.phone || '');
+          setEmail(user.email || '');
+          setRealName(user.real_name || '');
+          setIdCard(user.id_card || '');
+          setAvatar(user.avatar);
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ show: true, message, type });
@@ -45,17 +75,61 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!nickname || nickname.length < 2) {
       showToast('昵称至少2个字符', 'error');
       return;
     }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      showToast('请先登录', 'error');
+      return;
+    }
+
     setSaving(true);
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action: 'updateProfile',
+          nickname,
+          email,
+          phone,
+          avatar,
+          real_name: realName,
+          id_card: idCard,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        showToast('保存成功！');
+      } else {
+        showToast(data.message || '保存失败', 'error');
+      }
+    } catch (error) {
+      console.error('保存失败:', error);
+      showToast('保存失败，请稍后重试', 'error');
+    } finally {
       setSaving(false);
-      showToast('保存成功！');
-    }, 1500);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-account-primary animate-spin" />
+        </div>
+      </UserLayout>
+    );
+  }
 
   return (
     <UserLayout>
@@ -70,7 +144,7 @@ export default function ProfilePage() {
                 {avatar ? (
                   <img src={avatar} alt="头像" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-white font-bold text-3xl">{nickname.charAt(0)}</span>
+                  <span className="text-white font-bold text-3xl">{nickname.charAt(0) || '用'}</span>
                 )}
               </div>
               <label className="absolute bottom-0 right-0 w-8 h-8 bg-account-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-600 transition-colors shadow-lg">
@@ -144,18 +218,13 @@ export default function ProfilePage() {
                 <Smartphone className="w-4 h-4 inline mr-1" />
                 手机号
               </label>
-              <div className="flex gap-3">
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="flex-1 py-3.5 px-4 bg-account-bg text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-account-primary border border-account-border"
-                  placeholder="请输入手机号"
-                />
-                <button className="px-5 py-3.5 bg-account-primary text-white rounded-xl hover:bg-blue-600 transition-colors font-medium">
-                  绑定
-                </button>
-              </div>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full py-3.5 px-4 bg-account-bg text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-account-primary border border-account-border"
+                placeholder="请输入手机号"
+              />
             </div>
 
             {/* 邮箱 */}

@@ -1,82 +1,74 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import UserLayout from '@/components/user/UserLayout';
 import {
   Package,
-  Clock,
-  CreditCard,
-  Truck,
-  CheckCircle,
-  RefreshCw,
   Search,
   ChevronRight,
-  ShoppingBag
+  ShoppingBag,
+  Loader2
 } from 'lucide-react';
 
 type TabType = 'all' | 'unpaid' | 'pending' | 'shipped' | 'completed' | 'refund';
 
+interface Order {
+  id: number;
+  order_no: string;
+  product_name: string;
+  product_image: string;
+  total_amount: number;
+  status: string;
+  created_at: string;
+  [key: string]: any;
+}
+
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<TabType>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const tabs: { id: TabType; label: string; count?: number }[] = [
-    { id: 'all', label: '全部', count: 3 },
-    { id: 'unpaid', label: '待付款', count: 1 },
-    { id: 'pending', label: '待发货', count: 0 },
-    { id: 'shipped', label: '待收货', count: 1 },
-    { id: 'completed', label: '已完成', count: 1 },
-    { id: 'refund', label: '售后退款', count: 0 },
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
 
-  // 示例订单数据
-  const orders = [
-    {
-      id: '1',
-      orderNo: 'ORD20260421001',
-      shop: '抖音旗舰店',
-      product: '抖音充值 100币',
-      price: 98,
-      status: 'unpaid',
-      time: '2026-04-21 10:30',
-      image: 'https://picsum.photos/80/80?random=1'
-    },
-    {
-      id: '2',
-      orderNo: 'ORD20260420002',
-      shop: '王者荣耀官方',
-      product: '648点券直充',
-      price: 618,
-      status: 'shipped',
-      time: '2026-04-20 15:20',
-      image: 'https://picsum.photos/80/80?random=2'
-    },
-    {
-      id: '3',
-      orderNo: 'ORD20260419003',
-      shop: 'B站会员购',
-      product: 'B站大会员年卡',
-      price: 168,
-      status: 'completed',
-      time: '2026-04-19 09:15',
-      image: 'https://picsum.photos/80/80?random=3'
-    },
-  ];
+      try {
+        const response = await fetch('/api/user?action=orders', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (data.success) {
+          setOrders(data.data || []);
+        }
+      } catch (error) {
+        console.error('获取订单失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   const getStatusInfo = (status: string) => {
     const statusMap: Record<string, { label: string; color: string; bg: string }> = {
+      pending: { label: '待付款', color: 'text-orange-400', bg: 'bg-orange-400/20' },
       unpaid: { label: '待付款', color: 'text-orange-400', bg: 'bg-orange-400/20' },
-      pending: { label: '待发货', color: 'text-blue-400', bg: 'bg-blue-400/20' },
+      processing: { label: '处理中', color: 'text-blue-400', bg: 'bg-blue-400/20' },
       shipped: { label: '待收货', color: 'text-purple-400', bg: 'bg-purple-400/20' },
       completed: { label: '已完成', color: 'text-account-success', bg: 'bg-account-success/20' },
+      refunded: { label: '已退款', color: 'text-account-danger', bg: 'bg-account-danger/20' },
       refund: { label: '售后退款', color: 'text-account-danger', bg: 'bg-account-danger/20' },
     };
-    return statusMap[status] || statusMap.completed;
+    return statusMap[status] || { label: status, color: 'text-account-secondary', bg: 'bg-account-bg' };
   };
 
   const getActionButton = (status: string) => {
     switch (status) {
+      case 'pending':
       case 'unpaid':
         return (
           <button className="px-5 py-2 bg-account-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium">
@@ -100,12 +92,62 @@ export default function OrdersPage() {
     }
   };
 
+  const getTabCounts = () => {
+    const counts: Record<string, number> = {
+      all: orders.length,
+      unpaid: 0,
+      pending: 0,
+      shipped: 0,
+      completed: 0,
+      refund: 0,
+    };
+
+    orders.forEach(order => {
+      if (order.status === 'pending' || order.status === 'unpaid') counts.unpaid++;
+      else if (order.status === 'processing') counts.pending++;
+      else if (order.status === 'shipped') counts.shipped++;
+      else if (order.status === 'completed') counts.completed++;
+      else counts.refund++;
+    });
+
+    return counts;
+  };
+
+  const counts = getTabCounts();
+
+  const tabs: { id: TabType; label: string }[] = [
+    { id: 'all', label: '全部' },
+    { id: 'unpaid', label: '待付款' },
+    { id: 'pending', label: '待发货' },
+    { id: 'shipped', label: '待收货' },
+    { id: 'completed', label: '已完成' },
+    { id: 'refund', label: '售后退款' },
+  ];
+
   const filteredOrders = orders.filter(order => {
-    const matchesTab = activeTab === 'all' || order.status === activeTab;
-    const matchesSearch = order.orderNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         order.product.toLowerCase().includes(searchQuery.toLowerCase());
+    const statusMap: Record<string, string[]> = {
+      unpaid: ['pending', 'unpaid'],
+      pending: ['processing'],
+      shipped: ['shipped'],
+      completed: ['completed'],
+      refund: ['refunded', 'refund'],
+    };
+
+    const matchesTab = activeTab === 'all' || (statusMap[activeTab]?.includes(order.status));
+    const matchesSearch = order.order_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         order.product_name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
+
+  if (isLoading) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-account-primary animate-spin" />
+        </div>
+      </UserLayout>
+    );
+  }
 
   return (
     <UserLayout>
@@ -138,9 +180,9 @@ export default function OrdersPage() {
                 }`}
               >
                 {tab.label}
-                {tab.count !== undefined && tab.count > 0 && (
+                {counts[tab.id] > 0 && (
                   <span className="px-2 py-0.5 bg-account-primary text-white text-xs rounded-full">
-                    {tab.count}
+                    {counts[tab.id]}
                   </span>
                 )}
               </button>
@@ -156,12 +198,12 @@ export default function OrdersPage() {
             </div>
             <h3 className="text-lg font-medium text-white mb-2">暂无订单</h3>
             <p className="text-account-secondary text-sm mb-4">您暂时没有相关订单</p>
-            <button
-              onClick={() => window.location.href = '/shop'}
-              className="px-6 py-2.5 bg-account-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium"
+            <Link
+              href="/shop"
+              className="px-6 py-2.5 bg-account-primary text-white rounded-lg hover:bg-blue-600 transition-colors text-sm font-medium inline-block"
             >
               去逛逛
-            </button>
+            </Link>
           </div>
         ) : (
           <div className="space-y-4">
@@ -172,7 +214,7 @@ export default function OrdersPage() {
                   {/* 订单头部 */}
                   <div className="flex items-center justify-between px-4 py-3 bg-account-bg">
                     <div className="flex items-center gap-2">
-                      <span className="text-account-secondary text-sm">{order.shop}</span>
+                      <span className="text-account-secondary text-sm">无忧服务</span>
                       <ChevronRight className="w-4 h-4 text-account-secondary" />
                     </div>
                     <span className={`px-3 py-1 rounded text-xs font-medium ${statusInfo.bg} ${statusInfo.color}`}>
@@ -184,17 +226,17 @@ export default function OrdersPage() {
                   <div className="p-4">
                     <div className="flex gap-4">
                       <img
-                        src={order.image}
-                        alt={order.product}
+                        src={order.product_image || 'https://picsum.photos/80/80?random=1'}
+                        alt={order.product_name}
                         className="w-20 h-20 rounded-xl object-cover bg-account-bg"
                       />
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-white font-medium mb-1">{order.product}</h4>
-                        <p className="text-account-secondary text-sm mb-2">订单号: {order.orderNo}</p>
-                        <p className="text-account-secondary/60 text-xs">{order.time}</p>
+                        <h4 className="text-white font-medium mb-1">{order.product_name}</h4>
+                        <p className="text-account-secondary text-sm mb-2">订单号: {order.order_no}</p>
+                        <p className="text-account-secondary/60 text-xs">{order.created_at}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-account-primary font-bold text-lg">¥{order.price}</p>
+                        <p className="text-account-primary font-bold text-lg">¥{order.total_amount}</p>
                       </div>
                     </div>
 

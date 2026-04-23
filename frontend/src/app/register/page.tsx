@@ -94,14 +94,41 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+    setError('');
 
-    // Simulate registration request
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          email,
+          phone: `${countryCode}${phone}`,
+          password,
+        }),
+      });
 
-    // Demo: redirect to login
-    router.push('/login?registered=true');
+      const data = await response.json();
 
-    setLoading(false);
+      if (!response.ok) {
+        throw new Error(data.message || (language === 'zh' ? '注册失败' : language === 'my' ? 'မှတ်ပုံတင်မအောင်မြင်' : 'Registration failed'));
+      }
+
+      // 保存 token 到 localStorage
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', String(data.userId));
+      }
+
+      // 注册成功，跳转登录页
+      router.push('/login?registered=true');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : (language === 'zh' ? '注册失败，请稍后重试' : language === 'my' ? 'မှတ်ပုံတင်မအောင်မြင်' : 'Registration failed, please try again'));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {

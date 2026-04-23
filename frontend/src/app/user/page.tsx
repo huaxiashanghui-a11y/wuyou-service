@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import UserLayout from '@/components/user/UserLayout';
 import {
@@ -14,34 +15,112 @@ import {
   ArrowDownRight,
   Gift,
   ShoppingBag,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 
+interface UserStats {
+  nickname: string;
+  id: number;
+  balance: number;
+  points: number;
+  member_level: string;
+  pending_orders: number;
+}
+
+interface SpendingStats {
+  monthly_spending: number;
+  monthly_orders: number;
+  total_points: number;
+  total_discount: number;
+}
+
 export default function UserHomePage() {
-  // 账户概览数据
+  const [isLoading, setIsLoading] = useState(true);
+  const [userStats, setUserStats] = useState<UserStats>({
+    nickname: '用户',
+    id: 0,
+    balance: 0,
+    points: 0,
+    member_level: 'VIP 1',
+    pending_orders: 0,
+  });
+  const [spendingStats, setSpendingStats] = useState<SpendingStats>({
+    monthly_spending: 0,
+    monthly_orders: 0,
+    total_points: 0,
+    total_discount: 0,
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        // 获取用户信息
+        const profileRes = await fetch('/api/user?action=profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const profileData = await profileRes.json();
+
+        if (profileData.success) {
+          setUserStats(prev => ({
+            ...prev,
+            nickname: profileData.data.nickname || profileData.data.username,
+            id: profileData.data.id,
+            balance: profileData.data.balance || 0,
+            points: profileData.data.points || 0,
+            member_level: profileData.data.member_level || 'VIP 1',
+          }));
+        }
+
+        // 获取订单统计
+        const ordersRes = await fetch('/api/user?action=orders', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const ordersData = await ordersRes.json();
+
+        if (ordersData.success) {
+          const pendingCount = ordersData.data.filter(
+            (order: any) => order.status === 'pending' || order.status === 'processing'
+          ).length;
+          setUserStats(prev => ({ ...prev, pending_orders: pendingCount }));
+        }
+      } catch (error) {
+        console.error('获取数据失败:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-account-primary animate-spin" />
+        </div>
+      </UserLayout>
+    );
+  }
+
   const accountStats = [
-    { label: '账户余额', value: '1,280.00', icon: Wallet, color: 'from-account-primary to-blue-600', bg: 'bg-account-primary/20', text: 'text-account-primary', href: '/user/wallet' },
-    { label: '我的积分', value: '580', icon: Star, color: 'from-account-gold to-yellow-500', bg: 'bg-account-gold/20', text: 'text-account-gold', href: '/user/stats' },
-    { label: '会员等级', value: 'VIP 3', icon: Crown, color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/20', text: 'text-purple-400', href: '/user/profile' },
-    { label: '待处理订单', value: '2', icon: FileText, color: 'from-orange-500 to-red-500', bg: 'bg-orange-500/20', text: 'text-orange-400', href: '/user/orders' },
+    { label: '账户余额', value: `¥${userStats.balance.toFixed(2)}`, icon: Wallet, color: 'from-account-primary to-blue-600', bg: 'bg-account-primary/20', text: 'text-account-primary', href: '/user/wallet' },
+    { label: '我的积分', value: String(userStats.points), icon: Star, color: 'from-account-gold to-yellow-500', bg: 'bg-account-gold/20', text: 'text-account-gold', href: '/user/stats' },
+    { label: '会员等级', value: userStats.member_level, icon: Crown, color: 'from-purple-500 to-pink-500', bg: 'bg-purple-500/20', text: 'text-purple-400', href: '/user/profile' },
+    { label: '待处理订单', value: String(userStats.pending_orders), icon: FileText, color: 'from-orange-500 to-red-500', bg: 'bg-orange-500/20', text: 'text-orange-400', href: '/user/orders' },
   ];
 
-  // 功能卡片数据
   const featureCards = [
     { id: 'wallet', icon: Wallet, label: '我的钱包', desc: '充值/提现', color: 'from-account-primary to-blue-600', href: '/user/wallet' },
     { id: 'orders', icon: FileText, label: '我的订单', desc: '查看全部', color: 'from-green-500 to-emerald-600', href: '/user/orders' },
-    { id: 'coupons', icon: Gift, label: '优惠券', desc: '3张可用', color: 'from-orange-500 to-red-500', href: '/user/coupons' },
+    { id: 'coupons', icon: Gift, label: '优惠券', desc: '优惠券', color: 'from-orange-500 to-red-500', href: '/user/coupons' },
     { id: 'promotion', icon: TrendingUp, label: '我的推广', desc: '赚取佣金', color: 'from-purple-500 to-pink-500', href: '/user/promotion' },
     { id: 'security', icon: CreditCard, label: '账户安全', desc: '安全中心', color: 'from-cyan-500 to-blue-500', href: '/user/security' },
     { id: 'settings', icon: RefreshCw, label: '设置', desc: '偏好设置', color: 'from-gray-500 to-gray-600', href: '/user/settings' },
-  ];
-
-  // 消费统计
-  const spendingStats = [
-    { label: '本月消费', value: '2,580.00', change: '+12.5%', trend: 'up' },
-    { label: '本月订单', value: '15笔', change: '+3笔', trend: 'up' },
-    { label: '累计积分', value: '5,800', change: '+120', trend: 'up' },
-    { label: '累计优惠', value: '¥320', change: '-¥80', trend: 'down' },
   ];
 
   return (
@@ -52,11 +131,11 @@ export default function UserHomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-account-primary to-blue-700 flex items-center justify-center shadow-glow">
-                <span className="text-white font-bold text-2xl">用</span>
+                <span className="text-white font-bold text-2xl">{userStats.nickname.charAt(0)}</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">欢迎回来，用户</h1>
-                <p className="text-account-secondary text-sm mt-1">ID: 100001 · VIP 3会员</p>
+                <h1 className="text-2xl font-bold text-white">欢迎回来，{userStats.nickname}</h1>
+                <p className="text-account-secondary text-sm mt-1">ID: {userStats.id} · {userStats.member_level}</p>
               </div>
             </div>
             <Link
@@ -110,36 +189,6 @@ export default function UserHomePage() {
                 </Link>
               );
             })}
-          </div>
-        </div>
-
-        {/* 消费统计 */}
-        <div className="bg-account-card rounded-xl p-5 mb-6 border border-account-border">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-bold">数据概览</h3>
-            <select className="bg-account-bg text-account-secondary text-sm rounded-lg px-3 py-2 border border-account-border">
-              <option>本月</option>
-              <option>上周</option>
-              <option>本年</option>
-            </select>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {spendingStats.map((stat, index) => (
-              <div key={index} className="bg-account-bg rounded-xl p-4">
-                <p className="text-account-secondary text-sm mb-2">{stat.label}</p>
-                <p className="text-2xl font-bold text-white mb-2">{stat.value}</p>
-                <div className="flex items-center gap-1">
-                  {stat.trend === 'up' ? (
-                    <ArrowUpRight className="w-4 h-4 text-account-success" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4 text-account-danger" />
-                  )}
-                  <span className={`text-sm ${stat.trend === 'up' ? 'text-account-success' : 'text-account-danger'}`}>
-                    {stat.change}
-                  </span>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 

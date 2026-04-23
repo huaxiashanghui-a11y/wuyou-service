@@ -1,17 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import UserLayout from '@/components/user/UserLayout';
 import {
   ChevronLeft,
-  ChevronRight,
   Check,
   Upload,
   QrCode,
   Smartphone,
   Copy,
   Wallet,
-  History
+  Loader2
 } from 'lucide-react';
 
 // 支付方式数据
@@ -38,7 +37,32 @@ export default function WalletPage() {
   const [qrCode, setQrCode] = useState('');
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [balance] = useState('1,280.00');
+  const [balance, setBalance] = useState('0.00');
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  // 获取余额
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const response = await fetch('/api/user?action=wallet', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (data.success) {
+          setBalance((data.data.balance || 0).toFixed(2));
+        }
+      } catch (error) {
+        console.error('获取余额失败:', error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchBalance();
+  }, []);
 
   // 生成二维码
   const generateQRCode = () => {
@@ -64,13 +88,56 @@ export default function WalletPage() {
   };
 
   // 提交充值申请
-  const submitRecharge = () => {
+  const submitRecharge = async () => {
     if (!uploadedFile) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
     setLoading(true);
-    setTimeout(() => {
+    const rechargeAmount = amount || parseInt(customAmount) || 0;
+
+    try {
+      // 创建充值订单
+      const createRes = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action: 'recharge',
+          amount: rechargeAmount,
+          paymentMethod: paymentMethods.find(m => m.id === selectedMethod)?.name,
+        }),
+      });
+
+      const createData = await createRes.json();
+      if (!createData.success) {
+        alert(createData.message || '创建充值订单失败');
+        setLoading(false);
+        return;
+      }
+
+      // 确认充值（上传凭证）
+      await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          action: 'confirmRecharge',
+          orderNo: createData.data.orderNo,
+          paymentProof: uploadedFile,
+        }),
+      });
+
       setLoading(false);
-      setStep(4);
-    }, 2000);
+      setStep(5);
+    } catch (error) {
+      console.error('充值失败:', error);
+      setLoading(false);
+    }
   };
 
   // 重置流程
@@ -85,6 +152,16 @@ export default function WalletPage() {
 
   // 步骤标签
   const steps = ['选择金额', '选择支付', '扫码支付', '上传凭证'];
+
+  if (isLoadingData) {
+    return (
+      <UserLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-account-primary animate-spin" />
+        </div>
+      </UserLayout>
+    );
+  }
 
   return (
     <UserLayout>
