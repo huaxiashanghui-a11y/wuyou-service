@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { dbQuery } from '@/lib/db';
-import { generateToken, createSession } from '@/lib/auth';
+import { dbQuery, initTables } from '@/lib/db';
+import { generateToken } from '@/lib/auth';
 import { User } from '@/lib/db';
 
 // 内置超级管理员账号：账号wysz88，密码wysz8888
@@ -20,6 +20,9 @@ async function getAdminPasswordHash(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    // 确保数据库表已初始化
+    await initTables();
+    
     const { username, password } = await request.json();
 
     // 验证必填字段
@@ -42,16 +45,9 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 内置管理员登录成功，生成临时用户信息
+      // 内置管理员登录成功，生成 Token
+      // 注意：内置管理员不写入 user_sessions 表，因为它是内存中的内置账号
       const token = generateToken({ userId: 0, username: ADMIN_USERNAME });
-      
-      // 为内置管理员创建会话（即使userId=0也创建会话，方便后续验证）
-      await createSession(
-        0,
-        token,
-        request.headers.get('x-forwarded-for') || '127.0.0.1',
-        request.headers.get('user-agent') || 'Admin Console'
-      );
       
       const adminUser = {
         id: 0,
@@ -106,11 +102,15 @@ export async function POST(request: NextRequest) {
     const token = generateToken({ userId: user.id, username: user.username });
 
     // 创建会话
-    await createSession(
-      user.id,
-      token,
-      request.headers.get('x-forwarded-for') || '127.0.0.1',
-      request.headers.get('user-agent') || 'Unknown'
+    await dbQuery(
+      'INSERT INTO user_sessions (user_id, token, ip_address, device, expires_at) VALUES (?, ?, ?, ?, ?)',
+      [
+        user.id,
+        token,
+        request.headers.get('x-forwarded-for') || '127.0.0.1',
+        request.headers.get('user-agent') || 'Unknown',
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7天后过期
+      ]
     );
 
     // 记录安全日志

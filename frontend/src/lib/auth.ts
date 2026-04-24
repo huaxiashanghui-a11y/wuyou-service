@@ -42,6 +42,11 @@ export async function verifySession(request: NextRequest): Promise<TokenPayload 
   const payload = verifyToken(token);
   if (!payload) return null;
 
+  // 内置管理员（userId=0）不需要检查会话表
+  if (payload.userId === 0) {
+    return payload;
+  }
+
   // 检查会话是否有效
   const sessions = await dbQuery<Session[]>(
     'SELECT * FROM user_sessions WHERE user_id = ? AND token = ? AND expires_at > NOW()',
