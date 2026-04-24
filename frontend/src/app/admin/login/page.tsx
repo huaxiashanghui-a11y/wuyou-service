@@ -35,7 +35,7 @@ export default function AdminLoginPage() {
         // 跳转到管理后台首页
         router.push('/admin');
       } else {
-        setError(data.message || '登录失败');
+        setError(data.message || '用户名或密码错误');
       }
     } catch (err) {
       setError('网络错误，请稍后重试');
@@ -45,19 +45,27 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div
+      className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url('/images/login-bg.jpg')",
+      }}
+    >
+      {/* 半透明黑色遮罩 */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+
+      <div className="relative w-full max-w-md">
         {/* Logo 区域 */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-lg mb-4">
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">管理后台</h1>
-          <p className="text-gray-400">无忧服务平台管理系统</p>
+          <p className="text-gray-200">企业级平台管理后台</p>
         </div>
 
         {/* 登录表单 */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8">
           <h2 className="text-xl font-bold text-gray-800 text-center mb-6">管理员登录</h2>
 
           {error && (
@@ -80,14 +88,14 @@ export default function AdminLoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="请输入管理员账号"
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all bg-white"
                 />
               </div>
             </div>
 
             {/* 密码 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">登录密码</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">密码</label>
               <div className="relative">
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <Lock className="w-5 h-5" />
@@ -96,9 +104,9 @@ export default function AdminLoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="请输入登录密码"
+                  placeholder="请输入密码"
                   required
-                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all bg-white"
                 />
                 <button
                   type="button"
@@ -129,7 +137,7 @@ export default function AdminLoginPage() {
         </div>
 
         {/* 版权信息 */}
-        <p className="text-center text-gray-500 text-sm mt-6">
+        <p className="text-center text-gray-300 text-sm mt-6">
           © 2024 无忧服务 版权所有
         </p>
       </div>
