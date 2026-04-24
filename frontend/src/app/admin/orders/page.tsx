@@ -59,9 +59,15 @@ export default function OrdersPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
+      if (!token) {
+        console.warn('未登录');
+        return;
+      }
 
-      const params = new URLSearchParams({ page: page.toString(), pageSize: pageSize.toString() });
+      const params = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
+      });
       if (keyword) params.append('keyword', keyword);
       if (status) params.append('status', status);
       if (paymentStatus) params.append('payment_status', paymentStatus);
@@ -72,9 +78,10 @@ export default function OrdersPage() {
       const data = await res.json();
 
       if (data.code === 200) {
-        setOrders(data.data.list || []);
-        setTotal(data.data.total || 0);
+        setOrders(data.data?.list || []);
+        setTotal(data.data?.total || 0);
       } else {
+        console.error('获取订单列表失败:', data.message);
         setOrders([]);
         setTotal(0);
       }

@@ -1,18 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPool } from '@/lib/db';
-import { verifyToken } from '@/lib/auth';
+import { getPool, initTables } from '@/lib/db';
+import { verifyToken, getTokenFromRequest } from '@/lib/auth';
+
+// 确保数据库表已初始化
+initTables().catch(console.error);
+
+// 统一响应格式
+function successResponse(data: any, message = 'success') {
+  return NextResponse.json({ code: 200, message, data });
+}
+
+function errorResponse(message: string, status = 500) {
+  return NextResponse.json({ code: status, message }, { status });
+}
+
+// 验证管理员身份
+async function verifyAdmin(request: NextRequest) {
+  const token = getTokenFromRequest(request);
+  if (!token) return null;
+  return verifyToken(token);
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ code: 401, message: '未授权' }, { status: 401 });
+    const decoded = await verifyAdmin(request);
+    if (!decoded) {
+      return errorResponse('未授权', 401);
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ code: 401, message: '无效的令牌' }, { status: 401 });
-    }
+    await initTables();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -58,40 +74,35 @@ export async function GET(request: NextRequest) {
       [...params, pageSize, offset]
     );
 
-    return NextResponse.json({
-      code: 200,
-      message: 'success',
-      data: {
-        list: rows,
-        total,
-        page,
-        pageSize,
-        totalPages: Math.ceil(total / pageSize)
-      }
+    connection.release();
+
+    return successResponse({
+      list: rows,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取用户列表失败:', error);
-    return NextResponse.json({ code: 500, message: '服务器错误' }, { status: 500 });
+    return errorResponse('服务器错误: ' + error.message);
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ code: 401, message: '未授权' }, { status: 401 });
+    const decoded = await verifyAdmin(request);
+    if (!decoded) {
+      return errorResponse('未授权', 401);
     }
 
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ code: 401, message: '无效的令牌' }, { status: 401 });
-    }
+    await initTables();
 
     const body = await request.json();
     const { id, action, ...updateData } = body;
 
     if (!id) {
-      return NextResponse.json({ code: 400, message: '用户ID不能为空' }, { status: 400 });
+      return errorResponse('用户ID不能为空', 400);
     }
 
     const connection = await getPool().getConnection();
@@ -147,12 +158,71 @@ export async function PUT(request: NextRequest) {
         break;
 
       default:
-        return NextResponse.json({ code: 400, message: '无效的操作' }, { status: 400 });
+        connection.release();
+        return errorResponse('无效的操作', 400);
     }
 
-    return NextResponse.json({ code: 200, message: '操作成功' });
-  } catch (error) {
+    connection.release();
+    return successResponse(null, '操作成功');
+  } catch (error: any) {
     console.error('更新用户失败:', error);
-    return NextResponse.json({ code: 500, message: '服务器错误' }, { status: 500 });
+    return errorResponse('服务器错误: ' + error.message);
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const decoded = await verifyAdmin(request);
+    if (!decoded) {
+      return errorResponse('未授权', 401);
+    }
+
+    await initTables();
+
+    const body = await request.json();
+    const connection = await getPool().getConnection();
+
+    // 添加用户
+    const { username, password, nickname, email, phone, real_name } = body;
+
+    await connection.execute(
+      `INSERT INTO users (username, password, nickname, email, phone, real_name, status) 
+       VALUES (?, ?, ?, ?, ?, ?, 1)`,
+      [username, password, nickname || username, email, phone, real_name]
+    );
+
+    connection.release();
+    return successResponse(null, '用户创建成功');
+  } catch (error: any) {
+    console.error('创建用户失败:', error);
+    return errorResponse('服务器错误: ' + error.message);
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const decoded = await verifyAdmin(request);
+    if (!decoded) {
+      return errorResponse('未授权', 401);
+    }
+
+    await initTables();
+
+    const body = await request.json();
+    const { ids } = body;
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return errorResponse('请选择要删除的用户', 400);
+    }
+
+    const connection = await getPool().getConnection();
+    const placeholders = ids.map(() => '?').join(',');
+    await connection.execute(`DELETE FROM users WHERE id IN (${placeholders})`, ids);
+
+    connection.release();
+    return successResponse(null, '删除成功');
+  } catch (error: any) {
+    console.error('删除用户失败:', error);
+    return errorResponse('服务器错误: ' + error.message);
   }
 }
