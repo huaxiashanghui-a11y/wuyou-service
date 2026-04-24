@@ -12,7 +12,6 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight,
   Home,
   Shield,
   Loader2,
@@ -28,7 +27,8 @@ import {
   TrendingUp,
   ShoppingBag,
   Mail,
-  Bell
+  Bell,
+  Link2,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -52,7 +52,7 @@ const menuItems: MenuItem[] = [
     icon: Users,
     children: [
       { id: 'user-list', label: '用户列表', icon: Users, href: '/admin/users' },
-      { id: 'user-bindings', label: '绑定管理', icon: Link, href: '/admin/users/bindings' },
+      { id: 'user-bindings', label: '绑定管理', icon: Link2, href: '/admin/users/bindings' },
     ],
   },
   {
@@ -232,6 +232,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const fetchAdminData = async () => {
       const token = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
+      
       if (!token) {
         router.push('/admin/login');
         return;
@@ -242,6 +243,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         try {
           const userData = JSON.parse(storedUser);
           if (userData.id === 0 && userData.is_admin) {
+            // 内置管理员 - 不需要从API获取用户信息
             setAdminData({
               id: 0,
               nickname: '超级管理员',
@@ -255,6 +257,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         }
       }
 
+      // 非内置管理员，从API获取用户信息
       try {
         const response = await fetch('/api/user?action=profile', {
           headers: {
@@ -265,6 +268,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         if (!response.ok) {
           localStorage.removeItem('token');
           localStorage.removeItem('userId');
+          localStorage.removeItem('user');
           router.push('/admin/login');
           return;
         }
@@ -318,7 +322,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
-      router.push('/');
+      localStorage.removeItem('user');
+      router.push('/admin/login');
     }
   };
 
@@ -326,6 +331,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const hasChildren = item.children && item.children.length > 0;
     const isCollapsed = collapsedMenus.has(item.id);
     const active = isActive(item.href);
+    const Icon = item.icon;
 
     return (
       <div key={item.id}>
@@ -334,11 +340,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             href={item.href}
             className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
               active
-                ? 'bg-primary text-white'
+                ? 'bg-blue-500 text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <Icon className="w-4 h-4 flex-shrink-0" />
             <span>{item.label}</span>
           </Link>
         ) : (
@@ -346,11 +352,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             onClick={() => hasChildren && toggleMenu(item.id)}
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
               active
-                ? 'bg-primary text-white'
+                ? 'bg-blue-500 text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <Icon className="w-4 h-4 flex-shrink-0" />
             <span className="flex-1 text-left">{item.label}</span>
             {hasChildren && (
               <ChevronDown className={`w-4 h-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
@@ -371,7 +377,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-500">加载中...</p>
         </div>
       </div>
@@ -384,7 +390,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4 shadow-sm">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <span className="text-gray-800 font-semibold">管理后台</span>
@@ -405,7 +411,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowMobileNav(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white animate-slide-in shadow-xl">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl overflow-y-auto">
             <div className="p-5 border-b border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-gray-800 font-semibold">菜单</span>
@@ -417,7 +423,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -426,7 +432,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </div>
               </div>
             </div>
-            <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+            <nav className="p-4 space-y-1">
               {menuItems.map(item => renderMenuItem(item))}
             </nav>
           </div>
@@ -439,7 +445,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {/* Logo 区域 */}
           <div className="p-5 border-b border-gray-200">
             <Link href="/admin" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow">
+              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -453,7 +459,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="p-5 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary" />
+                <Shield className="w-5 h-5 text-blue-500" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-gray-800 font-medium truncate">{adminData.nickname}</p>
@@ -469,13 +475,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* 底部操作区 */}
           <div className="p-4 border-t border-gray-200 space-y-2">
-            <Link
-              href="/"
-              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-all text-sm font-medium"
-            >
-              <Home className="w-4 h-4" />
-              <span>返回首页</span>
-            </Link>
             <button
               onClick={() => setShowLogoutModal(true)}
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors text-sm font-medium"
@@ -497,7 +496,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* 退出登录确认弹窗 */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm animate-fade-in shadow-xl">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-8 h-8 text-red-500" />

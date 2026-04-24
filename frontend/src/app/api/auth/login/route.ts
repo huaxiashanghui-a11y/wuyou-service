@@ -44,6 +44,15 @@ export async function POST(request: NextRequest) {
 
       // 内置管理员登录成功，生成临时用户信息
       const token = generateToken({ userId: 0, username: ADMIN_USERNAME });
+      
+      // 为内置管理员创建会话（即使userId=0也创建会话，方便后续验证）
+      await createSession(
+        0,
+        token,
+        request.headers.get('x-forwarded-for') || '127.0.0.1',
+        request.headers.get('user-agent') || 'Admin Console'
+      );
+      
       const adminUser = {
         id: 0,
         username: ADMIN_USERNAME,

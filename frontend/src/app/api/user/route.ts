@@ -20,6 +20,29 @@ export async function GET(request: NextRequest) {
 
     switch (action) {
       case 'profile': {
+        // 内置管理员（userId=0）不需要查询数据库
+        if (payload.userId === 0) {
+          return NextResponse.json({
+            success: true,
+            data: {
+              id: 0,
+              username: 'wysz88',
+              nickname: '超级管理员',
+              email: '',
+              phone: '',
+              avatar: '',
+              balance: 0,
+              points: 0,
+              member_level: 0,
+              real_name: '',
+              id_card: '',
+              is_merchant: false,
+              is_admin: true,
+              created_at: new Date().toISOString(),
+            }
+          });
+        }
+        
         const users = await dbQuery<User[]>(
           'SELECT id, username, nickname, email, phone, avatar, balance, points, member_level, real_name, id_card, is_merchant, created_at FROM users WHERE id = ?',
           [payload.userId]

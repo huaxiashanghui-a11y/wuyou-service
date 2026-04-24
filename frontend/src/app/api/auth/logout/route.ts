@@ -14,11 +14,13 @@ export async function POST(request: NextRequest) {
         await deleteSession(token);
       }
 
-      // 记录安全日志
-      await dbQuery(
-        'INSERT INTO security_logs (user_id, action, ip_address) VALUES (?, ?, ?)',
-        [payload.userId, '退出登录', request.headers.get('x-forwarded-for') || '127.0.0.1']
-      );
+      // 记录安全日志（内置管理员不记录到数据库）
+      if (payload.userId !== 0) {
+        await dbQuery(
+          'INSERT INTO security_logs (user_id, action, ip_address) VALUES (?, ?, ?)',
+          [payload.userId, '退出登录', request.headers.get('x-forwarded-for') || '127.0.0.1']
+        );
+      }
     }
 
     return NextResponse.json({
