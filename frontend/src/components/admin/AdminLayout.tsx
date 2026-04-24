@@ -232,7 +232,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const fetchAdminData = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
-        router.push('/login');
+        router.push('/admin/login');
         return;
       }
 
@@ -246,7 +246,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         if (!response.ok) {
           localStorage.removeItem('token');
           localStorage.removeItem('userId');
-          router.push('/login');
+          router.push('/admin/login');
           return;
         }
 
@@ -260,7 +260,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         }
       } catch (error) {
         console.error('获取管理员信息失败:', error);
-        router.push('/login');
+        router.push('/admin/login');
       } finally {
         setIsLoading(false);
       }
