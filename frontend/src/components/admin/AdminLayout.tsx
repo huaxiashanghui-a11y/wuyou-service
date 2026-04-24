@@ -238,7 +238,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         return;
       }
 
-      // 检查是否为内置管理员（userId 为 0）
+      // 首先检查是否为内置管理员（userId 为 0）
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
@@ -265,7 +265,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           },
         });
 
+        // 即使 API 返回错误，也可能是临时的网络问题，不要直接重定向
         if (!response.ok) {
+          console.warn('API 响应异常:', response.status);
+          // 检查是否有存储的用户信息作为备用
+          if (storedUser) {
+            try {
+              const userData = JSON.parse(storedUser);
+              setAdminData({
+                id: userData.id,
+                nickname: userData.nickname || userData.username,
+                username: userData.username,
+              });
+              setIsLoading(false);
+              return;
+            } catch (e) {
+              // 解析备用数据失败
+            }
+          }
+          // 如果没有备用数据，仍然重定向
           localStorage.removeItem('token');
           localStorage.removeItem('userId');
           localStorage.removeItem('user');
@@ -280,9 +298,37 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             nickname: result.data.nickname || result.data.username,
             username: result.data.username,
           });
+        } else if (storedUser) {
+          // API 返回 success=false，使用备用数据
+          try {
+            const userData = JSON.parse(storedUser);
+            setAdminData({
+              id: userData.id,
+              nickname: userData.nickname || userData.username,
+              username: userData.username,
+            });
+          } catch (e) {
+            // 备用数据解析失败
+          }
         }
       } catch (error) {
         console.error('获取管理员信息失败:', error);
+        // 网络错误时，尝试使用存储的用户信息
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setAdminData({
+              id: userData.id,
+              nickname: userData.nickname || userData.username,
+              username: userData.username,
+            });
+            setIsLoading(false);
+            return;
+          } catch (e) {
+            // 备用数据解析失败
+          }
+        }
+        // 如果无法获取用户信息，重定向
         router.push('/admin/login');
       } finally {
         setIsLoading(false);

@@ -32,8 +32,8 @@ export default function AdminLoginPage() {
         localStorage.setItem('userId', String(data.data.user.id));
         localStorage.setItem('user', JSON.stringify(data.data.user));
 
-        // 跳转到管理后台首页
-        router.push('/admin');
+        // 使用硬跳转确保页面完全重新加载
+        window.location.href = '/admin';
       } else {
         setError(data.message || '用户名或密码错误');
       }
