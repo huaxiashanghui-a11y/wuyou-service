@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Shield, Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 export default function AdminLoginPage() {
@@ -54,7 +53,7 @@ export default function AdminLoginPage() {
             <Shield className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">管理后台</h1>
-          <p className="text-gray-400">wysz88.com 后台管理系统</p>
+          <p className="text-gray-400">无忧服务平台管理系统</p>
         </div>
 
         {/* 登录表单 */}
@@ -127,22 +126,11 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
-
-          {/* 底部链接 */}
-          <div className="mt-6 text-center">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-gray-500 hover:text-orange-500 transition-colors text-sm"
-            >
-              <span>←</span>
-              <span>返回首页</span>
-            </Link>
-          </div>
         </div>
 
         {/* 版权信息 */}
         <p className="text-center text-gray-500 text-sm mt-6">
-          © 2024 wysz88.com 版权所有
+          © 2024 无忧服务 版权所有
         </p>
       </div>
     </div>
