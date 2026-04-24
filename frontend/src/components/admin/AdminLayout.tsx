@@ -231,9 +231,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   useEffect(() => {
     const fetchAdminData = async () => {
       const token = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
       if (!token) {
         router.push('/admin/login');
         return;
+      }
+
+      // 检查是否为内置管理员（userId 为 0）
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData.id === 0 && userData.is_admin) {
+            setAdminData({
+              id: 0,
+              nickname: '超级管理员',
+              username: 'wysz88',
+            });
+            setIsLoading(false);
+            return;
+          }
+        } catch (e) {
+          // 解析失败，继续尝试获取用户信息
+        }
       }
 
       try {

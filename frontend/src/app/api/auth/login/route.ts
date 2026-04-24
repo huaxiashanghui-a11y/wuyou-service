@@ -4,6 +4,20 @@ import { dbQuery } from '@/lib/db';
 import { generateToken, createSession } from '@/lib/auth';
 import { User } from '@/lib/db';
 
+// 内置超级管理员账号：账号wysz88，密码wysz8888
+const ADMIN_USERNAME = 'wysz88';
+const ADMIN_PASSWORD = 'wysz8888';
+
+// 初始化内置管理员密码（静态加密）
+let adminPasswordHash: string | null = null;
+
+async function getAdminPasswordHash(): Promise<string> {
+  if (!adminPasswordHash) {
+    adminPasswordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  }
+  return adminPasswordHash;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json();
@@ -14,6 +28,37 @@ export async function POST(request: NextRequest) {
         { success: false, message: '用户名和密码不能为空' },
         { status: 400 }
       );
+    }
+
+    // 检查是否为内置超级管理员
+    if (username === ADMIN_USERNAME) {
+      const hash = await getAdminPasswordHash();
+      const isValid = await bcrypt.compare(password, hash);
+
+      if (!isValid) {
+        return NextResponse.json(
+          { success: false, message: '用户名或密码错误' },
+          { status: 401 }
+        );
+      }
+
+      // 内置管理员登录成功，生成临时用户信息
+      const token = generateToken({ userId: 0, username: ADMIN_USERNAME });
+      const adminUser = {
+        id: 0,
+        username: ADMIN_USERNAME,
+        nickname: '超级管理员',
+        is_admin: true,
+      };
+
+      return NextResponse.json({
+        success: true,
+        message: '登录成功',
+        data: {
+          token,
+          user: adminUser,
+        },
+      });
     }
 
     // 查找用户
