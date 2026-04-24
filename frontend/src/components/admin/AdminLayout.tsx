@@ -11,24 +11,192 @@ import {
   LogOut,
   Menu,
   X,
+  ChevronDown,
   ChevronRight,
   Home,
   Shield,
-  Loader2
+  Loader2,
+  Package,
+  Truck,
+  CreditCard,
+  Wallet,
+  User,
+  Gamepad2,
+  DollarSign,
+  Megaphone,
+  Image,
+  TrendingUp,
+  ShoppingBag,
+  Mail,
+  Bell
 } from 'lucide-react';
 
-type NavItem = {
+interface MenuItem {
   id: string;
-  icon: typeof Users;
   label: string;
-  href: string;
-};
+  icon: React.ElementType;
+  href?: string;
+  children?: MenuItem[];
+}
 
-const navItems: NavItem[] = [
-  { id: 'dashboard', icon: Home, label: '后台概览', href: '/admin' },
-  { id: 'merchants', icon: Store, label: '商家审核', href: '/admin/merchants' },
-  { id: 'users', icon: Users, label: '用户管理', href: '/admin/users' },
-  { id: 'orders', icon: FileText, label: '订单管理', href: '/admin/orders' },
+const menuItems: MenuItem[] = [
+  {
+    id: 'dashboard',
+    label: '首页',
+    icon: Home,
+    href: '/admin',
+  },
+  {
+    id: 'users',
+    label: '用户管理',
+    icon: Users,
+    children: [
+      { id: 'user-list', label: '用户列表', icon: Users, href: '/admin/users' },
+      { id: 'user-bindings', label: '绑定管理', icon: Link, href: '/admin/users/bindings' },
+    ],
+  },
+  {
+    id: 'merchants',
+    label: '商家管理',
+    icon: Store,
+    children: [
+      { id: 'merchant-list', label: '商户列表', icon: Store, href: '/admin/merchants' },
+      { id: 'merchant-auth', label: '认证管理', icon: Shield, href: '/admin/merchants/auth' },
+    ],
+  },
+  {
+    id: 'products',
+    label: '产品管理',
+    icon: Package,
+    href: '/admin/products',
+  },
+  {
+    id: 'orders',
+    label: '订单管理',
+    icon: FileText,
+    href: '/admin/orders',
+  },
+  {
+    id: 'services',
+    label: '服务管理',
+    icon: Truck,
+    children: [
+      { id: 'service-food', label: '同城外卖', icon: ShoppingBag, href: '/admin/services/food' },
+      { id: 'service-errand', label: '同城跑腿', icon: Truck, href: '/admin/services/errand' },
+      { id: 'service-buy', label: '帮买帮送', icon: ShoppingBag, href: '/admin/services/buy' },
+      { id: 'service-proxy', label: '平台代购', icon: ShoppingBag, href: '/admin/services/proxy' },
+      { id: 'service-taxi', label: '同城滴滴车', icon: Truck, href: '/admin/services/taxi' },
+    ],
+  },
+  {
+    id: 'funds',
+    label: '资金管理',
+    icon: Wallet,
+    children: [
+      { id: 'fund-payment', label: '支付配置', icon: CreditCard, href: '/admin/funds/payment' },
+      { id: 'fund-points', label: '积分列表', icon: Wallet, href: '/admin/funds/points' },
+      { id: 'fund-price', label: '价格列表', icon: DollarSign, href: '/admin/funds/price' },
+    ],
+  },
+  {
+    id: 'payments',
+    label: '支付管理',
+    icon: CreditCard,
+    children: [
+      { id: 'pay-wechat', label: '微信支付', icon: CreditCard, href: '/admin/payments/wechat' },
+      { id: 'pay-alipay', label: '支付宝', icon: CreditCard, href: '/admin/payments/alipay' },
+      { id: 'pay-kbzpay', label: 'KBZpay', icon: CreditCard, href: '/admin/payments/kbzpay' },
+      { id: 'pay-kbzbanking', label: 'KBZBanking', icon: CreditCard, href: '/admin/payments/kbzbanking' },
+      { id: 'pay-wavepay', label: 'Wavepay', icon: CreditCard, href: '/admin/payments/wavepay' },
+      { id: 'pay-ayapay', label: 'AYApay', icon: CreditCard, href: '/admin/payments/ayapay' },
+      { id: 'pay-cbpay', label: 'CBpay', icon: CreditCard, href: '/admin/payments/cbpay' },
+      { id: 'pay-usdt', label: 'USDT', icon: CreditCard, href: '/admin/payments/usdt' },
+      { id: 'pay-binance', label: '币安', icon: CreditCard, href: '/admin/payments/binance' },
+    ],
+  },
+  {
+    id: 'finance',
+    label: '财务管理',
+    icon: Wallet,
+    children: [
+      { id: 'finance-exchange', label: '兑换记录', icon: DollarSign, href: '/admin/finance/exchange' },
+      { id: 'finance-recharge', label: '充值管理', icon: Wallet, href: '/admin/finance/recharge' },
+      { id: 'finance-recharge-detail', label: '充值明细', icon: FileText, href: '/admin/finance/recharge-detail' },
+      { id: 'finance-points', label: '积分兑换明细', icon: TrendingUp, href: '/admin/finance/points' },
+    ],
+  },
+  {
+    id: 'membership',
+    label: '会员管理',
+    icon: User,
+    children: [
+      { id: 'member-orders', label: '会员订单', icon: FileText, href: '/admin/membership/orders' },
+      { id: 'member-levels', label: '会员等级', icon: User, href: '/admin/membership/levels' },
+    ],
+  },
+  {
+    id: 'games',
+    label: '游戏管理',
+    icon: Gamepad2,
+    children: [
+      { id: 'game-orders', label: '游戏订单', icon: FileText, href: '/admin/games/orders' },
+      { id: 'game-products', label: '游戏产品', icon: Package, href: '/admin/games/products' },
+    ],
+  },
+  {
+    id: 'accounts',
+    label: '账号管理',
+    icon: Shield,
+    href: '/admin/accounts',
+  },
+  {
+    id: 'forex',
+    label: '外汇管理',
+    icon: DollarSign,
+    children: [
+      { id: 'forex-cny-mmk', label: '人民币兑缅币', icon: DollarSign, href: '/admin/forex/cny-mmk' },
+      { id: 'forex-mmk-cny', label: '缅币兑人民币', icon: DollarSign, href: '/admin/forex/mmk-cny' },
+      { id: 'forex-usdt-cny', label: 'USDT兑人民币', icon: DollarSign, href: '/admin/forex/usdt-cny' },
+      { id: 'forex-cny-usdt', label: '人民币兑USDT', icon: DollarSign, href: '/admin/forex/cny-usdt' },
+      { id: 'forex-mmk-usdt', label: '缅币兑USDT', icon: DollarSign, href: '/admin/forex/mmk-usdt' },
+      { id: 'forex-usdt-mmk', label: 'USDT兑缅币', icon: DollarSign, href: '/admin/forex/usdt-mmk' },
+    ],
+  },
+  {
+    id: 'operations',
+    label: '运营管理',
+    icon: Megaphone,
+    children: [
+      { id: 'ops-activity', label: '活动管理', icon: Megaphone, href: '/admin/operations/activity' },
+      { id: 'ops-activity-detail', label: '活动明细', icon: FileText, href: '/admin/operations/activity-detail' },
+      { id: 'ops-notice', label: '公告管理', icon: Bell, href: '/admin/operations/notice' },
+      { id: 'ops-message', label: '系统消息', icon: Mail, href: '/admin/operations/message' },
+      { id: 'ops-email', label: '邮件列表', icon: Mail, href: '/admin/operations/email' },
+      { id: 'ops-support', label: '客服列表', icon: Users, href: '/admin/operations/support' },
+      { id: 'ops-claim', label: '领取明细', icon: TrendingUp, href: '/admin/operations/claim' },
+    ],
+  },
+  {
+    id: 'media',
+    label: '素材管理',
+    icon: Image,
+    children: [
+      { id: 'media-game', label: '游戏素材', icon: Gamepad2, href: '/admin/media/game' },
+      { id: 'media-product', label: '商品素材', icon: Package, href: '/admin/media/product' },
+      { id: 'media-activity', label: '活动素材', icon: Megaphone, href: '/admin/media/activity' },
+      { id: 'media-food', label: '外卖素材', icon: ShoppingBag, href: '/admin/media/food' },
+    ],
+  },
+  {
+    id: 'promotion',
+    label: '推广管理',
+    icon: TrendingUp,
+    children: [
+      { id: 'promo-users', label: '用户信息', icon: Users, href: '/admin/promotion/users' },
+      { id: 'promo-invite', label: '邀请人数', icon: TrendingUp, href: '/admin/promotion/invite' },
+      { id: 'promo-commission', label: '返佣明细', icon: Wallet, href: '/admin/promotion/commission' },
+    ],
+  },
 ];
 
 interface AdminLayoutProps {
@@ -42,6 +210,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [collapsedMenus, setCollapsedMenus] = useState<Set<string>>(new Set());
   const [adminData, setAdminData] = useState({
     id: 0,
     nickname: '管理员',
@@ -100,6 +269,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     fetchAdminData();
   }, [router]);
 
+  const toggleMenu = (menuId: string) => {
+    const newCollapsed = new Set(collapsedMenus);
+    if (newCollapsed.has(menuId)) {
+      newCollapsed.delete(menuId);
+    } else {
+      newCollapsed.add(menuId);
+    }
+    setCollapsedMenus(newCollapsed);
+  };
+
+  const isActive = (href?: string) => {
+    if (!href) return false;
+    return pathname === href || pathname.startsWith(href + '/');
+  };
+
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -119,32 +303,76 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   };
 
+  const renderMenuItem = (item: MenuItem, level: number = 0) => {
+    const hasChildren = item.children && item.children.length > 0;
+    const isCollapsed = collapsedMenus.has(item.id);
+    const active = isActive(item.href);
+
+    return (
+      <div key={item.id}>
+        {item.href ? (
+          <Link
+            href={item.href}
+            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
+              active
+                ? 'bg-primary text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <span>{item.label}</span>
+          </Link>
+        ) : (
+          <button
+            onClick={() => hasChildren && toggleMenu(item.id)}
+            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
+              active
+                ? 'bg-primary text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <item.icon className="w-4 h-4 flex-shrink-0" />
+            <span className="flex-1 text-left">{item.label}</span>
+            {hasChildren && (
+              <ChevronDown className={`w-4 h-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
+            )}
+          </button>
+        )}
+        {hasChildren && !isCollapsed && (
+          <div className={`ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-4`}>
+            {item.children!.map(child => renderMenuItem(child, level + 1))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // 加载状态
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-account-bg flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-account-primary animate-spin mx-auto mb-4" />
-          <p className="text-account-secondary">加载中...</p>
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-500">加载中...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-account-bg">
+    <div className="min-h-screen bg-gray-100">
       {/* 移动端顶部导航 */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 h-16 bg-account-card border-b border-account-border z-50 flex items-center justify-between px-4">
+        <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4 shadow-sm">
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-semibold">管理后台</span>
+            <span className="text-gray-800 font-semibold">管理后台</span>
           </Link>
           <button
             onClick={() => setShowMobileNav(true)}
-            className="p-2 text-white hover:bg-account-border rounded-lg transition-colors"
+            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <Menu className="w-6 h-6" />
           </button>
@@ -155,139 +383,93 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {showMobileNav && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50"
             onClick={() => setShowMobileNav(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-account-card animate-slide-in">
-            {/* 头部 */}
-            <div className="p-5 border-b border-account-border">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white animate-slide-in shadow-xl">
+            <div className="p-5 border-b border-gray-200">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-white font-semibold">菜单</span>
+                <span className="text-gray-800 font-semibold">菜单</span>
                 <button
                   onClick={() => setShowMobileNav(false)}
-                  className="p-2 text-account-secondary hover:bg-account-border rounded-lg"
+                  className="p-2 text-gray-400 hover:bg-gray-100 rounded-lg"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-medium">{adminData.nickname}</p>
-                  <p className="text-account-secondary text-sm">管理员</p>
+                  <p className="text-gray-800 font-medium">{adminData.nickname}</p>
+                  <p className="text-gray-500 text-sm">管理员</p>
                 </div>
               </div>
             </div>
-
-            {/* 导航列表 */}
-            <nav className="p-3">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    onClick={() => setShowMobileNav(false)}
-                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1 transition-all ${
-                      isActive
-                        ? 'bg-purple-500/20 text-purple-400'
-                        : 'text-account-secondary hover:bg-account-bg hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="font-medium">{item.label}</span>
-                    {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
-                  </Link>
-                );
-              })}
+            <nav className="p-4 space-y-1 overflow-y-auto max-h-[calc(100vh-140px)]">
+              {menuItems.map(item => renderMenuItem(item))}
             </nav>
-
-            {/* 退出登录 */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-account-border">
-              <button
-                onClick={() => {
-                  setShowMobileNav(false);
-                  setShowLogoutModal(true);
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-account-bg text-account-danger rounded-xl hover:bg-account-danger/20 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                <span className="font-medium">退出登录</span>
-              </button>
-            </div>
           </div>
         </div>
       )}
 
       {/* PC端左侧固定侧边栏 */}
       {!isMobile && (
-        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-account-card border-r border-account-border z-40 flex flex-col">
+        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 z-40 flex flex-col shadow-sm">
           {/* Logo 区域 */}
-          <div className="p-5 border-b border-account-border">
+          <div className="p-5 border-b border-gray-200">
             <Link href="/admin" className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow">
+                <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-white font-bold text-lg">管理后台</p>
-                <p className="text-account-secondary text-sm">wysz88.com</p>
+                <p className="text-gray-800 font-bold">管理后台</p>
+                <p className="text-gray-400 text-xs">wysz88.com</p>
               </div>
             </Link>
           </div>
 
           {/* 管理员信息区域 */}
-          <div className="p-5 border-b border-account-border">
+          <div className="p-5 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
-                <Shield className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold truncate">{adminData.nickname}</p>
-                <p className="text-account-secondary text-sm">ID: {adminData.id}</p>
+                <p className="text-gray-800 font-medium truncate">{adminData.nickname}</p>
+                <p className="text-gray-400 text-xs">ID: {adminData.id}</p>
               </div>
             </div>
           </div>
 
           {/* 导航菜单 */}
-          <nav className="flex-1 p-3 overflow-y-auto">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl mb-1 transition-all ${
-                    isActive
-                      ? 'bg-gradient-to-r from-purple-500/20 to-transparent text-purple-400 border-l-2 border-purple-500'
-                      : 'text-account-secondary hover:bg-account-bg hover:text-white'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
+          <nav className="flex-1 p-4 overflow-y-auto space-y-1">
+            {menuItems.map(item => renderMenuItem(item))}
           </nav>
 
           {/* 底部操作区 */}
-          <div className="p-4 border-t border-account-border">
+          <div className="p-4 border-t border-gray-200 space-y-2">
+            <Link
+              href="/"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 transition-all text-sm font-medium"
+            >
+              <Home className="w-4 h-4" />
+              <span>返回首页</span>
+            </Link>
             <button
               onClick={() => setShowLogoutModal(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-account-bg text-account-danger rounded-xl hover:bg-account-danger/20 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors text-sm font-medium"
             >
-              <LogOut className="w-5 h-5" />
-              <span className="font-medium">退出登录</span>
+              <LogOut className="w-4 h-4" />
+              <span>退出登录</span>
             </button>
           </div>
         </aside>
       )}
 
       {/* 主内容区域 */}
-      <main className={`${isMobile ? 'pt-16' : 'ml-64'} min-h-screen`}>
+      <main className={`${isMobile ? 'pt-14' : 'ml-64'} min-h-screen`}>
         <div className="p-4 md:p-6 lg:p-8">
           {children}
         </div>
@@ -295,25 +477,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* 退出登录确认弹窗 */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-account-card rounded-2xl p-6 w-full max-w-sm animate-fade-in border border-account-border">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm animate-fade-in shadow-xl">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-account-danger/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <LogOut className="w-8 h-8 text-account-danger" />
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogOut className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">确认退出</h3>
-              <p className="text-account-secondary">确定要退出管理后台吗？</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">确认退出</h3>
+              <p className="text-gray-500 text-sm">确定要退出管理后台吗？</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-3 bg-account-bg text-white rounded-xl hover:bg-account-border transition-colors font-medium"
+                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
               >
                 取消
               </button>
               <button
                 onClick={handleLogout}
-                className="flex-1 py-3 bg-account-danger text-white rounded-xl hover:bg-red-600 transition-colors font-medium"
+                className="flex-1 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-sm"
               >
                 确认退出
               </button>
