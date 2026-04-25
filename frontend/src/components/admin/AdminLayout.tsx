@@ -387,7 +387,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
               active
                 ? 'bg-blue-500 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-300 hover:bg-white/10 hover:text-white'
             }`}
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
@@ -399,7 +399,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
               active
                 ? 'bg-blue-500 text-white'
-                : 'text-gray-600 hover:bg-gray-100'
+                : 'text-gray-300 hover:bg-white/10 hover:text-white'
             }`}
           >
             <Icon className="w-4 h-4 flex-shrink-0" />
@@ -410,7 +410,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </button>
         )}
         {hasChildren && !isCollapsed && (
-          <div className={`ml-4 mt-1 space-y-1 border-l-2 border-gray-200 pl-4`}>
+          <div className={`ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-4`}>
             {item.children!.map(child => renderMenuItem(child, level + 1))}
           </div>
         )}
@@ -487,28 +487,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* PC端左侧固定侧边栏 */}
       {!isMobile && (
-        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-gray-200 z-40 flex flex-col shadow-sm">
+        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#1a1a2e] border-r border-white/10 z-40 flex flex-col shadow-xl">
           {/* Logo 区域 */}
-          <div className="p-5 border-b border-gray-200">
+          <div className="p-5 border-b border-white/10">
             <Link href="/admin" className="flex items-center gap-3">
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-gray-800 font-bold">管理后台</p>
+                <p className="text-white font-bold">管理后台</p>
                 <p className="text-gray-400 text-xs">wysz88.com</p>
               </div>
             </Link>
           </div>
 
           {/* 管理员信息区域 */}
-          <div className="p-5 border-b border-gray-200">
+          <div className="p-5 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-blue-500" />
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-gray-800 font-medium truncate">{adminData.nickname}</p>
+                <p className="text-white font-medium truncate">{adminData.nickname}</p>
                 <p className="text-gray-400 text-xs">ID: {adminData.id}</p>
               </div>
             </div>
@@ -520,10 +520,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
 
           {/* 底部操作区 */}
-          <div className="p-4 border-t border-gray-200 space-y-2">
+          <div className="p-4 border-t border-white/10 space-y-2">
             <button
               onClick={() => setShowLogoutModal(true)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors text-sm font-medium"
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium"
             >
               <LogOut className="w-4 h-4" />
               <span>退出登录</span>
