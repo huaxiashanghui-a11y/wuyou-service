@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   X,
+  ChevronRight,
   ChevronDown,
   Home,
   Shield,
@@ -29,6 +30,7 @@ import {
   Mail,
   Bell,
   Link2,
+  ChevronLeft,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -40,12 +42,7 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  {
-    id: 'dashboard',
-    label: '首页',
-    icon: Home,
-    href: '/admin',
-  },
+  { id: 'dashboard', label: '首页', icon: Home, href: '/admin' },
   {
     id: 'users',
     label: '用户管理',
@@ -64,18 +61,8 @@ const menuItems: MenuItem[] = [
       { id: 'merchant-auth', label: '认证管理', icon: Shield, href: '/admin/merchants/auth' },
     ],
   },
-  {
-    id: 'products',
-    label: '产品管理',
-    icon: Package,
-    href: '/admin/products',
-  },
-  {
-    id: 'orders',
-    label: '订单管理',
-    icon: FileText,
-    href: '/admin/orders',
-  },
+  { id: 'products', label: '产品管理', icon: Package, href: '/admin/products' },
+  { id: 'orders', label: '订单管理', icon: FileText, href: '/admin/orders' },
   {
     id: 'services',
     label: '服务管理',
@@ -143,12 +130,7 @@ const menuItems: MenuItem[] = [
       { id: 'game-products', label: '游戏产品', icon: Package, href: '/admin/games/products' },
     ],
   },
-  {
-    id: 'accounts',
-    label: '账号管理',
-    icon: Shield,
-    href: '/admin/accounts',
-  },
+  { id: 'accounts', label: '账号管理', icon: Shield, href: '/admin/accounts' },
   {
     id: 'forex',
     label: '外汇管理',
@@ -210,7 +192,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [showMobileNav, setShowMobileNav] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [collapsedMenus, setCollapsedMenus] = useState<Set<string>>(new Set());
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [adminData, setAdminData] = useState({
     id: 0,
     nickname: '管理员',
@@ -227,23 +210,38 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // 自动展开当前菜单的父级
+  useEffect(() => {
+    const expandCurrentMenu = () => {
+      for (const item of menuItems) {
+        if (item.children?.some(child => pathname.startsWith(child.href || ''))) {
+          setExpandedMenus(prev => {
+            const newSet = new Set(prev);
+            newSet.add(item.id);
+            return newSet;
+          });
+          break;
+        }
+      }
+    };
+    expandCurrentMenu();
+  }, [pathname]);
+
   // 获取管理员信息
   useEffect(() => {
     const fetchAdminData = async () => {
       const token = localStorage.getItem('token');
       const storedUser = localStorage.getItem('user');
-      
+
       if (!token) {
         router.push('/admin/login');
         return;
       }
 
-      // 首先检查是否为内置管理员（userId 为 0）
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
           if (userData.id === 0 && userData.is_admin) {
-            // 内置管理员 - 不需要从API获取用户信息
             setAdminData({
               id: 0,
               nickname: '超级管理员',
@@ -252,38 +250,25 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             setIsLoading(false);
             return;
           }
-        } catch (e) {
-          // 解析失败，继续尝试获取用户信息
-        }
+        } catch (e) {}
       }
 
-      // 非内置管理员，从API获取用户信息
       try {
         const response = await fetch('/api/user?action=profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        // 即使 API 返回错误，也可能是临时的网络问题，不要直接重定向
         if (!response.ok) {
-          console.warn('API 响应异常:', response.status);
-          // 检查是否有存储的用户信息作为备用
           if (storedUser) {
-            try {
-              const userData = JSON.parse(storedUser);
-              setAdminData({
-                id: userData.id,
-                nickname: userData.nickname || userData.username,
-                username: userData.username,
-              });
-              setIsLoading(false);
-              return;
-            } catch (e) {
-              // 解析备用数据失败
-            }
+            const userData = JSON.parse(storedUser);
+            setAdminData({
+              id: userData.id,
+              nickname: userData.nickname || userData.username,
+              username: userData.username,
+            });
+            setIsLoading(false);
+            return;
           }
-          // 如果没有备用数据，仍然重定向
           localStorage.removeItem('token');
           localStorage.removeItem('userId');
           localStorage.removeItem('user');
@@ -298,37 +283,18 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             nickname: result.data.nickname || result.data.username,
             username: result.data.username,
           });
-        } else if (storedUser) {
-          // API 返回 success=false，使用备用数据
-          try {
-            const userData = JSON.parse(storedUser);
-            setAdminData({
-              id: userData.id,
-              nickname: userData.nickname || userData.username,
-              username: userData.username,
-            });
-          } catch (e) {
-            // 备用数据解析失败
-          }
         }
       } catch (error) {
-        console.error('获取管理员信息失败:', error);
-        // 网络错误时，尝试使用存储的用户信息
         if (storedUser) {
-          try {
-            const userData = JSON.parse(storedUser);
-            setAdminData({
-              id: userData.id,
-              nickname: userData.nickname || userData.username,
-              username: userData.username,
-            });
-            setIsLoading(false);
-            return;
-          } catch (e) {
-            // 备用数据解析失败
-          }
+          const userData = JSON.parse(storedUser);
+          setAdminData({
+            id: userData.id,
+            nickname: userData.nickname || userData.username,
+            username: userData.username,
+          });
+          setIsLoading(false);
+          return;
         }
-        // 如果无法获取用户信息，重定向
         router.push('/admin/login');
       } finally {
         setIsLoading(false);
@@ -338,20 +304,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     fetchAdminData();
   }, [router]);
 
-  const toggleMenu = (menuId: string) => {
-    const newCollapsed = new Set(collapsedMenus);
-    if (newCollapsed.has(menuId)) {
-      newCollapsed.delete(menuId);
-    } else {
-      newCollapsed.add(menuId);
-    }
-    setCollapsedMenus(newCollapsed);
-  };
+  const toggleMenu = useCallback((menuId: string) => {
+    setExpandedMenus(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(menuId)) {
+        newSet.delete(menuId);
+      } else {
+        newSet.add(menuId);
+      }
+      return newSet;
+    });
+  }, []);
 
-  const isActive = (href?: string) => {
+  const isActive = useCallback((href?: string) => {
     if (!href) return false;
     return pathname === href || pathname.startsWith(href + '/');
-  };
+  }, [pathname]);
 
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
@@ -375,42 +343,65 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const renderMenuItem = (item: MenuItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0;
-    const isCollapsed = collapsedMenus.has(item.id);
+    const isExpanded = expandedMenus.has(item.id);
     const active = isActive(item.href);
     const Icon = item.icon;
 
     return (
-      <div key={item.id}>
+      <div key={item.id} className="relative">
         {item.href ? (
           <Link
             href={item.href}
-            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
-              active
-                ? 'bg-blue-500 text-white'
+            className={`
+              flex items-center gap-3 px-3 py-2.5 rounded-lg
+              transition-all duration-200 ease-out
+              group relative
+              ${active
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25'
                 : 'text-gray-300 hover:bg-white/10 hover:text-white'
-            }`}
+              }
+              ${level > 0 ? 'ml-6 text-sm' : ''}
+            `}
           >
-            <Icon className="w-4 h-4 flex-shrink-0" />
-            <span>{item.label}</span>
+            {active && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+            )}
+            <Icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${active ? '' : 'group-hover:scale-110'}`} />
+            {!sidebarCollapsed && (
+              <span className="font-medium truncate">{item.label}</span>
+            )}
+            {hasChildren && !sidebarCollapsed && (
+              <ChevronRight className={`w-4 h-4 ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+            )}
           </Link>
         ) : (
           <button
-            onClick={() => hasChildren && toggleMenu(item.id)}
-            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium ${
-              active
-                ? 'bg-blue-500 text-white'
+            onClick={() => toggleMenu(item.id)}
+            className={`
+              w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+              transition-all duration-200 ease-out
+              group relative
+              ${active
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25'
                 : 'text-gray-300 hover:bg-white/10 hover:text-white'
-            }`}
+              }
+              ${level > 0 ? 'ml-6 text-sm' : ''}
+            `}
           >
-            <Icon className="w-4 h-4 flex-shrink-0" />
-            <span className="flex-1 text-left">{item.label}</span>
-            {hasChildren && (
-              <ChevronDown className={`w-4 h-4 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
+            {active && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+            )}
+            <Icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${active ? '' : 'group-hover:scale-110'}`} />
+            {!sidebarCollapsed && (
+              <>
+                <span className="font-medium truncate">{item.label}</span>
+                <ChevronRight className={`w-4 h-4 ml-auto transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+              </>
             )}
           </button>
         )}
-        {hasChildren && !isCollapsed && (
-          <div className={`ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-4`}>
+        {hasChildren && isExpanded && !sidebarCollapsed && (
+          <div className="mt-1 space-y-1 overflow-hidden">
             {item.children!.map(child => renderMenuItem(child, level + 1))}
           </div>
         )}
@@ -421,9 +412,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // 加载状态
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f3f4f6' }}>
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-500">加载中...</p>
         </div>
       </div>
@@ -431,19 +422,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen flex" style={{ background: '#f3f4f6' }}>
       {/* 移动端顶部导航 */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-50 flex items-center justify-between px-4 shadow-sm">
+        <div className="fixed top-0 left-0 right-0 h-16 z-50 flex items-center justify-between px-4"
+          style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' }}>
           <Link href="/admin" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
               <Shield className="w-5 h-5 text-white" />
             </div>
-            <span className="text-gray-800 font-semibold">管理后台</span>
+            <span className="text-white font-bold">管理后台</span>
           </Link>
           <button
             onClick={() => setShowMobileNav(true)}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
           >
             <Menu className="w-6 h-6" />
           </button>
@@ -454,27 +446,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {showMobileNav && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setShowMobileNav(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-white shadow-xl overflow-y-auto">
-            <div className="p-5 border-b border-gray-200">
+          <div className="absolute left-0 top-0 bottom-0 w-80 overflow-y-auto"
+            style={{ background: 'linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%)' }}>
+            <div className="p-5 border-b border-white/10">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-gray-800 font-semibold">菜单</span>
+                <span className="text-white font-semibold">菜单</span>
                 <button
                   onClick={() => setShowMobileNav(false)}
-                  className="p-2 text-gray-400 hover:bg-gray-100 rounded-lg"
+                  className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
                   <Shield className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-gray-800 font-medium">{adminData.nickname}</p>
-                  <p className="text-gray-500 text-sm">管理员</p>
+                  <p className="text-white font-medium">{adminData.nickname}</p>
+                  <p className="text-white/60 text-sm">管理员</p>
                 </div>
               </div>
             </div>
@@ -485,84 +478,131 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       )}
 
-      {/* PC端左侧固定侧边栏 */}
+      {/* PC端左侧固定侧边栏 - 深色主题 */}
       {!isMobile && (
-        <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#1a1a2e] border-r border-white/10 z-40 flex flex-col shadow-xl">
+        <aside
+          className={`
+            fixed left-0 top-0 bottom-0 z-40
+            flex flex-col
+            transition-all duration-300 ease-out
+            ${sidebarCollapsed ? 'w-20' : 'w-64'}
+          `}
+          style={{ background: 'linear-gradient(180deg, #1a1a2e 0%, #0f0f1a 100%)' }}
+        >
           {/* Logo 区域 */}
-          <div className="p-5 border-b border-white/10">
+          <div className="p-4 border-b border-white/10">
             <Link href="/admin" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow">
-                <Shield className="w-5 h-5 text-white" />
+              <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <p className="text-white font-bold">管理后台</p>
-                <p className="text-gray-400 text-xs">wysz88.com</p>
-              </div>
+              {!sidebarCollapsed && (
+                <div>
+                  <p className="text-white font-bold text-lg leading-tight">管理后台</p>
+                  <p className="text-white/50 text-xs">wysz88.com</p>
+                </div>
+              )}
             </Link>
           </div>
 
           {/* 管理员信息区域 */}
-          <div className="p-5 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+          <div className="p-4 border-b border-white/10">
+            <div className={`flex items-center gap-3 ${sidebarCollapsed ? 'justify-center' : ''}`}>
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center flex-shrink-0">
                 <Shield className="w-5 h-5 text-blue-400" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-medium truncate">{adminData.nickname}</p>
-                <p className="text-gray-400 text-xs">ID: {adminData.id}</p>
-              </div>
+              {!sidebarCollapsed && (
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-medium truncate">{adminData.nickname}</p>
+                  <p className="text-white/40 text-xs">ID: {adminData.id}</p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* 导航菜单 */}
-          <nav className="flex-1 p-4 overflow-y-auto space-y-1">
+          <nav className="flex-1 p-3 overflow-y-auto admin-scroll space-y-1">
             {menuItems.map(item => renderMenuItem(item))}
           </nav>
 
           {/* 底部操作区 */}
-          <div className="p-4 border-t border-white/10 space-y-2">
+          <div className="p-3 border-t border-white/10 space-y-2">
+            {/* 折叠按钮 */}
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className={`
+                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                text-gray-300 hover:bg-white/10 hover:text-white
+                transition-all duration-200
+                ${sidebarCollapsed ? 'justify-center' : ''}
+              `}
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className="w-5 h-5" />
+              ) : (
+                <>
+                  <ChevronLeft className="w-5 h-5" />
+                  <span className="font-medium">收起菜单</span>
+                </>
+              )}
+            </button>
+
             <button
               onClick={() => setShowLogoutModal(true)}
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium"
+              className={`
+                w-full flex items-center gap-3 px-3 py-2.5 rounded-lg
+                text-red-400 hover:bg-red-500/20 hover:text-red-300
+                transition-all duration-200
+                ${sidebarCollapsed ? 'justify-center' : ''}
+              `}
             >
-              <LogOut className="w-4 h-4" />
-              <span>退出登录</span>
+              <LogOut className="w-5 h-5" />
+              {!sidebarCollapsed && <span className="font-medium">退出登录</span>}
             </button>
           </div>
         </aside>
       )}
 
       {/* 主内容区域 */}
-      <main className={`${isMobile ? 'pt-14' : 'ml-64'} min-h-screen`}>
-        <div className="p-4 md:p-6 lg:p-8">
+      <main className={`
+        flex-1 min-h-screen
+        transition-all duration-300 ease-out
+        ${isMobile ? 'pt-16' : sidebarCollapsed ? 'ml-20' : 'ml-64'}
+      `}>
+        <div className="p-4 md:p-6 lg:p-8 page-enter">
           {children}
         </div>
       </main>
 
-      {/* 退出登录确认弹窗 */}
+      {/* 退出登录确认弹窗 - 带动画 */}
       {showLogoutModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay"
+          onClick={() => setShowLogoutModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden modal-content"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
                 <LogOut className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">确认退出</h3>
-              <p className="text-gray-500 text-sm">确定要退出管理后台吗？</p>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowLogoutModal(false)}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
-              >
-                取消
-              </button>
-              <button
-                onClick={handleLogout}
-                className="flex-1 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium text-sm"
-              >
-                确认退出
-              </button>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">确认退出</h3>
+              <p className="text-gray-500 mb-8">确定要退出管理后台吗？</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                >
+                  取消
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-medium shadow-lg shadow-red-500/25"
+                >
+                  确认退出
+                </button>
+              </div>
             </div>
           </div>
         </div>

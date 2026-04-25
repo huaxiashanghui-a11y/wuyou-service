@@ -5,13 +5,13 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import {
   RefreshCw,
   Plus,
-  Search,
   Edit2,
   Trash2,
   ToggleLeft,
   ToggleRight,
   ChevronUp,
   ChevronDown,
+  CreditCard,
 } from 'lucide-react';
 
 interface PaymentChannel {
@@ -42,17 +42,15 @@ interface ModalFormData {
   sort_order: string;
 }
 
-// 支付方式列表
 const PAYMENT_METHODS = [
-  { value: 'alipay', label: '支付宝' },
-  { value: 'wechat', label: '微信' },
-  { value: 'manual', label: '人工充值' },
-  { value: 'bocoin', label: '波币钱包送5%' },
-  { value: 'unionpay', label: '银联转账' },
-  { value: 'digital_rmb', label: '数字人民币' },
+  { value: 'alipay', label: '支付宝', color: 'bg-blue-100 text-blue-700' },
+  { value: 'wechat', label: '微信', color: 'bg-green-100 text-green-700' },
+  { value: 'manual', label: '人工充值', color: 'bg-purple-100 text-purple-700' },
+  { value: 'bocoin', label: '波币钱包送5%', color: 'bg-orange-100 text-orange-700' },
+  { value: 'unionpay', label: '银联转账', color: 'bg-red-100 text-red-700' },
+  { value: 'digital_rmb', label: '数字人民币', color: 'bg-pink-100 text-pink-700' },
 ];
 
-// 设备类型选项
 const DEVICE_TYPES = [
   { value: 'pc', label: 'PC' },
   { value: 'mobile', label: '移动端' },
@@ -67,16 +65,10 @@ export default function PaymentConfigPage() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-
-  // 筛选状态
   const [activeTab, setActiveTab] = useState('all');
   const [keyword, setKeyword] = useState('');
-
-  // 排序状态
   const [sortField, setSortField] = useState('sort_order');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-
-  // 模态框状态
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState('添加支付渠道');
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -91,8 +83,6 @@ export default function PaymentConfigPage() {
     sort_order: '0',
   });
   const [saving, setSaving] = useState(false);
-
-  // 删除确认
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -140,9 +130,7 @@ export default function PaymentConfigPage() {
     }
   };
 
-  const handleRefresh = () => {
-    fetchData();
-  };
+  const handleRefresh = () => fetchData();
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -195,15 +183,10 @@ export default function PaymentConfigPage() {
       alert('请输入渠道名称');
       return;
     }
-    if (!formData.payment_method) {
-      alert('请选择支付方式');
-      return;
-    }
 
     setSaving(true);
     try {
       const token = localStorage.getItem('token');
-      const url = '/api/admin/finance';
       const method = editingId ? 'PUT' : 'POST';
 
       const body: any = {
@@ -224,7 +207,7 @@ export default function PaymentConfigPage() {
         body.id = editingId;
       }
 
-      const res = await fetch(url, {
+      const res = await fetch('/api/admin/finance', {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -249,7 +232,7 @@ export default function PaymentConfigPage() {
     }
   };
 
-  const handleToggleStatus = async (id: number, currentStatus: number) => {
+  const handleToggleStatus = async (id: number) => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch('/api/admin/finance', {
@@ -314,63 +297,54 @@ export default function PaymentConfigPage() {
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleString('zh-CN');
-  };
-
-  const getPaymentMethodName = (method: string) => {
+  const getPaymentMethodBadge = (method: string) => {
     const found = PAYMENT_METHODS.find(m => m.value === method);
-    return found ? found.label : method;
+    if (!found) return <span className="badge badge-gray">{method}</span>;
+    return (
+      <span className={`badge ${found.color}`}>
+        {found.label}
+      </span>
+    );
   };
 
-  const getTabCount = (tab: string) => {
-    if (tab === 'all') return total;
-    return channels.filter(c => {
-      if (tab === 'disabled') return c.status === 0;
-      return c.payment_method === tab;
-    }).length;
-  };
-
-  // 排序图标组件
   const SortIcon = ({ field }: { field: string }) => {
     if (sortField !== field) {
       return <ChevronUp className="w-4 h-4 text-gray-300" />;
     }
     return sortOrder === 'asc'
-      ? <ChevronUp className="w-4 h-4 text-[#3498DB]" />
-      : <ChevronDown className="w-4 h-4 text-[#3498DB]" />;
+      ? <ChevronUp className="w-4 h-4 text-blue-500" />
+      : <ChevronDown className="w-4 h-4 text-blue-500" />;
   };
 
   return (
     <AdminLayout>
-      <div className="p-6">
+      <div className="space-y-6">
         {/* 面包屑 */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <span>首页</span>
-          <span>/</span>
-          <span>资金管理</span>
-          <span>/</span>
-          <span className="text-gray-700">支付配置</span>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-gray-400">首页</span>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-400">资金管理</span>
+          <span className="text-gray-300">/</span>
+          <span className="text-gray-700 font-medium">支付配置</span>
         </div>
 
         {/* 页面标题 */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">支付渠道配置</h1>
+            <h1 className="text-2xl font-bold text-gray-900">支付渠道配置</h1>
             <p className="text-gray-500 mt-1">管理平台支付渠道和手续费设置</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={handleRefresh}
-              className="flex items-center gap-2 px-4 py-2 bg-[#3498DB] text-white rounded-lg hover:bg-[#2980B9] transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-blue-500/25"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               <span>刷新</span>
             </button>
             <button
               onClick={openAddModal}
-              className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#3498DB] text-[#3498DB] rounded-lg hover:bg-blue-50 transition-colors font-medium"
+              className="flex items-center gap-2 px-4 py-2.5 bg-white border-2 border-blue-500 text-blue-500 rounded-xl hover:bg-blue-50 transition-all font-semibold"
             >
               <Plus className="w-4 h-4" />
               <span>添加</span>
@@ -379,7 +353,7 @@ export default function PaymentConfigPage() {
         </div>
 
         {/* 支付方式筛选标签 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 mb-4">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="flex items-center gap-1 p-2 overflow-x-auto">
             {[
               { key: 'all', label: '全部' },
@@ -394,9 +368,9 @@ export default function PaymentConfigPage() {
               <button
                 key={tab.key}
                 onClick={() => handleTabClick(tab.key)}
-                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-colors ${
+                className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all duration-200 font-medium text-sm ${
                   activeTab === tab.key
-                    ? 'bg-[#3498DB] text-white'
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
@@ -414,18 +388,18 @@ export default function PaymentConfigPage() {
         </div>
 
         {/* 表格 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">商户名称</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">支付方式</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">设备类型</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">随机支付分组</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">名称</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">商户名称</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">支付方式</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">设备类型</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">随机支付分组</th>
                   <th
-                    className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+                    className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('fee_rate')}
                   >
                     <div className="flex items-center gap-1">
@@ -433,10 +407,10 @@ export default function PaymentConfigPage() {
                       <SortIcon field="fee_rate" />
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">状态</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">支付层级</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">状态</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">支付层级</th>
                   <th
-                    className="px-4 py-3 text-left text-sm font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+                    className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600 cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => handleSort('sort_order')}
                   >
                     <div className="flex items-center gap-1">
@@ -444,54 +418,55 @@ export default function PaymentConfigPage() {
                       <SortIcon field="sort_order" />
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">操作</th>
+                  <th className="px-4 py-3.5 text-left text-sm font-semibold text-gray-600">操作</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-50">
                 {loading ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-12 text-center text-gray-500">
-                      <RefreshCw className="w-6 h-6 animate-spin mx-auto" />
+                    <td colSpan={10} className="px-4 py-16 text-center">
+                      <RefreshCw className="w-8 h-8 animate-spin mx-auto text-blue-500" />
                     </td>
                   </tr>
                 ) : channels.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-4 py-12 text-center text-gray-500">
-                      暂无数据
+                    <td colSpan={10} className="px-4 py-16 text-center">
+                      <div className="flex flex-col items-center">
+                        <CreditCard className="w-12 h-12 text-gray-300 mb-3" />
+                        <p className="text-gray-500">暂无数据</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
                   channels.map((channel) => (
-                    <tr key={channel.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3">
-                        <span className="font-medium text-gray-800">{channel.name}</span>
+                    <tr key={channel.id} className="hover:bg-blue-50/30 transition-colors">
+                      <td className="px-4 py-3.5">
+                        <span className="font-semibold text-gray-900">{channel.name}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3.5 text-gray-600">
                         {channel.merchant_name || '-'}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs font-medium">
-                          {channel.payment_method_name || getPaymentMethodName(channel.payment_method)}
-                        </span>
+                      <td className="px-4 py-3.5">
+                        {getPaymentMethodBadge(channel.payment_method)}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3.5 text-gray-600">
                         {channel.device_type || '-'}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3.5 text-gray-600">
                         {channel.random_group || '-'}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`font-medium ${channel.fee_rate > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                      <td className="px-4 py-3.5">
+                        <span className={`font-semibold ${channel.fee_rate > 0 ? 'text-green-600' : 'text-gray-600'}`}>
                           {channel.fee_rate > 0 ? `${(channel.fee_rate * 100).toFixed(2)}%` : '-'}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-3.5">
                         <button
-                          onClick={() => handleToggleStatus(channel.id, channel.status)}
-                          className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                          onClick={() => handleToggleStatus(channel.id)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
                             channel.status === 1
-                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                              : 'bg-red-100 text-red-700 hover:bg-red-200'
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200 shadow-sm'
+                              : 'bg-red-100 text-red-700 hover:bg-red-200 shadow-sm'
                           }`}
                         >
                           {channel.status === 1 ? (
@@ -502,24 +477,24 @@ export default function PaymentConfigPage() {
                           {channel.status === 1 ? '启用' : '禁用'}
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3.5 text-gray-600">
                         {channel.payment_level || '-'}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td className="px-4 py-3.5 text-gray-600">
                         {channel.sort_order}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => openEditModal(channel)}
-                            className="p-1.5 text-gray-500 hover:text-[#3498DB] hover:bg-blue-50 rounded transition-colors"
+                            className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                             title="编辑"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => confirmDelete(channel.id)}
-                            className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                             title="删除"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -534,7 +509,7 @@ export default function PaymentConfigPage() {
           </div>
 
           {/* 分页 */}
-          <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+          <div className="px-4 py-4 border-t border-gray-100 flex items-center justify-between">
             <p className="text-sm text-gray-500">
               显示 {(page - 1) * pageSize + 1} - {Math.min(page * pageSize, total)}，共 {total} 条
             </p>
@@ -542,17 +517,17 @@ export default function PaymentConfigPage() {
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="pagination-btn"
               >
                 上一页
               </button>
-              <span className="px-3 py-1.5 text-gray-700 text-sm">
+              <span className="px-4 py-2 text-gray-700 font-medium">
                 第 {page} / {totalPages} 页
               </span>
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page >= totalPages}
-                className="px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="pagination-btn"
               >
                 下一页
               </button>
@@ -563,52 +538,52 @@ export default function PaymentConfigPage() {
 
       {/* 添加/编辑模态框 */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay"
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg modal-content overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-800">{modalTitle}</h3>
+              <h3 className="text-lg font-bold text-gray-900">{modalTitle}</h3>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                <span className="text-2xl">&times;</span>
+                <span className="text-2xl leading-none">&times;</span>
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  渠道名称 <span className="text-red-500">*</span>
-                </label>
+                <label className="form-label form-label-required">渠道名称</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="请输入渠道名称"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="input-dark"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  商户名称
-                </label>
+                <label className="form-label">商户名称</label>
                 <input
                   type="text"
                   value={formData.merchant_name}
                   onChange={(e) => setFormData({ ...formData, merchant_name: e.target.value })}
                   placeholder="请输入商户名称"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="input-dark"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  支付方式 <span className="text-red-500">*</span>
-                </label>
+                <label className="form-label form-label-required">支付方式</label>
                 <select
                   value={formData.payment_method}
                   onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="select-dark w-full"
                 >
                   {PAYMENT_METHODS.map((method) => (
                     <option key={method.value} value={method.value}>
@@ -619,13 +594,11 @@ export default function PaymentConfigPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  设备类型
-                </label>
+                <label className="form-label">设备类型</label>
                 <select
                   value={formData.device_type}
                   onChange={(e) => setFormData({ ...formData, device_type: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="select-dark w-full"
                 >
                   {DEVICE_TYPES.map((device) => (
                     <option key={device.value} value={device.value}>
@@ -636,22 +609,18 @@ export default function PaymentConfigPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  随机支付分组
-                </label>
+                <label className="form-label">随机支付分组</label>
                 <input
                   type="text"
                   value={formData.random_group}
                   onChange={(e) => setFormData({ ...formData, random_group: e.target.value })}
                   placeholder="如: A组, B组"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="input-dark"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  手续费比例 (%)
-                </label>
+                <label className="form-label">手续费比例 (%)</label>
                 <input
                   type="number"
                   step="0.01"
@@ -660,48 +629,44 @@ export default function PaymentConfigPage() {
                   value={formData.fee_rate}
                   onChange={(e) => setFormData({ ...formData, fee_rate: e.target.value })}
                   placeholder="如: 0.5"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="input-dark"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  支付层级
-                </label>
+                <label className="form-label">支付层级</label>
                 <input
                   type="text"
                   value={formData.payment_level}
                   onChange={(e) => setFormData({ ...formData, payment_level: e.target.value })}
                   placeholder="如: 一级, 二级"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="input-dark"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  排序
-                </label>
+                <label className="form-label">排序</label>
                 <input
                   type="number"
                   min="0"
                   value={formData.sort_order}
                   onChange={(e) => setFormData({ ...formData, sort_order: e.target.value })}
                   placeholder="数值越小越靠前"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#3498DB] focus:ring-1 focus:ring-[#3498DB]"
+                  className="input-dark"
                 />
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-end gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="px-5 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-colors font-medium"
               >
                 取消
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 bg-[#3498DB] text-white rounded-lg hover:bg-[#2980B9] transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all font-medium shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving ? '保存中...' : '保存'}
               </button>
@@ -712,27 +677,33 @@ export default function PaymentConfigPage() {
 
       {/* 删除确认模态框 */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <Trash2 className="w-6 h-6 text-red-600" />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md modal-content overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-500" />
               </div>
-              <h3 className="text-lg font-bold text-gray-800 mb-2">确认删除</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">确认删除</h3>
               <p className="text-gray-500 mb-6">确定要删除该支付渠道吗？此操作不可撤销。</p>
-              <div className="flex items-center justify-center gap-3">
+              <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setShowDeleteConfirm(false);
                     setDeleteId(null);
                   }}
-                  className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
                 >
                   取消
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="flex-1 py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all font-medium shadow-lg shadow-red-500/25"
                 >
                   删除
                 </button>
