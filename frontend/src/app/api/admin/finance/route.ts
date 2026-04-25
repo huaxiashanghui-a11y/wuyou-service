@@ -21,19 +21,25 @@ async function verifyAdmin(request: NextRequest) {
   return verifySession(request);
 }
 
-// 创建支付配置表
-async function ensurePaymentConfigTable() {
+// 创建支付渠道配置表（与图片字段一致）
+async function ensurePaymentChannelTable() {
   try {
     await dbQuery(`
-      CREATE TABLE IF NOT EXISTS payment_configs (
+      CREATE TABLE IF NOT EXISTS payment_channels (
         id INT PRIMARY KEY AUTO_INCREMENT,
-        payment_type VARCHAR(30) NOT NULL,
-        config_key VARCHAR(50) NOT NULL,
-        config_value TEXT,
-        status TINYINT DEFAULT 1,
+        name VARCHAR(100) NOT NULL COMMENT '名称',
+        merchant_name VARCHAR(100) COMMENT '商户名称',
+        payment_method VARCHAR(30) NOT NULL COMMENT '支付方式',
+        device_type VARCHAR(50) COMMENT '设备类型',
+        random_group VARCHAR(50) COMMENT '随机支付分组',
+        fee_rate DECIMAL(5,4) DEFAULT 0 COMMENT '手续费比例',
+        status TINYINT DEFAULT 1 COMMENT '状态：1启用 0禁用',
+        payment_level VARCHAR(50) COMMENT '支付层级',
+        sort_order INT DEFAULT 0 COMMENT '排序',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        UNIQUE KEY uk_type_key (payment_type, config_key)
+        INDEX idx_payment_method (payment_method),
+        INDEX idx_status (status)
       )
     `);
   } catch (e) {}
@@ -74,6 +80,16 @@ async function ensurePriceTable() {
   } catch (e) {}
 }
 
+// 支付方式映射
+const PAYMENT_METHODS: Record<string, string> = {
+  'alipay': '支付宝',
+  'wechat': '微信',
+  'manual': '人工充值',
+  'bocoin': '波币钱包送5%',
+  'unionpay': '银联转账',
+  'digital_rmb': '数字人民币',
+};
+
 // 获取资金管理数据
 export async function GET(request: NextRequest) {
   try {
@@ -87,22 +103,84 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'payment';
     const page = parseInt(searchParams.get('page') || '1');
-    const pageSize = parseInt(searchParams.get('pageSize') || '20');
+    const pageSize = parseInt(searchParams.get('pageSize') || '10');
     const keyword = searchParams.get('keyword') || '';
+    const paymentMethod = searchParams.get('paymentMethod') || '';
+    const status = searchParams.get('status') || '';
+    const sortField = searchParams.get('sortField') || 'sort_order';
+    const sortOrder = searchParams.get('sortOrder') || 'asc';
     const offset = (page - 1) * pageSize;
 
     if (type === 'payment') {
-      // 支付配置
-      await ensurePaymentConfigTable();
-      const configs = await dbQuery<any[]>(
-        'SELECT * FROM payment_configs ORDER BY payment_type, id'
+      // 支付渠道配置
+      await ensurePaymentChannelTable();
+
+      let sql = 'SELECT * FROM payment_channels WHERE 1=1';
+      let countSql = 'SELECT COUNT(*) as total FROM payment_channels';
+      const params: any[] = [];
+      const countParams: any[] = [];
+
+      // 支付方式筛选
+      if (paymentMethod && paymentMethod !== 'all') {
+        if (paymentMethod === 'disabled') {
+          sql += ' AND status = 0';
+          countSql += ' WHERE status = 0';
+        } else {
+          const methodKey = Object.keys(PAYMENT_METHODS).find(k => PAYMENT_METHODS[k] === paymentMethod);
+          sql += ' AND payment_method = ?';
+          countSql += ' WHERE payment_method = ?';
+          params.push(methodKey || paymentMethod);
+          countParams.push(methodKey || paymentMethod);
+        }
+      }
+
+      // 关键词搜索
+      if (keyword) {
+        sql += ' AND (name LIKE ? OR merchant_name LIKE ?)';
+        countSql += (countSql.includes('WHERE') ? ' AND' : ' WHERE') + ' (name LIKE ? OR merchant_name LIKE ?)';
+        params.push(`%${keyword}%`, `%${keyword}%`);
+        countParams.push(`%${keyword}%`, `%${keyword}%`);
+      }
+
+      // 排序
+      const allowedSortFields = ['name', 'fee_rate', 'sort_order', 'created_at'];
+      const validSortField = allowedSortFields.includes(sortField) ? sortField : 'sort_order';
+      const validSortOrder = sortOrder === 'desc' ? 'DESC' : 'ASC';
+      sql += ` ORDER BY ${validSortField} ${validSortOrder}`;
+
+      // 分页
+      sql += ' LIMIT ? OFFSET ?';
+
+      // 获取总数
+      const countResult = await dbQuery<any[]>(
+        countSql,
+        countParams.length > 0 ? countParams : undefined
       );
-      return successResponse({ list: configs, total: configs.length });
+      const total = countResult[0]?.total || 0;
+
+      // 获取列表
+      const channels = await dbQuery<any[]>(sql, [...params, pageSize, offset]);
+
+      // 转换支付方式为中文
+      const formattedChannels = channels.map(ch => ({
+        ...ch,
+        payment_method_name: PAYMENT_METHODS[ch.payment_method] || ch.payment_method,
+        status_name: ch.status === 1 ? '启用' : '禁用'
+      }));
+
+      return successResponse({
+        list: formattedChannels,
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+        paymentMethods: Object.values(PAYMENT_METHODS)
+      });
 
     } else if (type === 'points') {
       // 积分列表
       await ensurePointsTable();
-      
+
       let sql = `
         SELECT pr.*, u.username, u.nickname, u.phone as user_phone
         FROM points_records pr
@@ -160,23 +238,57 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { type, action, ...data } = body;
 
-    if (type === 'payment' && action === 'update') {
-      await ensurePaymentConfigTable();
-      // 更新支付配置
-      if (data.id) {
+    if (type === 'payment') {
+      await ensurePaymentChannelTable();
+
+      if (action === 'update' && data.id) {
+        // 更新支付渠道
+        const fields: string[] = [];
+        const values: any[] = [];
+
+        if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
+        if (data.merchant_name !== undefined) { fields.push('merchant_name = ?'); values.push(data.merchant_name); }
+        if (data.payment_method !== undefined) { fields.push('payment_method = ?'); values.push(data.payment_method); }
+        if (data.device_type !== undefined) { fields.push('device_type = ?'); values.push(data.device_type); }
+        if (data.random_group !== undefined) { fields.push('random_group = ?'); values.push(data.random_group); }
+        if (data.fee_rate !== undefined) { fields.push('fee_rate = ?'); values.push(data.fee_rate); }
+        if (data.status !== undefined) { fields.push('status = ?'); values.push(data.status); }
+        if (data.payment_level !== undefined) { fields.push('payment_level = ?'); values.push(data.payment_level); }
+        if (data.sort_order !== undefined) { fields.push('sort_order = ?'); values.push(data.sort_order); }
+
+        if (fields.length > 0) {
+          values.push(data.id);
+          await dbQuery(`UPDATE payment_channels SET ${fields.join(', ')} WHERE id = ?`, values);
+        }
+        return successResponse(null, '配置更新成功');
+
+      } else if (action === 'toggleStatus' && data.id) {
+        // 快速切换状态
+        await dbQuery('UPDATE payment_channels SET status = IF(status=1, 0, 1) WHERE id = ?', [data.id]);
+        return successResponse(null, '状态已切换');
+
+      } else if (action === 'create') {
+        // 创建支付渠道
         await dbQuery(
-          'UPDATE payment_configs SET config_value = ?, updated_at = NOW() WHERE id = ?',
-          [data.config_value, data.id]
+          `INSERT INTO payment_channels (name, merchant_name, payment_method, device_type, random_group, fee_rate, status, payment_level, sort_order)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            data.name,
+            data.merchant_name || '',
+            data.payment_method,
+            data.device_type || '',
+            data.random_group || '',
+            data.fee_rate || 0,
+            data.status !== undefined ? data.status : 1,
+            data.payment_level || '',
+            data.sort_order || 0
+          ]
         );
-      } else if (data.payment_type && data.config_key) {
-        await dbQuery(
-          `INSERT INTO payment_configs (payment_type, config_key, config_value) 
-           VALUES (?, ?, ?) 
-           ON DUPLICATE KEY UPDATE config_value = ?, updated_at = NOW()`,
-          [data.payment_type, data.config_key, data.config_value, data.config_value]
-        );
+        return successResponse(null, '支付渠道创建成功');
+
+      } else {
+        return errorResponse('参数错误', 400);
       }
-      return successResponse(null, '配置更新成功');
 
     } else if (type === 'points' && action === 'clear') {
       // 清零用户积分
@@ -242,12 +354,23 @@ export async function POST(request: NextRequest) {
     const { type, ...data } = body;
 
     if (type === 'payment') {
-      await ensurePaymentConfigTable();
+      await ensurePaymentChannelTable();
       await dbQuery(
-        'INSERT INTO payment_configs (payment_type, config_key, config_value) VALUES (?, ?, ?)',
-        [data.payment_type, data.config_key, data.config_value]
+        `INSERT INTO payment_channels (name, merchant_name, payment_method, device_type, random_group, fee_rate, status, payment_level, sort_order)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          data.name,
+          data.merchant_name || '',
+          data.payment_method,
+          data.device_type || '',
+          data.random_group || '',
+          data.fee_rate || 0,
+          data.status !== undefined ? data.status : 1,
+          data.payment_level || '',
+          data.sort_order || 0
+        ]
       );
-      return successResponse(null, '支付配置创建成功');
+      return successResponse(null, '支付渠道创建成功');
 
     } else if (type === 'price') {
       await ensurePriceTable();
@@ -286,8 +409,8 @@ export async function DELETE(request: NextRequest) {
     const placeholders = ids.map(() => '?').join(',');
 
     if (type === 'payment') {
-      await ensurePaymentConfigTable();
-      await dbQuery(`DELETE FROM payment_configs WHERE id IN (${placeholders})`, ids);
+      await ensurePaymentChannelTable();
+      await dbQuery(`DELETE FROM payment_channels WHERE id IN (${placeholders})`, ids);
       return successResponse(null, '删除成功');
 
     } else if (type === 'price') {

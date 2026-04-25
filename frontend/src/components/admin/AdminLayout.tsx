@@ -93,7 +93,7 @@ const menuItems: MenuItem[] = [
     label: '资金管理',
     icon: Wallet,
     children: [
-      { id: 'fund-payment', label: '支付配置', icon: CreditCard, href: '/admin/funds/payment' },
+      { id: 'fund-payment', label: '支付配置', icon: CreditCard, href: '/admin/finance/payment-config' },
       { id: 'fund-points', label: '积分列表', icon: Wallet, href: '/admin/funds/points' },
       { id: 'fund-price', label: '价格列表', icon: DollarSign, href: '/admin/funds/price' },
     ],
