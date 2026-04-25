@@ -286,6 +286,30 @@ export async function PUT(request: NextRequest) {
         );
         return successResponse(null, '支付渠道创建成功');
 
+      } else if (action === 'initSampleData') {
+        // 插入示例数据
+        const sampleData = [
+          { name: '支付宝官方', merchant_name: '无忧服务官方', payment_method: 'alipay', device_type: 'all', random_group: 'A组', fee_rate: 0, status: 1, payment_level: '一级', sort_order: 1 },
+          { name: '支付宝-渠道商A', merchant_name: '渠道商A', payment_method: 'alipay', device_type: 'mobile', random_group: 'A组', fee_rate: 0.005, status: 1, payment_level: '二级', sort_order: 2 },
+          { name: '微信支付官方', merchant_name: '无忧服务官方', payment_method: 'wechat', device_type: 'all', random_group: 'B组', fee_rate: 0, status: 1, payment_level: '一级', sort_order: 3 },
+          { name: '微信-渠道商B', merchant_name: '渠道商B', payment_method: 'wechat', device_type: 'pc', random_group: 'B组', fee_rate: 0.003, status: 1, payment_level: '二级', sort_order: 4 },
+          { name: '人工充值-客服1', merchant_name: '客服中心', payment_method: 'manual', device_type: 'all', random_group: '', fee_rate: 0, status: 1, payment_level: '一级', sort_order: 5 },
+          { name: '人工充值-客服2', merchant_name: '客服中心', payment_method: 'manual', device_type: 'all', random_group: '', fee_rate: 0, status: 1, payment_level: '二级', sort_order: 6 },
+          { name: '波币钱包', merchant_name: '波币平台', payment_method: 'bocoin', device_type: 'all', random_group: '', fee_rate: 0, status: 1, payment_level: '一级', sort_order: 7 },
+          { name: '银联转账', merchant_name: '银行通道', payment_method: 'unionpay', device_type: 'all', random_group: 'C组', fee_rate: 0.002, status: 1, payment_level: '一级', sort_order: 8 },
+          { name: '数字人民币', merchant_name: '央行数字货币', payment_method: 'digital_rmb', device_type: 'all', random_group: 'D组', fee_rate: 0, status: 1, payment_level: '一级', sort_order: 9 },
+          { name: '支付宝-旧通道', merchant_name: '已停用', payment_method: 'alipay', device_type: 'pc', random_group: '', fee_rate: 0.01, status: 0, payment_level: '三级', sort_order: 10 },
+        ];
+
+        for (const item of sampleData) {
+          await dbQuery(
+            `INSERT INTO payment_channels (name, merchant_name, payment_method, device_type, random_group, fee_rate, status, payment_level, sort_order)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [item.name, item.merchant_name, item.payment_method, item.device_type, item.random_group, item.fee_rate, item.status, item.payment_level, item.sort_order]
+          );
+        }
+        return successResponse(null, `成功插入${sampleData.length}条示例数据`);
+
       } else {
         return errorResponse('参数错误', 400);
       }

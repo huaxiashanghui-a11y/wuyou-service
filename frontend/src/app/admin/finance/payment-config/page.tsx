@@ -232,6 +232,41 @@ export default function PaymentConfigPage() {
     }
   };
 
+  // 初始化示例数据
+  const handleInitSampleData = async () => {
+    if (total > 0) {
+      if (!confirm('已有数据存在，确定要重新初始化吗？这将添加更多示例数据。')) {
+        return;
+      }
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/admin/finance', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          type: 'payment',
+          action: 'initSampleData',
+        }),
+      });
+      const data = await res.json();
+
+      if (data.code === 200) {
+        alert(data.message);
+        fetchData();
+      } else {
+        alert(data.message || '初始化失败');
+      }
+    } catch (error) {
+      console.error('初始化失败:', error);
+      alert('初始化失败');
+    }
+  };
+
   const handleToggleStatus = async (id: number) => {
     try {
       const token = localStorage.getItem('token');
@@ -341,6 +376,13 @@ export default function PaymentConfigPage() {
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               <span>刷新</span>
+            </button>
+            <button
+              onClick={handleInitSampleData}
+              className="flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all shadow-lg shadow-green-500/25 font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              <span>初始化示例数据</span>
             </button>
             <button
               onClick={openAddModal}
