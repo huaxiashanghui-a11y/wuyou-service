@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { dbQuery, initTables, TelegramRequestToken } from '@/lib/db';
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+export const dynamic = 'force-dynamic';
 
 // Webhook URL: https://www.wysz88.com/api/telegram/webhook
 export async function POST(request: NextRequest) {
@@ -79,13 +79,14 @@ export async function POST(request: NextRequest) {
 
 // 发送Telegram消息
 async function sendTelegramMessage(chatId: number, text: string): Promise<void> {
-  if (!TELEGRAM_BOT_TOKEN) {
+  const botToken = process.env.TELEGRAM_BOT_TOKEN || '';
+  if (!botToken) {
     console.warn('TELEGRAM_BOT_TOKEN not configured');
     return;
   }
 
   try {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

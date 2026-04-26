@@ -111,10 +111,9 @@ export async function POST(request: NextRequest) {
       }
 
       const insertResult = await dbQuery<any>(
-        'INSERT INTO `users` (`username`, `password`, `nickname`, `status`) VALUES (?, ?, ?, 1)',
+        'INSERT INTO `users` (`username`, `nickname`, `status`) VALUES (?, ?, 1)',
         [
           safeUsername,
-          '',
           channel === 'email' ? identifier.split('@')[0] : '用户' + safeUsername.substring(0, 4),
         ]
       );

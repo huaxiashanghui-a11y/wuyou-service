@@ -3,15 +3,18 @@ import { dbQuery, initTables, UserIdentity } from '@/lib/db';
 import { generateToken, createSession } from '@/lib/auth';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://www.wysz88.com/api/auth/google/callback';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
     if (!isFeatureEnabled('googleLogin')) {
       return NextResponse.redirect(new URL('/login?error=google_disabled', request.url));
     }
+
+    // 从环境变量读取Google OAuth配置（运行时读取，确保Vercel环境变量生效）
+    const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+    const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+    const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://www.wysz88.com/api/auth/google/callback';
 
     await initTables();
 
@@ -118,7 +121,7 @@ export async function GET(request: NextRequest) {
           : 'google_' + Date.now().toString(36);
 
         const result = await dbQuery<any>(
-          'INSERT INTO users (username, password, nickname, email, status) VALUES (?, ?, ?, ?, 1)',
+          'INSERT INTO users (username, password_hash, nickname, email, status) VALUES (?, ?, ?, ?, 1)',
           [safeUsername, '', googleName || safeUsername, googleEmail || null]
         );
         userId = result.insertId;

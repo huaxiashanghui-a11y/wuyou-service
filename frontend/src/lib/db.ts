@@ -41,7 +41,7 @@ export async function initTables(): Promise<void> {
     `CREATE TABLE IF NOT EXISTS users (
       id INT PRIMARY KEY AUTO_INCREMENT,
       username VARCHAR(50) NOT NULL UNIQUE,
-      password VARCHAR(255) NOT NULL,
+      password_hash VARCHAR(255) NOT NULL DEFAULT '',
       nickname VARCHAR(50),
       email VARCHAR(100),
       phone VARCHAR(20),
@@ -221,9 +221,8 @@ export async function initTables(): Promise<void> {
     )`
   ];
 
-  // 更新 users 表添加 is_merchant 字段（MySQL 需要先检查字段是否存在）
+  // 更新 users 表添加 is_merchant 字段
   try {
-    // 检查字段是否已存在
     const [columns] = await p.execute(`
       SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
       WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'is_merchant'
@@ -234,8 +233,33 @@ export async function initTables(): Promise<void> {
       console.log('is_merchant 字段添加成功');
     }
   } catch (e: any) {
-    // 忽略错误
     console.log('检查/添加 is_merchant 字段:', e.message);
+  }
+
+  // 更新 users 表: 确保 password_hash 列存在（兼容老表无密码字段的情况）
+  try {
+    const [pwHashCols] = await p.execute(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'password_hash'
+    `, [process.env.MYSQL_DATABASE || 'wuyouservice']);
+
+    if ((pwHashCols as any[]).length === 0) {
+      // 检查是否有旧的 password 列
+      const [oldPwCols] = await p.execute(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'password'
+      `, [process.env.MYSQL_DATABASE || 'wuyouservice']);
+
+      if ((oldPwCols as any[]).length > 0) {
+        await p.execute("ALTER TABLE users CHANGE COLUMN password password_hash VARCHAR(255) NOT NULL DEFAULT ''");
+        console.log('password 列已重命名为 password_hash');
+      } else {
+        await p.execute("ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL DEFAULT ''");
+        console.log('password_hash 字段添加成功');
+      }
+    }
+  } catch (e: any) {
+    console.log('检查/添加 password_hash 字段:', e.message);
   }
 
   for (const sql of tables) {
@@ -255,7 +279,7 @@ export async function closePool(): Promise<void> {
 export interface User {
   id: number;
   username: string;
-  password: string;
+  password_hash: string;
   nickname: string | null;
   email: string | null;
   phone: string | null;

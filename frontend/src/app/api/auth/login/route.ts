@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const user = users[0];
 
     // 验证密码
-    const isValid = await bcrypt.compare(password, user.password);
+    const isValid = await bcrypt.compare(password, user.password_hash);
     if (!isValid) {
       return NextResponse.json(
         { success: false, message: '用户名或密码错误' },
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 返回用户信息（不包含密码）
-    const { password: _, ...userInfo } = user;
+    const { password_hash: _, ...userInfo } = user;
 
     return NextResponse.json({
       success: true,

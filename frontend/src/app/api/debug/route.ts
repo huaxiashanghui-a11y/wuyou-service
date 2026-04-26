@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { dbQuery, initTables } from '@/lib/db';
+import { getFeatureFlags } from '@/lib/feature-flags';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,34 +47,67 @@ export async function GET() {
       'SELECT COUNT(*) AS cnt FROM `users`'
     );
 
+    // 检查users表中关键列是否存在
+    const columnNames = usersColumns.map((c: any) => c.Field);
+    const hasPasswordHash = columnNames.includes('password_hash');
+    const hasOldPassword = columnNames.includes('password');
+
     // 环境变量检查（只显示是否设置，不显示值）
-    const envCheck = {
-      GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
-      GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
-      GOOGLE_REDIRECT_URI: !!process.env.GOOGLE_REDIRECT_URI,
-      TELEGRAM_BOT_USERNAME: !!process.env.TELEGRAM_BOT_USERNAME,
-      TELEGRAM_BOT_TOKEN: !!process.env.TELEGRAM_BOT_TOKEN,
-      SMS_API_KEY: !!process.env.SMS_API_KEY,
-      SMS_FROM: !!process.env.SMS_FROM,
-      EMAIL_PROVIDER: !!process.env.EMAIL_PROVIDER,
-      EMAIL_API_KEY: !!process.env.EMAIL_API_KEY,
-      EMAIL_FROM: !!process.env.EMAIL_FROM,
-      OTP_SECRET: !!process.env.OTP_SECRET,
-      MYSQL_HOST: !!process.env.MYSQL_HOST,
-      MYSQL_DATABASE: !!process.env.MYSQL_DATABASE,
-    };
+    const envKeys = [
+      'GOOGLE_CLIENT_ID',
+      'GOOGLE_CLIENT_SECRET',
+      'GOOGLE_REDIRECT_URI',
+      'TELEGRAM_BOT_USERNAME',
+      'TELEGRAM_BOT_TOKEN',
+      'SMS_API_KEY',
+      'SMS_FROM',
+      'EMAIL_PROVIDER',
+      'EMAIL_API_KEY',
+      'EMAIL_FROM',
+      'OTP_SECRET',
+      'MYSQL_HOST',
+      'MYSQL_DATABASE',
+      'MYSQL_PASSWORD',
+      'JWT_SECRET',
+      'VERCEL_ENV',
+      'NODE_ENV',
+      'FEATURE_OTP_LOGIN',
+      'FEATURE_GOOGLE_LOGIN',
+      'FEATURE_TG_OTP_LOGIN',
+    ];
+
+    const envCheck: Record<string, boolean | string> = {};
+    for (const key of envKeys) {
+      const val = process.env[key];
+      if (val === undefined || val === null || val === '') {
+        envCheck[key] = false;
+      } else if (key.includes('SECRET') || key.includes('KEY') || key.includes('PASSWORD') || key.includes('TOKEN')) {
+        // 敏感信息只显示是否设置和长度
+        envCheck[key] = `set (length=${val.length})`;
+      } else {
+        envCheck[key] = val;
+      }
+    }
+
+    // Feature flags 实际值
+    const featureFlags = getFeatureFlags();
 
     return NextResponse.json({
       success: true,
       data: {
+        environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'unknown',
         tables: tables.map((t: any) => Object.values(t)[0]),
-        usersColumnNames: usersColumns.map((c: any) => c.Field),
+        usersColumnNames: columnNames,
         usersColumnDetails: usersColumns,
+        hasPasswordHash,
+        hasOldPassword,
         identitiesColumnNames: identitiesColumns.map((c: any) => c.Field),
         otpColumnNames: otpColumns.map((c: any) => c.Field),
         tgTokenColumnNames: tgTokenColumns.map((c: any) => c.Field),
         userCount: userCount[0]?.cnt || 0,
         envCheck,
+        featureFlags,
+        timestamp: new Date().toISOString(),
       },
     });
   } catch (error: any) {
