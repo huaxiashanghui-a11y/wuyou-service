@@ -12,7 +12,7 @@ if (mysqlPassword) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password, nickname, inviteCode } = await request.json();
+    const { username, password, nickname, email, phone, inviteCode } = await request.json();
 
     // 验证必填字段
     if (!username || !password) {
@@ -40,11 +40,25 @@ export async function POST(request: NextRequest) {
 
     // 创建用户
     const result = await dbQuery<any>(
-      'INSERT INTO users (username, password, nickname) VALUES (?, ?, ?)',
-      [username, hashedPassword, nickname || username]
+      'INSERT INTO users (username, password, nickname, email, phone) VALUES (?, ?, ?, ?, ?)',
+      [username, hashedPassword, nickname || username, email || null, phone || null]
     );
 
     const userId = result.insertId;
+
+    // 记录用户身份绑定
+    if (email) {
+      await dbQuery(
+        'INSERT IGNORE INTO user_identities (user_id, provider, identifier) VALUES (?, ?, ?)',
+        [userId, 'email', email]
+      );
+    }
+    if (phone) {
+      await dbQuery(
+        'INSERT IGNORE INTO user_identities (user_id, provider, identifier) VALUES (?, ?, ?)',
+        [userId, 'phone', phone]
+      );
+    }
 
     // 创建推广信息
     const newInviteCode = 'WY' + userId.toString().padStart(6, '0');

@@ -182,6 +182,42 @@ export async function initTables(): Promise<void> {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       INDEX idx_user_id (user_id),
       INDEX idx_status (status)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS user_identities (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      user_id INT NOT NULL,
+      provider VARCHAR(20) NOT NULL,
+      identifier VARCHAR(255) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE INDEX idx_provider_identifier (provider, identifier),
+      INDEX idx_user_id (user_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS otp_codes (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      destination VARCHAR(255) NOT NULL,
+      code_hash VARCHAR(255) NOT NULL,
+      channel VARCHAR(20) NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      attempts INT DEFAULT 0,
+      last_sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      verified TINYINT DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_destination_channel (destination, channel),
+      INDEX idx_expires (expires_at)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS telegram_request_tokens (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      request_token VARCHAR(64) NOT NULL UNIQUE,
+      telegram_user_id BIGINT,
+      user_id INT,
+      status VARCHAR(20) DEFAULT 'pending',
+      expires_at TIMESTAMP NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_request_token (request_token),
+      INDEX idx_telegram_user_id (telegram_user_id)
     )`
   ];
 
@@ -303,4 +339,34 @@ export interface MerchantApply {
   reviewed_by: number | null;
   created_at: Date;
   updated_at: Date;
+}
+
+export interface UserIdentity {
+  id: number;
+  user_id: number;
+  provider: string;
+  identifier: string;
+  created_at: Date;
+}
+
+export interface OtpCode {
+  id: number;
+  destination: string;
+  code_hash: string;
+  channel: string;
+  expires_at: Date;
+  attempts: number;
+  last_sent_at: Date;
+  verified: number;
+  created_at: Date;
+}
+
+export interface TelegramRequestToken {
+  id: number;
+  request_token: string;
+  telegram_user_id: number | null;
+  user_id: number | null;
+  status: string;
+  expires_at: Date;
+  created_at: Date;
 }
