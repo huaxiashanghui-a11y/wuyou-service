@@ -85,7 +85,7 @@ export default function GamesPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-games">
       <Header />
 
       <main className="max-w-7xl mx-auto px-4 pt-48 pb-8">

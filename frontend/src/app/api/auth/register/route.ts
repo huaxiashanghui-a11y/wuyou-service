@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     // 创建用户
     const result = await dbQuery<any>(
-      'INSERT INTO users (username, password, nickname, email, phone) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO `users` (`username`, `password`, `nickname`, `email`, `phone`) VALUES (?, ?, ?, ?, ?)',
       [username, hashedPassword, nickname || username, email || null, phone || null]
     );
 

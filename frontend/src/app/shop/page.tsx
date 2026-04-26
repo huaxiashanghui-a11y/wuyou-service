@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import LeftSidebar from '@/components/LeftSidebar';
 import ProductCard from '@/components/ProductCard';
 import { useApp } from '@/lib/i18n';
 import { Product } from '@/lib/types';
@@ -34,11 +33,8 @@ function ShopContent() {
 
   return (
     <div className="flex flex-1 pt-14">
-      {/* Left Sidebar */}
-      <LeftSidebar />
-
       {/* Main Content */}
-      <main className="flex-1 lg:ml-[200px] min-h-screen">
+      <main className="flex-1 min-h-screen">
         <div className="container-custom py-6">
           {/* Page Header */}
           <div className="mb-6">
@@ -111,7 +107,7 @@ function ShopLoading() {
 
 export default function ShopPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-shop">
       <Header />
       <Suspense fallback={<ShopLoading />}>
         <ShopContent />

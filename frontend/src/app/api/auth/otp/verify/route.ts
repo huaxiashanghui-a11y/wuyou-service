@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       }
 
       const insertResult = await dbQuery<any>(
-        'INSERT INTO users (username, password, nickname, status) VALUES (?, ?, ?, 1)',
+        'INSERT INTO `users` (`username`, `password`, `nickname`, `status`) VALUES (?, ?, ?, 1)',
         [
           safeUsername,
           '',

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import LeftSidebar from '@/components/LeftSidebar';
+import CategoryCards from '@/components/CategoryCards';
 import ProductCard from '@/components/ProductCard';
 import { ChevronLeft, ChevronRight, Star, Zap, Shield, Clock, MessageCircle, Users, ArrowUp, Bell, Gift } from 'lucide-react';
 import { Product } from '@/lib/types';
@@ -68,6 +68,18 @@ const memberCards = [
   { id: 'festival', title: '节日活动', subtitle: '更多优惠', icon: '🎉', color: 'from-pink-500 to-rose-500', href: '/shop' },
 ];
 
+// 分类卡片 - 从原左侧导航迁移
+const categoryCards = [
+  { id: 'zhibo', name: '直播平台', icon: '📺', href: '/coming-soon', subItems: [{ name: '抖音充值', href: '/coming-soon' }, { name: '快手充值', href: '/coming-soon' }, { name: '陌陌直播', href: '/coming-soon' }] },
+  { id: 'peiywan', name: '陪玩陪聊', icon: '🎮', href: '/coming-soon', subItems: [] },
+  { id: 'youxi', name: '游戏点卡', icon: '🎯', href: '/games', subItems: [{ name: '王者荣耀', href: '/games' }, { name: '原神', href: '/games' }, { name: '英雄联盟', href: '/games' }] },
+  { id: 'xiaoshuo', name: '小说动漫', icon: '📚', href: '/coming-soon', subItems: [] },
+  { id: 'shipin', name: '视频音频', icon: '🎬', href: '/coming-soon', subItems: [{ name: 'B站大会员', href: '/coming-soon' }, { name: '爱奇艺', href: '/coming-soon' }, { name: '优酷会员', href: '/coming-soon' }] },
+  { id: 'chongzhi', name: '游戏充值', icon: '💎', href: '/games', subItems: [{ name: '游戏代充', href: '/games' }, { name: '话费充值', href: '/recharge' }] },
+  { id: 'shejiao', name: '社交平台', icon: '💬', href: '/coming-soon', subItems: [{ name: '探探充值', href: '/coming-soon' }, { name: 'BLUED', href: '/coming-soon' }] },
+  { id: 'shenghuo', name: '生活服务', icon: '🛍️', href: '/coming-soon', subItems: [] },
+];
+
 export default function HomePage() {
   const [currentBanner, setCurrentBanner] = useState(0);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -100,80 +112,83 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-homepage">
       <Header />
 
-      {/* Main Layout */}
-      <div className="flex flex-1 pt-[106px] lg:pt-[138px]">
-        <LeftSidebar />
+      <main className="flex-1 pt-[106px] lg:pt-[138px]">
+        <div className="container-custom py-6">
 
-        <main className="flex-1 lg:ml-[200px] min-h-screen">
-          <div className="container-custom py-6">
-
-            {/* Section 1: Important Announcement Banner */}
-            <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-lg mb-6 overflow-hidden">
-              <div className="flex items-center">
-                <div className="flex items-center gap-2 px-4 py-3 bg-orange-700/50">
-                  <Bell className="w-5 h-5" />
-                  <span className="font-bold text-sm whitespace-nowrap">重要公告</span>
+          {/* Section 1: Important Announcement Banner */}
+          <div className="bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-lg mb-6 overflow-hidden">
+            <div className="flex items-center">
+              <div className="flex items-center gap-2 px-4 py-3 bg-orange-700/50">
+                <Bell className="w-5 h-5" />
+                <span className="font-bold text-sm whitespace-nowrap">重要公告</span>
+              </div>
+              <div className="flex-1 overflow-hidden py-3">
+                <div className="animate-scroll-left whitespace-nowrap text-sm">
+                  限时优惠：会员充值年卡仅需168元 | 新用户首单满50减10 | 游戏代充全场8折起 | 充值平台秒到账，安全可靠！
                 </div>
-                <div className="flex-1 overflow-hidden py-3">
-                  <div className="animate-scroll-left whitespace-nowrap text-sm">
-                    限时优惠：会员充值年卡仅需168元 | 新用户首单满50减10 | 游戏代充全场8折起 | 充值平台秒到账，安全可靠！
-                  </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Banner Carousel with Category Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+            {/* Left Category Cards */}
+            <div className="lg:col-span-2 order-2 lg:order-1">
+              <CategoryCards categories={categoryCards} />
+            </div>
+
+            {/* Center Banner Carousel */}
+            <div className="lg:col-span-7 order-1 lg:order-2">
+              <div className="relative rounded-xl overflow-hidden">
+                <div className="relative h-64 md:h-80 lg:h-[420px]">
+                  {banners.map((banner, index) => (
+                    <div
+                      key={banner.id}
+                      className={`absolute inset-0 transition-opacity duration-500 ${
+                        index === currentBanner ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient}`}>
+                        <div className="absolute inset-0 flex items-center px-8 md:px-16">
+                          <div className="text-white">
+                            <h2 className="text-3xl md:text-5xl font-bold mb-2">{banner.title}</h2>
+                            <p className="text-xl md:text-2xl mb-2 opacity-90">{banner.subtitle}</p>
+                            <p className="text-sm md:text-base opacity-75 mb-4">{banner.description}</p>
+                            <Link href="/shop" className="inline-block px-6 py-2 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
+                              立即购买
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={prevBanner} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <button onClick={nextBanner} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {banners.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentBanner(index)}
+                      className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                        index === currentBanner ? 'bg-white' : 'bg-white/50'
+                      }`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Section 2: Banner Carousel */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-              <div className="lg:col-span-3">
-                <div className="relative rounded-xl overflow-hidden">
-                  <div className="relative h-64 md:h-80 lg:h-96">
-                    {banners.map((banner, index) => (
-                      <div
-                        key={banner.id}
-                        className={`absolute inset-0 transition-opacity duration-500 ${
-                          index === currentBanner ? 'opacity-100' : 'opacity-0'
-                        }`}
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-r ${banner.gradient}`}>
-                          <div className="absolute inset-0 flex items-center px-8 md:px-16">
-                            <div className="text-white">
-                              <h2 className="text-3xl md:text-5xl font-bold mb-2">{banner.title}</h2>
-                              <p className="text-xl md:text-2xl mb-2 opacity-90">{banner.subtitle}</p>
-                              <p className="text-sm md:text-base opacity-75 mb-4">{banner.description}</p>
-                              <Link href="/shop" className="inline-block px-6 py-2 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
-                                立即购买
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={prevBanner} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
-                    <ChevronLeft className="w-6 h-6" />
-                  </button>
-                  <button onClick={nextBanner} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-colors">
-                    <ChevronRight className="w-6 h-6" />
-                  </button>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    {banners.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentBanner(index)}
-                        className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                          index === currentBanner ? 'bg-white' : 'bg-white/50'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Side Info Cards */}
-              <div className="hidden lg:flex flex-col gap-4">
+            {/* Right Side Info Cards */}
+            <div className="lg:col-span-3 order-3">
+              <div className="flex flex-col gap-4">
                 <div className="card-dark p-4 flex-1">
                   <h4 className="font-bold text-text-primary mb-3 flex items-center gap-2">
                     <Zap className="w-4 h-4 text-orange-500" />
@@ -210,123 +225,123 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
-
-            {/* Section 3: Main Business Category Cards */}
-            <section className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                  <span className="w-1 h-6 bg-orange-500 rounded-full"></span>
-                  主营业务
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-                {mainBusinessCards.map((card) => (
-                  <Link
-                    key={card.id}
-                    href={card.href}
-                    className="group"
-                  >
-                    <div className={`card-dark p-4 bg-gradient-to-br ${card.color} hover:scale-105 transition-all duration-300`}>
-                      <div className="text-3xl mb-2">{card.icon}</div>
-                      <h4 className="font-bold text-white text-sm mb-1">{card.name}</h4>
-                      <p className="text-white/80 text-xs">{card.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Section 4: Hot Products */}
-            <section className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-orange-500" />
-                  <h3 className="text-lg font-bold text-text-primary">热门推荐</h3>
-                </div>
-                <Link href="/shop" className="text-sm text-orange-500 hover:text-orange-400 transition-colors">
-                  查看全部 &gt;
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                {sampleProducts.slice(0, 12).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </section>
-
-            {/* Section 5: Hot Member/Activity Cards */}
-            <section className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
-                  <span className="w-1 h-6 bg-pink-500 rounded-full"></span>
-                  热门会员
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {memberCards.map((card) => (
-                  <Link
-                    key={card.id}
-                    href={card.href}
-                    className="group"
-                  >
-                    <div className={`card-dark p-5 bg-gradient-to-br ${card.color} hover:scale-105 transition-all duration-300`}>
-                      <div className="text-3xl mb-2">{card.icon}</div>
-                      <h4 className="font-bold text-white text-sm mb-1">{card.title}</h4>
-                      <p className="text-white/80 text-xs">{card.subtitle}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {/* Features Section */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <div className="card-dark p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-orange-500" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-text-primary">快速发货</h4>
-                  <p className="text-sm text-text-muted">订单提交后秒级发货</p>
-                </div>
-              </div>
-              <div className="card-dark p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
-                  <Shield className="w-6 h-6 text-green-500" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-text-primary">安全可靠</h4>
-                  <p className="text-sm text-text-muted">官方渠道，正品保障</p>
-                </div>
-              </div>
-              <div className="card-dark p-4 flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-purple-500" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-text-primary">24小时服务</h4>
-                  <p className="text-sm text-text-muted">全天候在线客服支持</p>
-                </div>
-              </div>
-            </section>
-
-            {/* Purchase Notice */}
-            <section className="card-dark p-4 mb-8">
-              <h4 className="font-bold text-text-primary mb-3">购买须知</h4>
-              <div className="text-sm text-text-muted space-y-2">
-                <p>1. 自动发货：付款成功后，系统将在5秒内自动发送卡密到您的订单页面。</p>
-                <p>2. 卡密查询：请前往&quot;我的订单&quot;查看卡密信息。</p>
-                <p>3. 充值说明：按照卡密上的指引在对应平台进行充值，或联系客服协助。</p>
-              </div>
-            </section>
           </div>
 
-          <Footer />
-        </main>
-      </div>
+          {/* Section 3: Main Business Category Cards */}
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                <span className="w-1 h-6 bg-orange-500 rounded-full"></span>
+                主营业务
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+              {mainBusinessCards.map((card) => (
+                <Link
+                  key={card.id}
+                  href={card.href}
+                  className="group"
+                >
+                  <div className={`card-dark p-4 bg-gradient-to-br ${card.color} hover:scale-105 transition-all duration-300`}>
+                    <div className="text-3xl mb-2">{card.icon}</div>
+                    <h4 className="font-bold text-white text-sm mb-1">{card.name}</h4>
+                    <p className="text-white/80 text-xs">{card.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Section 4: Hot Products */}
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-orange-500" />
+                <h3 className="text-lg font-bold text-text-primary">热门推荐</h3>
+              </div>
+              <Link href="/shop" className="text-sm text-orange-500 hover:text-orange-400 transition-colors">
+                查看全部 &gt;
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {sampleProducts.slice(0, 12).map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+
+          {/* Section 5: Hot Member/Activity Cards */}
+          <section className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                <span className="w-1 h-6 bg-pink-500 rounded-full"></span>
+                热门会员
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              {memberCards.map((card) => (
+                <Link
+                  key={card.id}
+                  href={card.href}
+                  className="group"
+                >
+                  <div className={`card-dark p-5 bg-gradient-to-br ${card.color} hover:scale-105 transition-all duration-300`}>
+                    <div className="text-3xl mb-2">{card.icon}</div>
+                    <h4 className="font-bold text-white text-sm mb-1">{card.title}</h4>
+                    <p className="text-white/80 text-xs">{card.subtitle}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+
+          {/* Features Section */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="card-dark p-4 flex items-center gap-4">
+              <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center">
+                <Zap className="w-6 h-6 text-orange-500" />
+              </div>
+              <div>
+                <h4 className="font-bold text-text-primary">快速发货</h4>
+                <p className="text-sm text-text-muted">订单提交后秒级发货</p>
+              </div>
+            </div>
+            <div className="card-dark p-4 flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                <Shield className="w-6 h-6 text-green-500" />
+              </div>
+              <div>
+                <h4 className="font-bold text-text-primary">安全可靠</h4>
+                <p className="text-sm text-text-muted">官方渠道，正品保障</p>
+              </div>
+            </div>
+            <div className="card-dark p-4 flex items-center gap-4">
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                <Clock className="w-6 h-6 text-purple-500" />
+              </div>
+              <div>
+                <h4 className="font-bold text-text-primary">24小时服务</h4>
+                <p className="text-sm text-text-muted">全天候在线客服支持</p>
+              </div>
+            </div>
+          </section>
+
+          {/* Purchase Notice */}
+          <section className="card-dark p-4 mb-8">
+            <h4 className="font-bold text-text-primary mb-3">购买须知</h4>
+            <div className="text-sm text-text-muted space-y-2">
+              <p>1. 自动发货：付款成功后，系统将在5秒内自动发送卡密到您的订单页面。</p>
+              <p>2. 卡密查询：请前往&quot;我的订单&quot;查看卡密信息。</p>
+              <p>3. 充值说明：按照卡密上的指引在对应平台进行充值，或联系客服协助。</p>
+            </div>
+          </section>
+        </div>
+
+        <Footer />
+      </main>
 
       {/* Right Floating Sidebar */}
       <div className="floating-sidebar">

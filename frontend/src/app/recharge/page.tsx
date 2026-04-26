@@ -170,7 +170,7 @@ export default function RechargePage() {
 
   if (showComingSoon) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-recharge">
         <Header />
         <main className="flex-1 flex items-center justify-center p-8">
           <div className="text-center max-w-md">
@@ -197,7 +197,7 @@ export default function RechargePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-recharge">
       <Header />
 
       <main className="flex-1 py-6">

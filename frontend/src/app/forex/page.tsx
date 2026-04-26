@@ -112,7 +112,7 @@ export default function ForexPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-forex">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-teal-600 text-white">
         <div className="max-w-7xl mx-auto px-4 py-12">

@@ -144,7 +144,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
   // 加载状态
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-account-bg flex items-center justify-center">
+      <div className="min-h-screen bg-user flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 text-account-primary animate-spin mx-auto mb-4" />
           <p className="text-account-secondary">加载中...</p>
@@ -154,7 +154,7 @@ export default function UserLayout({ children }: UserLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-account-bg">
+    <div className="min-h-screen bg-user">
       {/* 移动端顶部导航 */}
       {isMobile && (
         <div className="fixed top-0 left-0 right-0 h-16 bg-account-card border-b border-account-border z-50 flex items-center justify-between px-4">

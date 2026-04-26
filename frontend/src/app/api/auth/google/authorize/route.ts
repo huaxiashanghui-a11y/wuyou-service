@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'https://www.wysz88.com/api/auth/google/callback';
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,9 +13,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!GOOGLE_CLIENT_ID) {
+    const googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+    const googleRedirectUri = process.env.GOOGLE_REDIRECT_URI || 'https://www.wysz88.com/api/auth/google/callback';
+
+    if (!googleClientId) {
       return NextResponse.json(
-        { success: false, message: 'Google OAuth未配置' },
+        { success: false, message: 'Google OAuth未配置（缺少GOOGLE_CLIENT_ID）' },
         { status: 500 }
       );
     }
@@ -27,8 +29,8 @@ export async function GET(request: NextRequest) {
 
     // 构建Google OAuth URL
     const params = new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID,
-      redirect_uri: GOOGLE_REDIRECT_URI,
+      client_id: googleClientId,
+      redirect_uri: googleRedirectUri,
       response_type: 'code',
       scope: 'openid email profile',
       state: JSON.stringify({ csrf: state, redirect: redirectParam }),
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Google authorize error:', error);
     return NextResponse.json(
-      { success: false, message: '生成授权链接失败' },
+      { success: false, message: '生成授权链接失败: ' + error.message },
       { status: 500 }
     );
   }

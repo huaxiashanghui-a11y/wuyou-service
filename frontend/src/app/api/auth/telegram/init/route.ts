@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import { dbQuery, initTables, TelegramRequestToken } from '@/lib/db';
 import { isFeatureEnabled } from '@/lib/feature-flags';
 
-const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME || '';
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,9 +14,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!TELEGRAM_BOT_USERNAME) {
+    const telegramBotUsername = process.env.TELEGRAM_BOT_USERNAME || '';
+    const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
+
+    if (!telegramBotUsername || !telegramBotToken) {
+      const missing = [];
+      if (!telegramBotUsername) missing.push('TELEGRAM_BOT_USERNAME');
+      if (!telegramBotToken) missing.push('TELEGRAM_BOT_TOKEN');
       return NextResponse.json(
-        { success: false, message: 'Telegram Bot未配置' },
+        { success: false, message: `Telegram Bot未配置（缺少 ${missing.join('、')}）` },
         { status: 500 }
       );
     }
@@ -34,7 +40,7 @@ export async function POST(request: NextRequest) {
     );
 
     // 构建bot链接
-    const botStartUrl = `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${requestToken}`;
+    const botStartUrl = `https://t.me/${telegramBotUsername}?start=${requestToken}`;
 
     return NextResponse.json({
       success: true,
