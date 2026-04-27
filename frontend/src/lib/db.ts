@@ -262,6 +262,53 @@ export async function initTables(): Promise<void> {
     console.log('检查/添加 password_hash 字段:', e.message);
   }
 
+  // 更新 orders 表: 确保基础列和新列都存在
+  const orderNewColumns: Record<string, string> = {
+    created_at: "ALTER TABLE orders ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+    updated_at: "ALTER TABLE orders ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+    buyer_email: "ALTER TABLE orders ADD COLUMN buyer_email VARCHAR(100) DEFAULT NULL",
+    buyer_phone: "ALTER TABLE orders ADD COLUMN buyer_phone VARCHAR(20) DEFAULT NULL",
+    remark: "ALTER TABLE orders ADD COLUMN remark TEXT DEFAULT NULL",
+    currency: "ALTER TABLE orders ADD COLUMN currency VARCHAR(10) DEFAULT 'CNY'",
+  };
+
+  for (const [colName, alterSql] of Object.entries(orderNewColumns)) {
+    try {
+      const [cols] = await p.execute(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'orders' AND COLUMN_NAME = ?
+      `, [process.env.MYSQL_DATABASE || 'wuyouservice', colName]);
+
+      if ((cols as any[]).length === 0) {
+        await p.execute(alterSql);
+        console.log(`orders.${colName} 字段添加成功`);
+      }
+    } catch (e: any) {
+      console.log(`检查/添加 orders.${colName} 字段:`, e.message);
+    }
+  }
+
+  // 更新 order_items 表: 确保 created_at 列存在
+  const oiNewColumns: Record<string, string> = {
+    created_at: "ALTER TABLE order_items ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+  };
+
+  for (const [colName, alterSql] of Object.entries(oiNewColumns)) {
+    try {
+      const [cols] = await p.execute(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'order_items' AND COLUMN_NAME = ?
+      `, [process.env.MYSQL_DATABASE || 'wuyouservice', colName]);
+
+      if ((cols as any[]).length === 0) {
+        await p.execute(alterSql);
+        console.log(`order_items.${colName} 字段添加成功`);
+      }
+    } catch (e: any) {
+      console.log(`检查/添加 order_items.${colName} 字段:`, e.message);
+    }
+  }
+
   for (const sql of tables) {
     await p.execute(sql);
   }

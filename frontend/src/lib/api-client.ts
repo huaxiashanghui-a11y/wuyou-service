@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
-// API 基础URL - 在生产环境中应从环境变量读取
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wuyou-api.vercel.app';
+// API 基础URL - 使用相对路径指向同域名，生产环境无需额外配置
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // 创建 Axios 实例
 const apiClient: AxiosInstance = axios.create({

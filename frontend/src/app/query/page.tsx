@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Search, Package, CheckCircle, Clock, AlertCircle } from 'lucide-react';
-import { Order } from '@/lib/types';
+import { Search, Package, CheckCircle, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { Order, PAYMENT_METHODS, CURRENCY_SYMBOLS } from '@/lib/types';
+import { orderApi } from '@/lib/api';
 
 export default function QueryPage() {
   const [searchType, setSearchType] = useState<'orderNo' | 'email' | 'phone'>('orderNo');
@@ -12,6 +13,7 @@ export default function QueryPage() {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [searched, setSearched] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,41 +21,31 @@ export default function QueryPage() {
 
     setLoading(true);
     setSearched(true);
+    setError('');
 
-    // 模拟搜索
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const params: any = {};
+      if (searchType === 'orderNo') {
+        params.orderNo = searchValue.trim();
+      } else if (searchType === 'email') {
+        params.email = searchValue.trim();
+      } else {
+        params.phone = searchValue.trim();
+      }
 
-    // 模拟返回结果
-    const mockOrders: Order[] = [
-      {
-        id: '1',
-        orderNo: 'WY202401150001',
-        productId: '1',
-        productName: '王者荣耀点卡 100元',
-        productImage: 'https://images.unsplash.com/photo-1614294148960-9aa740632a87?w=100&h=100&fit=crop',
-        quantity: 1,
-        price: 95,
-        totalPrice: 95,
-        status: 'completed',
-        paymentMethod: 'alipay',
-        paidAt: '2024-01-15 10:30:00',
-        deliveredAt: '2024-01-15 10:30:05',
-        completedAt: '2024-01-15 10:30:10',
-        cards: [
-          { code: 'WK-ABCD-1234-5678-9012', password: 'pass1234' },
-        ],
-        buyerEmail: searchType === 'email' ? searchValue : 'customer@example.com',
-        createdAt: '2024-01-15 10:30:00',
-        updatedAt: '2024-01-15 10:30:10',
-      },
-    ];
-
-    setOrders(mockOrders);
-    setLoading(false);
+      const result = await orderApi.queryOrder(params);
+      setOrders(result);
+    } catch (err: any) {
+      console.error('Query error:', err);
+      setError(err?.response?.data?.message || '查询失败，请稍后重试');
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getStatusInfo = (status: Order['status']) => {
-    const statusMap = {
+    const statusMap: Record<string, { label: string; color: string; icon: any }> = {
       pending: { label: '待支付', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
       paid: { label: '已支付', color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
       processing: { label: '处理中', color: 'bg-orange-100 text-orange-800', icon: Clock },
@@ -62,7 +54,13 @@ export default function QueryPage() {
       cancelled: { label: '已取消', color: 'bg-gray-100 text-gray-800', icon: AlertCircle },
       refunded: { label: '已退款', color: 'bg-red-100 text-red-800', icon: AlertCircle },
     };
-    return statusMap[status];
+    return statusMap[status] || { label: status, color: 'bg-gray-100 text-gray-800', icon: Clock };
+  };
+
+  const getPaymentMethodName = (method?: string) => {
+    if (!method) return '未知';
+    const found = PAYMENT_METHODS.find(m => m.id === method);
+    return found ? found.name : method;
   };
 
   return (
@@ -149,12 +147,14 @@ export default function QueryPage() {
 
           {/* Results */}
           {loading ? (
-            <div className="space-y-4">
-              {[...Array(2)].map((_, i) => (
-                <div key={i} className="glass rounded-2xl p-6">
-                  <div className="h-32 skeleton rounded" />
-                </div>
-              ))}
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+              <span className="ml-3 text-gray-500">正在查询...</span>
+            </div>
+          ) : error ? (
+            <div className="glass rounded-2xl p-12 text-center">
+              <AlertCircle className="w-16 h-16 mx-auto text-red-300 mb-4" />
+              <p className="text-red-500">{error}</p>
             </div>
           ) : searched && orders.length === 0 ? (
             <div className="glass rounded-2xl p-12 text-center">
@@ -184,17 +184,22 @@ export default function QueryPage() {
                     {/* Order Content */}
                     <div className="p-6">
                       <div className="flex gap-4">
-                        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
-                          <img
-                            src={order.productImage}
-                            alt={order.productName}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                        {order.productImage && (
+                          <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                            <img
+                              src={order.productImage}
+                              alt={order.productName}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg">{order.productName}</h3>
                           <p className="text-gray-500 mt-1">
                             数量：{order.quantity} × ¥{order.price}
+                          </p>
+                          <p className="text-gray-500 text-sm">
+                            支付方式：{getPaymentMethodName(order.paymentMethod)}
                           </p>
                           <p className="text-xl font-bold text-primary-600 mt-2">
                             ¥{order.totalPrice}

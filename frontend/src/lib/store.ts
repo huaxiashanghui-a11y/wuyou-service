@@ -1,20 +1,24 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product, CartItem } from './types';
 
 // ============================================
 // 购物车 Store
+// 使用 persist 将购物车持久化到 localStorage
+// 为避免 SSR hydration mismatch，仅在客户端使用
 // ============================================
 
 interface CartStore {
   items: CartItem[];
   isOpen: boolean;
+  isHydrated: boolean;
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   toggleCart: () => void;
   setCartOpen: (isOpen: boolean) => void;
+  setHydrated: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
 }
@@ -24,6 +28,7 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      isHydrated: false,
 
       addItem: (product: Product, quantity = 1) => {
         set((state) => {
@@ -69,6 +74,8 @@ export const useCartStore = create<CartStore>()(
 
       setCartOpen: (isOpen: boolean) => set({ isOpen }),
 
+      setHydrated: () => set({ isHydrated: true }),
+
       getTotalPrice: () => {
         return get().items.reduce((total, item) => total + item.product.price * item.quantity, 0);
       },
@@ -79,6 +86,28 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'wuyou-cart',
+      storage: createJSONStorage(() => {
+        // 仅在浏览器环境中使用 localStorage
+        if (typeof window !== 'undefined') {
+          return window.localStorage;
+        }
+        // SSR 环境返回 mock storage
+        return {
+          getItem: () => null,
+          setItem: () => {},
+          removeItem: () => {},
+        };
+      }),
+      // 不持久化 isOpen 和 isHydrated
+      partialize: (state) => ({
+        items: state.items,
+      }),
+      // 客户端 hydrate 完成后标记
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.setHydrated();
+        }
+      },
     }
   )
 );

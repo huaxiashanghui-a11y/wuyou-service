@@ -1,5 +1,5 @@
 import apiClient, { PaginatedResponse, ApiResponse } from './api-client';
-import { Product, Category, Order, SystemSettings, CheckoutFormData } from './types';
+import { Product, Category, Order, SystemSettings, CreateOrderRequest, OrderQueryParams } from './types';
 
 // ============================================
 // 商品 API
@@ -13,25 +13,25 @@ export const productApi = {
     pageSize?: number;
     status?: string;
   }): Promise<PaginatedResponse<Product>> => {
-    const response = await apiClient.get<PaginatedResponse<Product>>('/api/products', { params });
+    const response = await apiClient.get<PaginatedResponse<Product>>('/api/admin/products', { params });
     return response.data;
   },
 
   // 获取单个商品
   getProduct: async (id: string): Promise<Product> => {
-    const response = await apiClient.get<ApiResponse<Product>>(`/api/products/${id}`);
+    const response = await apiClient.get<ApiResponse<Product>>(`/api/admin/products`, { params: { id } });
     return response.data.data!;
   },
 
   // 获取热门商品
   getFeaturedProducts: async (): Promise<Product[]> => {
-    const response = await apiClient.get<ApiResponse<Product[]>>('/api/products/featured');
+    const response = await apiClient.get<ApiResponse<Product[]>>('/api/admin/products', { params: { featured: true } });
     return response.data.data || [];
   },
 
   // 获取商品分类
   getCategories: async (): Promise<Category[]> => {
-    const response = await apiClient.get<ApiResponse<Category[]>>('/api/categories');
+    const response = await apiClient.get<ApiResponse<Category[]>>('/api/admin/categories');
     return response.data.data || [];
   },
 };
@@ -42,35 +42,27 @@ export const productApi = {
 
 export const orderApi = {
   // 创建订单
-  createOrder: async (data: {
-    productId: string;
-    quantity: number;
-    checkoutData: CheckoutFormData;
-  }): Promise<Order> => {
+  createOrder: async (data: CreateOrderRequest): Promise<ApiResponse<Order>> => {
     const response = await apiClient.post<ApiResponse<Order>>('/api/orders', data);
-    return response.data.data!;
+    return response.data;
   },
 
   // 查询订单
-  queryOrder: async (params: {
-    orderNo?: string;
-    email?: string;
-    phone?: string;
-  }): Promise<Order[]> => {
-    const response = await apiClient.get<ApiResponse<Order[]>>('/api/orders/query', { params });
+  queryOrder: async (params: OrderQueryParams): Promise<Order[]> => {
+    const response = await apiClient.get<ApiResponse<Order[]>>('/api/orders', { params });
     return response.data.data || [];
   },
 
-  // 获取订单详情
+  // 获取订单详情（通过 orderNo）
   getOrder: async (orderNo: string): Promise<Order> => {
-    const response = await apiClient.get<ApiResponse<Order>>(`/api/orders/${orderNo}`);
+    const response = await apiClient.get<ApiResponse<Order>>(`/api/orders`, { params: { orderNo } });
     return response.data.data!;
   },
 
-  // 模拟支付
-  mockPay: async (orderNo: string): Promise<Order> => {
-    const response = await apiClient.post<ApiResponse<Order>>(`/api/orders/${orderNo}/pay`);
-    return response.data.data!;
+  // 确认支付（用户确认后更新支付状态）
+  confirmPayment: async (orderNo: string, paymentProof?: string): Promise<ApiResponse<Order>> => {
+    const response = await apiClient.put<ApiResponse<Order>>(`/api/orders`, { orderNo, action: 'confirmPayment', paymentProof });
+    return response.data;
   },
 };
 

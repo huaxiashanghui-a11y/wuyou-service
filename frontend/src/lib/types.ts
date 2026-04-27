@@ -51,6 +51,7 @@ export interface Order {
   totalPrice: number;
   status: 'pending' | 'paid' | 'processing' | 'delivered' | 'completed' | 'cancelled' | 'refunded';
   paymentMethod?: string;
+  currency?: PaymentCurrency;
   paidAt?: string;
   deliveredAt?: string;
   completedAt?: string;
@@ -86,6 +87,57 @@ export interface Announcement {
   publishedAt: string;
   status: 'active' | 'inactive';
 }
+
+// ============================================
+// 支付相关类型
+// ============================================
+
+/** 支持的支付方式 */
+export type PaymentMethod = 'usdt_trc20' | 'kbzpay' | 'ayapay';
+
+/** 支持的币种 */
+export type PaymentCurrency = 'CNY' | 'MMK' | 'USDT';
+
+/** 支付方式配置 */
+export interface PaymentMethodConfig {
+  id: PaymentMethod;
+  name: string;
+  icon: string;
+  currency: PaymentCurrency;
+  description: string;
+}
+
+/** 预设支付方式列表 */
+export const PAYMENT_METHODS: PaymentMethodConfig[] = [
+  {
+    id: 'usdt_trc20',
+    name: 'USDT-TRC20',
+    icon: '₮',
+    currency: 'USDT',
+    description: 'Tether TRC20 链上转账',
+  },
+  {
+    id: 'kbzpay',
+    name: 'KBZPay',
+    icon: 'K',
+    currency: 'MMK',
+    description: 'KBZPay 移动支付',
+  },
+  {
+    id: 'ayapay',
+    name: 'AYAPay',
+    icon: 'A',
+    currency: 'MMK',
+    description: 'AYAPay 移动支付',
+  },
+];
+
+/** 币种符号映射 */
+export const CURRENCY_SYMBOLS: Record<PaymentCurrency, string> = {
+  CNY: '¥',
+  MMK: 'K',
+  USDT: '$',
+};
 
 // ============================================
 // API 响应类型
@@ -133,5 +185,16 @@ export interface CheckoutFormData {
   email: string;
   phone: string;
   remark?: string;
-  paymentMethod: 'alipay' | 'wechat' | 'card';
+  paymentMethod: PaymentMethod;
+  currency: PaymentCurrency;
+}
+
+/** 创建订单请求 */
+export interface CreateOrderRequest {
+  items: { productId: string; productName: string; productImage: string; quantity: number; price: number }[];
+  paymentMethod: PaymentMethod;
+  currency: PaymentCurrency;
+  email?: string;
+  phone?: string;
+  remark?: string;
 }

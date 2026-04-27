@@ -42,6 +42,22 @@ export async function GET() {
       );
     } catch { /* 表可能不存在 */ }
 
+    // 检查orders表结构
+    let ordersColumns: any[] = [];
+    try {
+      ordersColumns = await dbQuery<any[]>(
+        'SHOW COLUMNS FROM `orders`'
+      );
+    } catch { /* 表可能不存在 */ }
+
+    // 检查order_items表结构
+    let orderItemsColumns: any[] = [];
+    try {
+      orderItemsColumns = await dbQuery<any[]>(
+        'SHOW COLUMNS FROM `order_items`'
+      );
+    } catch { /* 表可能不存在 */ }
+
     // 用户数
     const userCount = await dbQuery<any[]>(
       'SELECT COUNT(*) AS cnt FROM `users`'
@@ -104,6 +120,8 @@ export async function GET() {
         identitiesColumnNames: identitiesColumns.map((c: any) => c.Field),
         otpColumnNames: otpColumns.map((c: any) => c.Field),
         tgTokenColumnNames: tgTokenColumns.map((c: any) => c.Field),
+        ordersColumnNames: ordersColumns.map((c: any) => c.Field),
+        orderItemsColumnNames: orderItemsColumns.map((c: any) => c.Field),
         userCount: userCount[0]?.cnt || 0,
         envCheck,
         featureFlags,
