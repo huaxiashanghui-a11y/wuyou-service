@@ -1,19 +1,181 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { dbQuery, initTables } from '@/lib/db';
+import jwt from 'jsonwebtoken';
+import { dbQuery, initTables, JWT_SECRET } from '@/lib/db';
+import {
+  itemsTotalCnyMinor,
+  convertToPayAmount,
+  getFxRateSnapshot,
+  formatPayAmount,
+  getCurrencySymbol,
+  hashItems,
+} from '@/lib/currency';
 
 export const dynamic = 'force-dynamic';
 
 // ============================================
-// POST /api/orders - 创建订单
+// POST /api/orders - 创建订单（支持新 quoteToken 流程 + 旧流程兼容）
 // ============================================
 export async function POST(request: NextRequest) {
   try {
     await initTables();
 
     const body = await request.json();
-    const { items, paymentMethod, currency, email, phone, remark } = body;
+    const { quoteToken, paymentMethodId, items, paymentMethod, currency, email, phone, remark } = body;
 
-    // 参数校验
+    // 生成订单号: WY + 时间戳 + 随机数
+    const orderNo =
+      'WY' +
+      Date.now().toString(36).toUpperCase() +
+      Math.random().toString(36).substring(2, 6).toUpperCase();
+
+    // 确定 user_id（已登录用户使用真实ID，未登录使用0）
+    let userId = 0;
+    try {
+      const authHeader = request.headers.get('authorization') || '';
+      const tokenMatch = authHeader.match(/Bearer\s+(.+)/);
+      if (tokenMatch) {
+        const payload = JSON.parse(
+          Buffer.from(tokenMatch[1].split('.')[1], 'base64').toString('utf8')
+        );
+        if (payload && payload.userId) {
+          userId = payload.userId;
+        }
+      }
+    } catch {
+      // 未登录用户，userId 保持 0（游客下单）
+    }
+
+    // ============================================
+    // 新流程：quoteToken-based（多币种支付）
+    // ============================================
+    if (quoteToken) {
+      // 验证 quoteToken
+      let quotePayload: any;
+      try {
+        quotePayload = jwt.verify(quoteToken, JWT_SECRET);
+      } catch {
+        return NextResponse.json(
+          { success: false, message: '报价已过期，请重新下单', errorCode: 'QUOTE_EXPIRED' },
+          { status: 400 }
+        );
+      }
+
+      // 验证支付方式
+      if (!paymentMethodId) {
+        return NextResponse.json(
+          { success: false, message: '缺少支付方式' },
+          { status: 400 }
+        );
+      }
+
+      const payMethods = await dbQuery<any[]>(
+        'SELECT * FROM payment_methods WHERE id = ? AND status = 1',
+        [paymentMethodId]
+      );
+      if (payMethods.length === 0) {
+        return NextResponse.json(
+          { success: false, message: '支付方式不可用', errorCode: 'PAYMENT_METHOD_DISABLED' },
+          { status: 400 }
+        );
+      }
+      const payMethod = payMethods[0];
+
+      // 联系方式
+      if (!email && !phone) {
+        return NextResponse.json(
+          { success: false, message: '请填写邮箱或手机号码', errorCode: 'INVALID_CONTACT' },
+          { status: 400 }
+        );
+      }
+
+      // 从 JWT 提取多币种数据
+      const {
+        cnyMinor: cnyAmountMinor,
+        payAmount: payAmountMinorOrMicro,
+        fxRate: fxRateSnapshot,
+        payCurrency,
+        itemsHash,
+      } = quotePayload;
+
+      // 构建旧列兼容数据
+      const totalAmount =
+        payCurrency === 'USDT'
+          ? payAmountMinorOrMicro / 1_000_000
+          : (payAmountMinorOrMicro || cnyAmountMinor || 0) / 100;
+
+      // 插入订单（含全部多币种新列）
+      const orderResult = await dbQuery<any>(
+        `INSERT INTO orders (
+           order_no, user_id, total_amount, status, payment_method,
+           buyer_email, buyer_phone, currency, remark,
+           order_currency, order_amount_minor, pay_method_id, pay_type,
+           pay_currency, pay_amount_minor_or_micro, fx_rate_snapshot,
+           quote_id, quote_expires_at, pay_status, order_status,
+           created_at
+         ) VALUES (
+           ?, ?, ?, 'pending', ?,
+           ?, ?, ?, ?,
+           'CNY', ?, ?, ?,
+           ?, ?, ?,
+           ?, DATE_ADD(NOW(), INTERVAL 15 MINUTE), 'UNPAID', 'NEW',
+           NOW()
+         )`,
+        [
+          orderNo, userId, totalAmount, payMethod.method_id,
+          email || null, phone || null, payCurrency, remark || null,
+          cnyAmountMinor || 0, paymentMethodId, payMethod.method_id,
+          payCurrency, payAmountMinorOrMicro || 0, fxRateSnapshot || '',
+          itemsHash || '',
+        ]
+      );
+      const orderId = orderResult.insertId;
+
+      // 插入订单明细（从 body.items 来 — 前端在 quote 后仍需传 items 用于记录）
+      const orderItems = items || [];
+      if (orderItems.length === 0) {
+        // 没有 items 的时候仍然让订单创建成功（可能是场景不同）
+      }
+      for (const item of orderItems) {
+        await dbQuery(
+          `INSERT INTO order_items (order_id, product_name, product_id, quantity, price, created_at)
+           VALUES (?, ?, ?, ?, ?, NOW())`,
+          [
+            orderId,
+            item.productName || '未知商品',
+            item.productId ? parseInt(item.productId) || 0 : 0,
+            item.quantity || 1,
+            item.price || 0,
+          ]
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: '订单创建成功',
+        data: {
+          orderNo,
+          orderId,
+          totalAmount,
+          payPageUrl: `/checkout?step=payment&orderNo=${orderNo}`,
+          payAmount: formatPayAmount(payAmountMinorOrMicro || 0, payCurrency),
+          payAmountRaw: payAmountMinorOrMicro,
+          payCurrency,
+          fxRateSnapshot,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+          status: 'pending',
+          email: email || null,
+          phone: phone || null,
+          orderCurrency: 'CNY',
+          orderAmountMinor: cnyAmountMinor,
+          payStatus: 'UNPAID',
+          orderStatus: 'NEW',
+        },
+      });
+    }
+
+    // ============================================
+    // 旧流程：无 quoteToken，向后兼容
+    // ============================================
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json(
         { success: false, message: '订单中无商品' },
@@ -35,39 +197,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 计算总金额
     const totalAmount = items.reduce(
       (sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 1),
       0
     );
 
-    // 生成订单号: WY + 时间戳 + 随机数
-    const orderNo =
-      'WY' +
-      Date.now().toString(36).toUpperCase() +
-      Math.random().toString(36).substring(2, 6).toUpperCase();
-
-    // 确定 user_id（已登录用户使用真实ID，未登录使用0）
-    // 从 Authorization header 中提取 token 并解析用户信息
-    let userId = 0;
-    try {
-      const authHeader = request.headers.get('authorization') || '';
-      const tokenMatch = authHeader.match(/Bearer\s+(.+)/);
-      if (tokenMatch) {
-        const token = tokenMatch[1];
-        // 简单解析 JWT（不验证签名，只取 payload 中的 userId）
-        const payload = JSON.parse(
-          Buffer.from(token.split('.')[1], 'base64').toString('utf8')
-        );
-        if (payload && payload.userId) {
-          userId = payload.userId;
-        }
-      }
-    } catch {
-      // 未登录用户，userId 保持 0（游客下单）
-    }
-
-    // 插入主订单（含邮箱、手机、币种、备注）
     const orderResult = await dbQuery<any>(
       `INSERT INTO orders (order_no, user_id, total_amount, status, payment_method, buyer_email, buyer_phone, currency, remark, created_at)
        VALUES (?, ?, ?, 'pending', ?, ?, ?, ?, ?, NOW())`,
@@ -75,7 +209,6 @@ export async function POST(request: NextRequest) {
     );
     const orderId = orderResult.insertId;
 
-    // 批量插入订单明细
     for (const item of items) {
       await dbQuery(
         `INSERT INTO order_items (order_id, product_name, product_id, quantity, price, created_at)
@@ -90,33 +223,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 构建返回数据
-    const orderData = {
-      orderNo,
-      totalAmount,
-      paymentMethod,
-      currency: currency || 'CNY',
-      status: 'pending',
-      email: email || null,
-      phone: phone || null,
-      remark: remark || null,
-      items: items.map((item: any) => ({
-        productName: item.productName,
-        productImage: item.productImage,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    };
-
     return NextResponse.json({
       success: true,
       message: '订单创建成功',
-      data: orderData,
+      data: {
+        orderNo,
+        totalAmount,
+        paymentMethod,
+        currency: currency || 'CNY',
+        status: 'pending',
+        email: email || null,
+        phone: phone || null,
+        remark: remark || null,
+        items: items.map((item: any) => ({
+          productName: item.productName,
+          productImage: item.productImage,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
     });
   } catch (error: any) {
     console.error('Create order error:', error);
     return NextResponse.json(
-      { success: false, message: '创建订单失败: ' + error.message },
+      { success: false, message: '创建订单失败: ' + error.message, errorCode: 'ORDER_CREATE_FAILED' },
       { status: 500 }
     );
   }

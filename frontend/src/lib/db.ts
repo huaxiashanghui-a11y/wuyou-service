@@ -218,6 +218,31 @@ export async function initTables(): Promise<void> {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       INDEX idx_request_token (request_token),
       INDEX idx_telegram_user_id (telegram_user_id)
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS payment_methods (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      method_id VARCHAR(20) UNIQUE NOT NULL,
+      name VARCHAR(100) NOT NULL,
+      currency VARCHAR(10) NOT NULL,
+      status TINYINT DEFAULT 1,
+      config JSON NULL,
+      sort_order INT DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `CREATE TABLE IF NOT EXISTS payment_transactions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      order_id INT NOT NULL,
+      transaction_no VARCHAR(100) UNIQUE,
+      pay_method_id INT,
+      amount_micro_or_minor BIGINT DEFAULT 0,
+      currency VARCHAR(10),
+      status VARCHAR(20) DEFAULT 'PENDING',
+      external_ref VARCHAR(255),
+      raw_callback TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )`
   ];
 
@@ -270,6 +295,18 @@ export async function initTables(): Promise<void> {
     buyer_phone: "ALTER TABLE orders ADD COLUMN buyer_phone VARCHAR(20) DEFAULT NULL",
     remark: "ALTER TABLE orders ADD COLUMN remark TEXT DEFAULT NULL",
     currency: "ALTER TABLE orders ADD COLUMN currency VARCHAR(10) DEFAULT 'CNY'",
+    // 多币种支付新列
+    order_currency: "ALTER TABLE orders ADD COLUMN order_currency VARCHAR(10) DEFAULT 'CNY'",
+    order_amount_minor: "ALTER TABLE orders ADD COLUMN order_amount_minor BIGINT DEFAULT 0",
+    pay_method_id: "ALTER TABLE orders ADD COLUMN pay_method_id INT DEFAULT NULL",
+    pay_type: "ALTER TABLE orders ADD COLUMN pay_type VARCHAR(20) DEFAULT NULL",
+    pay_currency: "ALTER TABLE orders ADD COLUMN pay_currency VARCHAR(10) DEFAULT NULL",
+    pay_amount_minor_or_micro: "ALTER TABLE orders ADD COLUMN pay_amount_minor_or_micro BIGINT DEFAULT 0",
+    fx_rate_snapshot: "ALTER TABLE orders ADD COLUMN fx_rate_snapshot VARCHAR(100) DEFAULT NULL",
+    quote_id: "ALTER TABLE orders ADD COLUMN quote_id VARCHAR(100) DEFAULT NULL",
+    quote_expires_at: "ALTER TABLE orders ADD COLUMN quote_expires_at TIMESTAMP NULL",
+    pay_status: "ALTER TABLE orders ADD COLUMN pay_status VARCHAR(20) DEFAULT 'UNPAID'",
+    order_status: "ALTER TABLE orders ADD COLUMN order_status VARCHAR(20) DEFAULT 'NEW'",
   };
 
   for (const [colName, alterSql] of Object.entries(orderNewColumns)) {
@@ -312,6 +349,36 @@ export async function initTables(): Promise<void> {
   for (const sql of tables) {
     await p.execute(sql);
   }
+
+  // 确保 orders.pay_method_id 有索引
+  try {
+    const [idxCols] = await p.execute(`
+      SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+      WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'pay_method_id'
+    `, [process.env.MYSQL_DATABASE || 'wuyouservice']);
+    if ((idxCols as any[]).length === 0) {
+      await p.execute('CREATE INDEX idx_pay_method_id ON orders(pay_method_id)');
+      console.log('orders.pay_method_id 索引添加成功');
+    }
+  } catch (e: any) {
+    console.log('检查/添加 pay_method_id 索引:', e.message);
+  }
+
+  // 种子数据: 默认支付方式 (INSERT IGNORE 防重复)
+  try {
+    await p.execute(
+      `INSERT IGNORE INTO payment_methods (method_id, name, currency, status, config, sort_order)
+       VALUES
+       ('usdt_trc20', 'USDT-TRC20', 'USDT', 1, '{"type":"wallet","address":"TRx6pF5yH5qPFjqKx7X8zPq6sV7vXy8zA1"}', 1),
+       ('kbzpay', 'KBZPay', 'MMK', 1, '{"type":"merchant_qr","merchantCode":"WYSZ88"}', 2),
+       ('ayapay', 'AYAPay', 'MMK', 1, '{"type":"merchant_qr","merchantCode":"WYSZ88"}', 3)`
+    );
+    console.log('payment_methods 种子数据已插入');
+  } catch (e: any) {
+    if (!e.message?.includes('Duplicate')) {
+      console.log('种子 payment_methods:', e.message);
+    }
+  }
 }
 
 // 关闭连接池
@@ -350,6 +417,47 @@ export interface Order {
   status: string;
   payment_method: string | null;
   paid_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+  buyer_email?: string | null;
+  buyer_phone?: string | null;
+  remark?: string | null;
+  currency?: string | null;
+  // 多币种支付新字段
+  order_currency?: string;
+  order_amount_minor?: number;
+  pay_method_id?: number | null;
+  pay_type?: string | null;
+  pay_currency?: string | null;
+  pay_amount_minor_or_micro?: number;
+  fx_rate_snapshot?: string | null;
+  quote_id?: string | null;
+  quote_expires_at?: Date | null;
+  pay_status?: string;
+  order_status?: string;
+}
+
+export interface PaymentMethodRecord {
+  id: number;
+  method_id: string;
+  name: string;
+  currency: string;
+  status: number;
+  config: any;
+  sort_order: number;
+  created_at: Date;
+}
+
+export interface PaymentTransaction {
+  id: number;
+  order_id: number;
+  transaction_no: string;
+  pay_method_id: number | null;
+  amount_micro_or_minor: number;
+  currency: string | null;
+  status: string;
+  external_ref: string | null;
+  raw_callback: string | null;
   created_at: Date;
   updated_at: Date;
 }

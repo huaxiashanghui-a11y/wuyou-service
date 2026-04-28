@@ -58,6 +58,27 @@ export async function GET() {
       );
     } catch { /* 表可能不存在 */ }
 
+    // 检查 payment_methods 表
+    let pmColumns: any[] = [];
+    let pmCount = 0;
+    try {
+      pmColumns = await dbQuery<any[]>(
+        'SHOW COLUMNS FROM `payment_methods`'
+      );
+      const pmCountResult = await dbQuery<any[]>(
+        'SELECT COUNT(*) AS cnt FROM `payment_methods`'
+      );
+      pmCount = pmCountResult[0]?.cnt || 0;
+    } catch { /* 表可能不存在 */ }
+
+    // 检查 payment_transactions 表
+    let ptColumns: any[] = [];
+    try {
+      ptColumns = await dbQuery<any[]>(
+        'SHOW COLUMNS FROM `payment_transactions`'
+      );
+    } catch { /* 表可能不存在 */ }
+
     // 用户数
     const userCount = await dbQuery<any[]>(
       'SELECT COUNT(*) AS cnt FROM `users`'
@@ -122,6 +143,9 @@ export async function GET() {
         tgTokenColumnNames: tgTokenColumns.map((c: any) => c.Field),
         ordersColumnNames: ordersColumns.map((c: any) => c.Field),
         orderItemsColumnNames: orderItemsColumns.map((c: any) => c.Field),
+        paymentMethodsColumnNames: pmColumns.map((c: any) => c.Field),
+        paymentMethodsCount: pmCount,
+        paymentTransactionsColumnNames: ptColumns.map((c: any) => c.Field),
         userCount: userCount[0]?.cnt || 0,
         envCheck,
         featureFlags,

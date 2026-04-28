@@ -189,7 +189,7 @@ export interface CheckoutFormData {
   currency: PaymentCurrency;
 }
 
-/** 创建订单请求 */
+/** 创建订单请求（旧版，兼容） */
 export interface CreateOrderRequest {
   items: { productId: string; productName: string; productImage: string; quantity: number; price: number }[];
   paymentMethod: PaymentMethod;
@@ -197,4 +197,89 @@ export interface CreateOrderRequest {
   email?: string;
   phone?: string;
   remark?: string;
+}
+
+// ============================================
+// 多币种支付新类型
+// ============================================
+
+/** API 返回的支付方式记录 */
+export interface PaymentMethodRecord {
+  id: number;
+  methodId: string;
+  name: string;
+  currency: PaymentCurrency;
+  status: number;
+  config: {
+    type: 'wallet' | 'merchant_qr';
+    address?: string;
+    merchantCode?: string;
+  } | null;
+  sortOrder: number;
+}
+
+/** 汇率报价请求 */
+export interface QuoteRequest {
+  items: { productId: string; quantity: number; price: number }[];
+  targetCurrency: PaymentCurrency;
+}
+
+/** 汇率报价响应 */
+export interface QuoteResponse {
+  quoteToken: string;
+  payAmount: number;
+  payCurrency: PaymentCurrency;
+  fxRate: string;
+  cnyAmountMinor: number;
+  expiresAt: string;
+}
+
+/** 创建订单请求（新版：quote-based） */
+export interface CreateOrderQuoteRequest {
+  quoteToken: string;
+  paymentMethodId: number;
+  items?: { productId: string; productName: string; productImage: string; quantity: number; price: number }[];
+  email?: string;
+  phone?: string;
+  remark?: string;
+}
+
+/** 支付准备请求 */
+export interface PaymentPrepareRequest {
+  orderNo: string;
+}
+
+/** 支付指引 */
+export interface PaymentInstructions {
+  type: 'wallet' | 'merchant_qr' | 'unknown';
+  address?: string | null;
+  merchantCode?: string | null;
+}
+
+/** 支付准备响应 */
+export interface PaymentPrepareResponse {
+  methodType: string;
+  instructions: PaymentInstructions;
+  transactionNo: string;
+  amount: string;
+  amountRaw: number;
+  currency: string;
+}
+
+/** 订单创建响应（新版） */
+export interface CreateOrderQuoteResponse {
+  orderNo: string;
+  orderId: number;
+  totalAmount: number;
+  payPageUrl: string;
+  payAmount: string;
+  payAmountRaw: number;
+  payCurrency: string;
+  fxRateSnapshot: string;
+  expiresAt: string;
+  status: string;
+  orderCurrency: string;
+  orderAmountMinor: number;
+  payStatus: string;
+  orderStatus: string;
 }

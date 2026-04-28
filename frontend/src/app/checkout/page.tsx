@@ -1,44 +1,113 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCartStore, useToastStore } from '@/lib/store';
-import { CheckCircle, Loader2, ShieldCheck, Copy, ExternalLink } from 'lucide-react';
+import { CheckCircle, Loader2, ShieldCheck, Copy, Clock, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
-import { orderApi } from '@/lib/api';
-import { PaymentMethod, PAYMENT_METHODS, CURRENCY_SYMBOLS } from '@/lib/types';
+import { orderApi, paymentApi } from '@/lib/api';
+import { PaymentMethodRecord, CURRENCY_SYMBOLS, PaymentCurrency } from '@/lib/types';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { items, getTotalPrice, clearCart, isHydrated } = useCartStore();
   const { addToast } = useToastStore();
+
+  // URL 参数：支持从 payPageUrl 跳回自动展示支付步骤
+  const urlOrderNo = searchParams.get('orderNo');
+  const urlStep = searchParams.get('step');
 
   const [formData, setFormData] = useState({
     email: '',
     phone: '',
     remark: '',
-    paymentMethod: 'usdt_trc20' as PaymentMethod,
+    selectedMethodId: 0, // payment_methods.id (数据库 ID)
   });
-  const [step, setStep] = useState<'form' | 'payment' | 'success'>('form');
+  const [step, setStep] = useState<'form' | 'payment' | 'success'>(
+    urlStep === 'payment' && urlOrderNo ? 'payment' : 'form'
+  );
   const [loading, setLoading] = useState(false);
   const [orderData, setOrderData] = useState<any>(null);
   const [clientReady, setClientReady] = useState(false);
+
+  // 动态支付方式
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodRecord[]>([]);
+  const [methodsLoading, setMethodsLoading] = useState(true);
+
+  // 报价数据
+  const [quoteData, setQuoteData] = useState<{
+    quoteToken: string;
+    payAmount: number;
+    payCurrency: PaymentCurrency;
+    payAmountRaw: number;
+    expiresAt: string;
+  } | null>(null);
+
+  // 支付指引
+  const [paymentInstructions, setPaymentInstructions] = useState<any>(null);
+
+  // 倒计时（秒）
+  const [countdown, setCountdown] = useState<number>(0);
 
   // 确保客户端 Hydration 完成后再渲染
   useEffect(() => {
     setClientReady(true);
   }, []);
 
+  // 倒计时逻辑：报价/订单过期倒计时
+  useEffect(() => {
+    if (!quoteData?.expiresAt) return;
+    const expiry = new Date(quoteData.expiresAt).getTime();
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.floor((expiry - Date.now()) / 1000));
+      setCountdown(remaining);
+      if (remaining <= 0) {
+        addToast({ message: '报价已过期，请重新下单', type: 'warning' });
+      }
+    };
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, [quoteData?.expiresAt]);
+
+  // 加载支付方式
+  useEffect(() => {
+    if (!clientReady) return;
+
+    const loadMethods = async () => {
+      try {
+        const result = await paymentApi.getMethods();
+        if (result.success && result.data && result.data.length > 0) {
+          setPaymentMethods(result.data);
+          // 默认选中第一个
+          setFormData((prev) => ({ ...prev, selectedMethodId: result.data![0].id }));
+        } else {
+          addToast({ message: '暂无可用支付方式，请联系客服', type: 'error' });
+        }
+      } catch (error: any) {
+        console.error('Load payment methods error:', error);
+        addToast({ message: '支付方式加载失败，请稍后重试', type: 'error' });
+      } finally {
+        setMethodsLoading(false);
+      }
+    };
+
+    loadMethods();
+  }, [clientReady]);
+
   const totalPrice = getTotalPrice();
 
-  // 获取当前支付方式的币种
-  const currentPaymentMethod = PAYMENT_METHODS.find(m => m.id === formData.paymentMethod);
-  const currencySymbol = currentPaymentMethod ? CURRENCY_SYMBOLS[currentPaymentMethod.currency] : '¥';
+  // 获取当前选中的支付方式（纯后端数据，无硬编码回退）
+  const selectedMethod = paymentMethods.find((m) => m.id === formData.selectedMethodId);
+  const displayCurrency = selectedMethod?.currency || 'CNY';
+  const currencySymbol = CURRENCY_SYMBOLS[displayCurrency as PaymentCurrency] || '¥';
+  const displayMethodName = selectedMethod?.name || '';
 
   // ============================================
-  // 步骤1：提交订单
+  // 步骤1：提交订单（报价 → 建单 两步）
   // ============================================
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +117,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!formData.paymentMethod) {
+    if (!formData.selectedMethodId) {
       addToast({ message: '请选择支付方式', type: 'error' });
       return;
     }
@@ -58,13 +127,41 @@ export default function CheckoutPage() {
       return;
     }
 
+    const method = paymentMethods.find((m) => m.id === formData.selectedMethodId);
+    if (!method) {
+      addToast({ message: '请选择有效的支付方式', type: 'error' });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const methodConfig = PAYMENT_METHODS.find(m => m.id === formData.paymentMethod)!;
+      // ========== Step A: 获取汇率报价 ==========
+      const quoteItems = items.map((item) => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        price: item.product.price,
+      }));
 
-      // 构建订单请求数据
-      const orderItems = items.map(item => ({
+      const quoteResult = await paymentApi.createQuote({
+        items: quoteItems,
+        targetCurrency: method.currency,
+      });
+
+      if (!quoteResult.success || !quoteResult.data) {
+        addToast({
+          message: quoteResult.message || '获取报价失败',
+          type: 'error',
+        });
+        setLoading(false);
+        return;
+      }
+
+      const { quoteToken, payAmount, payCurrency, expiresAt } = quoteResult.data;
+      setQuoteData({ quoteToken, payAmount, payCurrency, payAmountRaw: payAmount, expiresAt });
+
+      // ========== Step B: 创建订单 ==========
+      const orderItems = items.map((item) => ({
         productId: item.product.id,
         productName: item.product.name,
         productImage: item.product.image,
@@ -72,26 +169,36 @@ export default function CheckoutPage() {
         price: item.product.price,
       }));
 
-      const result = await orderApi.createOrder({
+      const orderResult = await orderApi.createOrderFromQuote({
+        quoteToken,
+        paymentMethodId: formData.selectedMethodId,
         items: orderItems,
-        paymentMethod: formData.paymentMethod,
-        currency: methodConfig.currency,
         email: formData.email || undefined,
         phone: formData.phone || undefined,
         remark: formData.remark || undefined,
       });
 
-      if (!result.success) {
-        addToast({ message: result.message || '订单创建失败', type: 'error' });
+      if (!orderResult.success || !orderResult.data) {
+        addToast({
+          message: orderResult.message || '订单创建失败',
+          type: 'error',
+        });
         setLoading(false);
         return;
       }
 
-      setOrderData(result.data);
-      setStep('payment');
+      setOrderData(orderResult.data);
       addToast({ message: '订单创建成功！请完成支付', type: 'success' });
+
+      // 跳转到支付页（满足验收标准：自动跳转到 payPageUrl）
+      const payPageUrl = orderResult.data.payPageUrl;
+      if (payPageUrl) {
+        router.replace(payPageUrl);
+        return; // replace 后无需设置 step
+      }
+      setStep('payment');
     } catch (error: any) {
-      console.error('Create order error:', error);
+      console.error('Submit order error:', error);
       const errorMsg =
         error?.response?.data?.message || error?.message || '下单失败，请稍后重试';
       addToast({ message: errorMsg, type: 'error' });
@@ -101,6 +208,68 @@ export default function CheckoutPage() {
   };
 
   // ============================================
+  // 步骤2：获取支付指引
+  // ============================================
+  const loadPaymentInstructions = async () => {
+    if (!orderData?.orderNo) return;
+
+    setLoading(true);
+    try {
+      const result = await paymentApi.preparePayment({
+        orderNo: orderData.orderNo,
+      });
+
+      if (result.success && result.data) {
+        setPaymentInstructions(result.data);
+      } else {
+        addToast({
+          message: result.message || '获取支付信息失败',
+          type: 'warning',
+        });
+      }
+    } catch (error: any) {
+      console.error('Load payment instructions error:', error);
+      // 不阻断流程
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 当 URL 携带 orderNo 时，自动加载订单并进入支付步骤
+  useEffect(() => {
+    if (!clientReady || !urlOrderNo) return;
+
+    const loadOrder = async () => {
+      setLoading(true);
+      try {
+        const result = await orderApi.getOrderByNo(urlOrderNo);
+        if (result.success && result.data) {
+          setOrderData(result.data);
+          setStep('payment');
+        } else {
+          addToast({ message: result.message || '订单不存在', type: 'error' });
+          router.replace('/checkout');
+        }
+      } catch (error: any) {
+        console.error('Load order by URL param error:', error);
+        addToast({ message: '加载订单失败', type: 'error' });
+        router.replace('/checkout');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOrder();
+  }, [clientReady, urlOrderNo]);
+
+  // 进入支付步骤时加载支付指引
+  useEffect(() => {
+    if (step === 'payment' && orderData?.orderNo && !paymentInstructions) {
+      loadPaymentInstructions();
+    }
+  }, [step, orderData?.orderNo]);
+
+  // ============================================
   // 步骤2：确认支付
   // ============================================
   const handleConfirmPayment = async () => {
@@ -108,7 +277,6 @@ export default function CheckoutPage() {
 
     setLoading(true);
     try {
-      // 调用确认支付API（用户可以在这里上传支付凭证）
       const result = await orderApi.confirmPayment(orderData.orderNo);
 
       if (!result.success) {
@@ -117,61 +285,89 @@ export default function CheckoutPage() {
         return;
       }
 
-      // 支付确认成功
       clearCart();
       setStep('success');
-      addToast({ message: '支付确认成功！我们会尽快处理您的订单', type: 'success' });
+      addToast({
+        message: '支付确认成功！我们会尽快处理您的订单',
+        type: 'success',
+      });
     } catch (error: any) {
       console.error('Confirm payment error:', error);
-      // 即使API报错也清空购物车（可能是网络问题，订单已创建）
       clearCart();
       setStep('success');
-      addToast({ message: '订单已提交，请留意您的联系方式获取通知', type: 'success' });
+      addToast({
+        message: '订单已提交，请留意您的联系方式获取通知',
+        type: 'success',
+      });
     } finally {
       setLoading(false);
     }
   };
 
   // ============================================
-  // 支付方式对应的支付指引
+  // 格式化倒计时
   // ============================================
-  const getPaymentInstructions = (method: PaymentMethod) => {
-    switch (method) {
-      case 'usdt_trc20':
-        return {
-          title: 'USDT-TRC20 转账支付',
-          steps: [
-            '请使用支持 TRC20 的钱包（如 Binance、OKX、Bitget）',
-            '向下方地址转账对应金额',
-            '转账完成后，点击"确认已支付"提交',
-          ],
-          address: 'TRx6pF5yH5qPFjqKx7X8zPq6sV7vXy8zA1', // 示例地址
-        };
-      case 'kbzpay':
-        return {
-          title: 'KBZPay 扫码支付',
-          steps: [
-            '打开 KBZPay App',
-            '扫描下方二维码或输入商户号',
-            '输入支付金额并确认',
-            '支付完成后，点击"确认已支付"提交',
-          ],
-          address: '收款商户: WYSZ88',
-        };
-      case 'ayapay':
-        return {
-          title: 'AYAPay 扫码支付',
-          steps: [
-            '打开 AYAPay App',
-            '扫描下方二维码或输入商户号',
-            '输入支付金额并确认',
-            '支付完成后，点击"确认已支付"提交',
-          ],
-          address: '收款商户: WYSZ88',
-        };
-      default:
-        return { title: '支付', steps: [], address: '' };
+  const formatCountdown = (seconds: number): string => {
+    if (seconds <= 0) return '已过期';
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // ============================================
+  // 获取支付指引文字
+  // ============================================
+  const getPaymentInstructionsDisplay = () => {
+    if (paymentInstructions) {
+      const { instructions, methodType, amount } = paymentInstructions;
+      switch (methodType) {
+        case 'usdt_trc20':
+          return {
+            title: 'USDT-TRC20 转账支付',
+            steps: [
+              '请使用支持 TRC20 的钱包（如 Binance、OKX、Bitget）',
+              `向下方地址转账 ${amount}`,
+              '转账完成后，点击"确认已支付"提交',
+            ],
+            address: instructions.address || '暂无地址，请联系客服',
+          };
+        case 'kbzpay':
+          return {
+            title: 'KBZPay 扫码支付',
+            steps: [
+              '打开 KBZPay App',
+              '扫描下方二维码或输入商户号',
+              `输入支付金额 ${amount} 并确认`,
+              '支付完成后，点击"确认已支付"提交',
+            ],
+            address: instructions.merchantCode
+              ? `收款商户: ${instructions.merchantCode}`
+              : '暂无商户信息，请联系客服',
+          };
+        case 'ayapay':
+          return {
+            title: 'AYAPay 扫码支付',
+            steps: [
+              '打开 AYAPay App',
+              '扫描下方二维码或输入商户号',
+              `输入支付金额 ${amount} 并确认`,
+              '支付完成后，点击"确认已支付"提交',
+            ],
+            address: instructions.merchantCode
+              ? `收款商户: ${instructions.merchantCode}`
+              : '暂无商户信息，请联系客服',
+          };
+        default:
+          break;
+      }
     }
+
+    // 回退：显示基本支付信息
+    return {
+      title: displayMethodName || '支付',
+      steps: ['请按所选支付方式完成支付', '支付完成后点击"确认已支付"提交'],
+      address: '',
+    };
   };
 
   // ============================================
@@ -190,9 +386,9 @@ export default function CheckoutPage() {
   }
 
   // ============================================
-  // 渲染：空购物车
+  // 渲染：空购物车（URL 直达支付步骤时，跳过此检查）
   // ============================================
-  if (items.length === 0 && step !== 'success') {
+  if (items.length === 0 && step !== 'success' && step !== 'payment') {
     return (
       <div className="min-h-screen flex flex-col">
         <Header />
@@ -217,7 +413,7 @@ export default function CheckoutPage() {
   // ============================================
   // 获取支付指引
   // ============================================
-  const instructions = getPaymentInstructions(formData.paymentMethod);
+  const instructions = getPaymentInstructionsDisplay();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -228,22 +424,46 @@ export default function CheckoutPage() {
           {/* Progress Steps */}
           <div className="flex items-center justify-center mb-8">
             <div className="flex items-center gap-4">
-              <div className={`flex items-center gap-2 ${step === 'form' ? 'text-primary-500' : 'text-green-500'}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                  step === 'form' ? 'bg-primary-500 text-white' : 'bg-green-500 text-white'
-                }`}>
+              <div
+                className={`flex items-center gap-2 ${
+                  step === 'form' ? 'text-primary-500' : 'text-green-500'
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    step === 'form'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-green-500 text-white'
+                  }`}
+                >
                   {step !== 'form' ? <CheckCircle className="w-5 h-5" /> : '1'}
                 </div>
                 <span className="font-medium">填写订单</span>
               </div>
               <div className="w-20 h-0.5 bg-gray-300" />
-              <div className={`flex items-center gap-2 ${
-                step === 'payment' ? 'text-primary-500' : step === 'success' ? 'text-green-500' : 'text-gray-400'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                  step === 'success' ? 'bg-green-500 text-white' : step === 'payment' ? 'bg-primary-500 text-white' : 'bg-gray-300 text-gray-500'
-                }`}>
-                  {step === 'success' ? <CheckCircle className="w-5 h-5" /> : '2'}
+              <div
+                className={`flex items-center gap-2 ${
+                  step === 'payment'
+                    ? 'text-primary-500'
+                    : step === 'success'
+                    ? 'text-green-500'
+                    : 'text-gray-400'
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                    step === 'success'
+                      ? 'bg-green-500 text-white'
+                      : step === 'payment'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-300 text-gray-500'
+                  }`}
+                >
+                  {step === 'success' ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    '2'
+                  )}
                 </div>
                 <span className="font-medium">完成支付</span>
               </div>
@@ -269,7 +489,9 @@ export default function CheckoutPage() {
                         <input
                           type="email"
                           value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
                           placeholder="用于接收订单通知"
                           className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all"
                         />
@@ -281,7 +503,9 @@ export default function CheckoutPage() {
                         <input
                           type="tel"
                           value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          onChange={(e) =>
+                            setFormData({ ...formData, phone: e.target.value })
+                          }
                           placeholder="用于接收订单通知"
                           className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all"
                         />
@@ -292,35 +516,66 @@ export default function CheckoutPage() {
                     </p>
                   </div>
 
-                  {/* Payment Method */}
+                  {/* Payment Method - Dynamic from API ONLY */}
                   <div className="glass rounded-2xl p-6">
                     <h2 className="text-lg font-semibold mb-4">支付方式</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {PAYMENT_METHODS.map((method) => (
-                        <button
-                          key={method.id}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, paymentMethod: method.id })}
-                          className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-3 ${
-                            formData.paymentMethod === method.id
-                              ? 'border-primary-500 bg-primary-50 shadow-md'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-bold ${
-                            formData.paymentMethod === method.id
-                              ? 'bg-primary-500 text-white'
-                              : 'bg-gray-100 text-gray-600'
-                          }`}>
-                            {method.icon}
-                          </div>
-                          <div className="text-center">
-                            <span className="font-semibold text-sm block">{method.name}</span>
-                            <span className="text-xs text-gray-500">{method.description}</span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
+                    {methodsLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                      </div>
+                    ) : paymentMethods.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {paymentMethods.map((method) => (
+                          <button
+                            key={method.id}
+                            type="button"
+                            onClick={() =>
+                              setFormData({
+                                ...formData,
+                                selectedMethodId: method.id,
+                              })
+                            }
+                            className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-3 ${
+                              formData.selectedMethodId === method.id
+                                ? 'border-primary-500 bg-primary-50 shadow-md'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div
+                              className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl font-bold ${
+                                formData.selectedMethodId === method.id
+                                  ? 'bg-primary-500 text-white'
+                                  : 'bg-gray-100 text-gray-600'
+                              }`}
+                            >
+                              {method.currency === 'USDT'
+                                ? '₮'
+                                : method.currency === 'MMK'
+                                ? 'K'
+                                : '¥'}
+                            </div>
+                            <div className="text-center">
+                              <span className="font-semibold text-sm block">
+                                {method.name}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {CURRENCY_SYMBOLS[method.currency as PaymentCurrency] || ''}{' '}
+                                {method.currency}
+                              </span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      // 无可用支付方式时的错误提示（不再硬编码回退）
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <AlertTriangle className="w-10 h-10 text-yellow-500 mb-3" />
+                        <p className="text-gray-600 font-medium">暂无可用支付方式</p>
+                        <p className="text-sm text-gray-400 mt-1">
+                          请联系客服或稍后再试
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Remark */}
@@ -328,7 +583,9 @@ export default function CheckoutPage() {
                     <h2 className="text-lg font-semibold mb-4">备注（可选）</h2>
                     <textarea
                       value={formData.remark}
-                      onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, remark: e.target.value })
+                      }
                       placeholder="有什么想告诉我们的吗？"
                       rows={3}
                       className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-primary-500 focus:outline-none transition-all resize-none"
@@ -342,7 +599,10 @@ export default function CheckoutPage() {
                     <h2 className="text-lg font-semibold mb-4">订单摘要</h2>
                     <div className="space-y-4">
                       {items.map((item) => (
-                        <div key={item.product.id} className="flex gap-3">
+                        <div
+                          key={item.product.id}
+                          className="flex gap-3"
+                        >
                           <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
                             <Image
                               src={item.product.image}
@@ -353,10 +613,15 @@ export default function CheckoutPage() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-sm truncate">{item.product.name}</h3>
-                            <p className="text-sm text-gray-500">x {item.quantity}</p>
+                            <h3 className="font-medium text-sm truncate">
+                              {item.product.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              x {item.quantity}
+                            </p>
                             <p className="text-primary-600 font-semibold">
-                              {currencySymbol}{item.product.price * item.quantity}
+                              {currencySymbol}
+                              {item.product.price * item.quantity}
                             </p>
                           </div>
                         </div>
@@ -366,8 +631,22 @@ export default function CheckoutPage() {
                     <div className="border-t mt-4 pt-4">
                       <div className="flex justify-between text-lg font-bold">
                         <span>合计</span>
-                        <span className="text-primary-600">{currencySymbol}{totalPrice.toFixed(2)}</span>
+                        <span className="text-primary-600">
+                          {currencySymbol}
+                          {totalPrice.toFixed(2)}
+                        </span>
                       </div>
+                      {quoteData && (
+                        <div className="text-xs text-gray-500 mt-1 text-right">
+                          应付: {CURRENCY_SYMBOLS[quoteData.payCurrency] || ''}
+                          {quoteData.payAmountRaw > 0
+                            ? quoteData.payCurrency === 'USDT'
+                              ? (quoteData.payAmountRaw / 1000000).toFixed(2)
+                              : (quoteData.payAmountRaw / 100).toFixed(0)
+                            : ''}{' '}
+                          {quoteData.payCurrency}
+                        </div>
+                      )}
                     </div>
 
                     <button
@@ -395,14 +674,36 @@ export default function CheckoutPage() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">订单已创建</h2>
                 <p className="text-gray-600 mb-1">订单号</p>
-                <p className="text-xl font-mono font-bold text-primary-600 mb-6 select-all">{orderData.orderNo}</p>
+                <p className="text-xl font-mono font-bold text-primary-600 mb-6 select-all">
+                  {orderData.orderNo}
+                </p>
+
+                {/* 倒计时 */}
+                {countdown > 0 && (
+                  <div className="flex items-center justify-center gap-2 mb-4 text-sm">
+                    <Clock className="w-4 h-4 text-orange-500" />
+                    <span className="text-orange-600 font-medium">
+                      请在 {formatCountdown(countdown)} 内完成支付
+                    </span>
+                  </div>
+                )}
+                {countdown === 0 && quoteData?.expiresAt && (
+                  <div className="flex items-center justify-center gap-2 mb-4 text-sm">
+                    <AlertTriangle className="w-4 h-4 text-red-500" />
+                    <span className="text-red-600 font-medium">
+                      报价已过期，请返回重新下单
+                    </span>
+                  </div>
+                )}
 
                 {/* 支付指引 */}
                 <div className="bg-gray-50 rounded-xl p-6 mb-6 text-left">
-                  <h3 className="font-semibold text-gray-800 mb-3">{instructions.title}</h3>
+                  <h3 className="font-semibold text-gray-800 mb-3">
+                    {instructions.title}
+                  </h3>
                   <ol className="space-y-2 text-sm text-gray-600 list-decimal list-inside">
-                    {instructions.steps.map((step, idx) => (
-                      <li key={idx}>{step}</li>
+                    {instructions.steps.map((stepText, idx) => (
+                      <li key={idx}>{stepText}</li>
                     ))}
                   </ol>
 
@@ -429,10 +730,11 @@ export default function CheckoutPage() {
                 </div>
 
                 <p className="text-3xl font-bold text-primary-600 mb-4">
-                  {currencySymbol}{totalPrice.toFixed(2)}
+                  {orderData.payAmount || `${currencySymbol}${totalPrice.toFixed(2)}`}
                 </p>
                 <p className="text-sm text-gray-500 mb-6">
-                  支付方式：{currentPaymentMethod?.name}
+                  支付方式：
+                  {displayMethodName || orderData.paymentMethod || ''}
                 </p>
 
                 <button
@@ -441,7 +743,9 @@ export default function CheckoutPage() {
                   className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-xl btn-hover disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {loading && <Loader2 className="w-5 h-5 animate-spin" />}
-                  确认已支付 {currencySymbol}{totalPrice.toFixed(2)}
+                  确认已支付{' '}
+                  {orderData.payAmount ||
+                    `${currencySymbol}${totalPrice.toFixed(2)}`}
                 </button>
 
                 <p className="text-xs text-gray-400 mt-3 flex items-center justify-center gap-1">
@@ -470,9 +774,13 @@ export default function CheckoutPage() {
                 </div>
                 <h2 className="text-2xl font-bold mb-2">支付确认成功！</h2>
                 {orderData && (
-                  <p className="text-gray-600 mb-1">订单号: {orderData.orderNo}</p>
+                  <p className="text-gray-600 mb-1">
+                    订单号: {orderData.orderNo}
+                  </p>
                 )}
-                <p className="text-gray-500 text-sm mb-6">我们会尽快处理您的订单，请留意联系方式获取通知</p>
+                <p className="text-gray-500 text-sm mb-6">
+                  我们会尽快处理您的订单，请留意联系方式获取通知
+                </p>
 
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 text-left">
                   <p className="text-green-800 text-sm">
